@@ -1,1 +1,1 @@
-# PTT is a powershell project fpr out company
+# PTT is a powershell project for our company
