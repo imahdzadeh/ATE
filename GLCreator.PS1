@@ -1,9 +1,9 @@
-$MainPath = 'D:\HST\AccFinance\ACCG\GL'
-$ACCLPath = "D:\HST\AccFinance\ACCG"
+$MainPath = "$env:comroot\AccFinance\ACCG\GL"
+$ACCLPath = "$env:comroot\AccFinance\ACCG"
 $CurYear = (Get-Date).year
 $CurMonth = ((Get-Culture).DateTimeFormat.GetMonthName((Get-Date).Month)).Substring(0,3)
-$GLYPAth = $mainPath + "\" + $CurYear
-$GLMPAth = $GLYPAth + "\" + $CurMonth
+$GLYPAth = "$mainPath\$CurYear"
+$GLMPAth = "$GLYPAth\$CurMonth"
 $ACCLFileName = (Get-ChildItem -Path $ACCLPath -Filter "*ACCL*").FullName
 #$sheetName = "SubLedgers"
 $ObjCSV = Import-Csv $ACCLFileName
