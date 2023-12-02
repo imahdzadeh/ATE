@@ -31,11 +31,17 @@ $form.AutoScale = $false
 
 $EmailGV = $null
 $EmailGV = New-Object System.Windows.Forms.DataGridView
-$EmailGV.Size=New-Object System.Drawing.Size(429,350)
+$EmailGV.Size=New-Object System.Drawing.Size(595,350)
+$EmailGV.Location = New-Object System.Drawing.size(25,50)
 $EmailGV.ColumnCount = 3
-$EmailGV.Columns[1].width = 208
+$EmailGV.Columns[0].width = 180
+$EmailGV.Columns[1].width = 325
+$EmailGV.Columns[2].width = 70
 $EmailGV.RowHeadersVisible = $false
 $EmailGV.ColumnHeadersVisible = $false
+$EmailGV.SelectionMode = 'FullRowSelect'
+$EmailGV.AllowUserToResizeColumns = $false
+$EmailGV.AllowUserToResizeRows = $false
 
 
 Import-Csv 'C:\Users\Isar\Desktop\powershell\emails.csv' | foreach {
@@ -52,6 +58,7 @@ $pictureBox2.Image = $img3
 $pictureBox2.SizeMode = "StretchImage"
 $pictureBox2.Location = New-Object System.Drawing.size(7,10)
 $pictureBox2.Size = New-Object System.Drawing.Size(25,25)
+$pictureBox2.BackColor = 'green'
 
 $circle = new-object Windows.Forms.PictureBox
 $circle.Image = $circlepath
@@ -59,12 +66,19 @@ $circle.SizeMode = "StretchImage"
 $circle.Location = New-Object System.Drawing.size(31,30)
 $circle.Size = New-Object System.Drawing.Size(7,7)
 
+$circle2 = new-object Windows.Forms.PictureBox
+$circle2.Image = $circlepath
+$circle2.SizeMode = "StretchImage"
+$circle2.Location = New-Object System.Drawing.size(31,30)
+$circle2.Size = New-Object System.Drawing.Size(7,7)
+
 $GBChat = New-Object system.Windows.Forms.Groupbox
-$GBChat.Size = New-Object System.Drawing.Size(222,239)
+$GBChat.Size = New-Object System.Drawing.Size(100,239)
 
 $GBemail = New-Object system.Windows.Forms.Groupbox
-$GBemail.Size = New-Object System.Drawing.Size(120,400)
-#$GBemail.Location = New-Object System.Drawing.point(31,30)
+$GBemail.Size = New-Object System.Drawing.Size(80,400)
+$GBemail.Location = New-Object System.Drawing.point(31,0)
+#$GBemail.BackColor = 'red'
 #$GBemail.AutoSize = $true
 
 #$GBChat.text = ""
@@ -74,14 +88,62 @@ $GBemail.Size = New-Object System.Drawing.Size(120,400)
 
 #$GBChat.Location = New-Object System.Drawing.Point(20,20)
 
+$listBox_DrawItem={
+ param(
+  [System.Object] $sender, 
+  [System.Windows.Forms.DrawItemEventArgs] $e
+ )
+   #Suppose Sender de type Listbox
+ if ($Sender.Items.Count -eq 0) {return}
+ 
+   #Suppose item de type String
+ $lbItem="  $($Sender.Items[$e.Index])"
+
+ #if ( $lbItem -match 'locked$')  
+ #{ 
+ 
+ $test = $e.Index
+    If ($e.Index -gt 8)
+    {
+    $Color=[System.Drawing.Color]::green       
+    }
+    Else
+    {
+     $Color=[System.Drawing.Color]::red       
+    }
+    try
+    {
+      $brush = new-object System.Drawing.SolidBrush($Color)
+      $test = $lbItem.length
+  #    $e.Graphics.FillRectangle($brush, $e.Bounds)
+   $e.Graphics.FillEllipse($brush,0,$e.Bounds.Y+3.5,7,7)
+  
+#     $e.Graphics.DrawImage($circlepath,0,$e.Bounds.Y+3.5,7,7)
+     
+     
+    }
+    finally
+    {
+      $brush.Dispose()
+    }
+  # }
+ $e.Graphics.DrawString($lbItem, $e.Font, [System.Drawing.SystemBrushes]::ControlText, (new-object System.Drawing.PointF($e.Bounds.X, $e.Bounds.Y)))
+}
 $listBox = New-Object System.Windows.Forms.ListBox
 $listBox.Location = New-Object System.Drawing.Point(5,40)
 $listBox.Size = New-Object System.Drawing.Size(214,400)
 $listBox.Height = 200
-
+$listbox.FormattingEnabled = $True
+$listbox.TabIndex = 4
+$listBox.DrawMode = [System.Windows.Forms.DrawMode]::OwnerDrawFixed
+$listbox.DataBindings.DefaultDataSourceUpdateMode = 0
+$listBox.Add_DrawItem($listBox_DrawItem)
+$listbox.add_Click($action_si_click_sur_VMKO)
 [void] $listBox.Items.Add('User1')
 [void] $listBox.Items.Add('Ali')
+
 [void] $listBox.Items.Add('User3')
+$listBox.Items.Count
 [void] $listBox.Items.Add('Matyma')
 [void] $listBox.Items.Add('tesduser')
 [void] $listBox.Items.Add('chatuser')
@@ -95,6 +157,10 @@ $listBox.Height = 200
 [void] $listBox.Items.Add('noname')
 [void] $listBox.Items.Add('noname')
 [void] $listBox.Items.Add('noname')
+#$listBox.Controls.Add($circle)
+#$listBox.Items[2].
+
+
 
 $NewsLB = New-Object System.Windows.Forms.ListBox
 $NewsLB.Location = New-Object System.Drawing.Point(5,30)
@@ -108,9 +174,9 @@ $NewsLB.Height = 172
 [void] $NewsLB.Items.Add('PowerShell is a task automation and configuration management program from Microsoft')
 
 $EmailLB = New-Object System.Windows.Forms.ListBox
-$EmailLB.Location = New-Object System.Drawing.Point(2,36)
-$EmailLB.Size = New-Object System.Drawing.Size(116,300)
-$EmailLB.Height = 316
+$EmailLB.Location = New-Object System.Drawing.Point(2,25)
+$EmailLB.Size = New-Object System.Drawing.Size(80,300)
+$EmailLB.Height = 329
 [void] $EmailLB.Items.Add('Inbox')
 [void] $EmailLB.Items.Add('')
 [void] $EmailLB.Items.Add('Drafts')
@@ -124,13 +190,15 @@ $EmailLB.Height = 316
 [void] $EmailLB.Items.Add('Trash')
 
 
+
+
 $Chatlabel = New-Object System.Windows.Forms.Label
-$Chatlabel.Location = New-Object System.Drawing.size(32,12)
+$Chatlabel.Location = New-Object System.Drawing.size(33,25)
 $Chatlabel.Size = New-Object System.Drawing.Size(25,15)
 $Chatlabel.Text = $env:USERNAME
 
 $Chatstatus = New-Object System.Windows.Forms.Label
-$Chatstatus.Location = New-Object System.Drawing.size(38,28)
+$Chatstatus.Location = New-Object System.Drawing.size(70,26)
 $Chatstatus.Size = New-Object System.Drawing.Size(30,25)
 $Chatstatus.Text = 'حاضر'
 
@@ -138,7 +206,7 @@ $GBChat.Controls.Add($listBox)
 $GBChat.Controls.Add($Chatlabel)
 $GBChat.Controls.Add($pictureBox2)
 $GBChat.Controls.Add($Chatstatus)
-$GBChat.Controls.Add($circle)
+#$GBChat.Controls.Add($circle)
 
 
 
@@ -179,18 +247,18 @@ $AddPrinterBtn                   = New-Object system.Windows.Forms.Button
 $AddPrinterBtn.Anchor            = 'right'
 $AddPrinterBtn.BackColor         = "#d2d4d6"
 $AddPrinterBtn.text              = "امور پرسنلی"
-$AddPrinterBtn.width             = 215
+$AddPrinterBtn.width             = 100
 $AddPrinterBtn.height            = 50
 #$AddPrinterBtn.location          = New-Object System.Drawing.Point(370,250)
 $AddPrinterBtn.Font              = 'Microsoft Sans Serif,10'
 $AddPrinterBtn.ForeColor         = "#000"
 
 $ComposeBtn                   = New-Object system.Windows.Forms.Button
-$ComposeBtn.Location = New-Object System.Drawing.Size(5,10)
+$ComposeBtn.Location = New-Object System.Drawing.Size(1,0)
 #$ComposeBtn.Anchor            = 'right'
-$ComposeBtn.BackColor         = "#d2d4d6"
+#$ComposeBtn.BackColor         = "#d2d4d6"
 $ComposeBtn.text              = "Compose"
-$ComposeBtn.width             = 110
+$ComposeBtn.width             = 80
 $ComposeBtn.height            = 25
 #$ComposeBtn.location          = New-Object System.Drawing.Point(370,250)
 $ComposeBtn.Font              = 'Microsoft Sans Serif,10'
@@ -200,7 +268,7 @@ $DesktopBtn                      = New-Object system.Windows.Forms.Button
 $DesktopBtn.Anchor            = 'right'
 $DesktopBtn.BackColor         = "#d2d4d6"
 $DesktopBtn.text              = "میز کار"
-$DesktopBtn.width             = 215
+$DesktopBtn.width             = 100
 $DesktopBtn.height            = 50
 #$AddPrinterBtn.location          = New-Object System.Drawing.Point(370,250)
 $DesktopBtn.Font              = 'Microsoft Sans Serif,10'
@@ -254,7 +322,7 @@ $tableLayoutPanel1.AutoSize= $true
 $tableLayoutPanel3 = New-Object System.Windows.Forms.TableLayoutPanel
 $tableLayoutPanel3.RowCount = 1
 $tableLayoutPanel3.ColumnCount = 1
-$tableLayoutPanel3.Size = New-Object System.Drawing.Size(200,250)
+$tableLayoutPanel3.Size = New-Object System.Drawing.Size(150,250)
 $tableLayoutPanel3.Controls.Add($GBChat, 0, 0);
 #$tableLayoutPanel3.BackColor = 'red'
 $tableLayoutPanel3.Dock = [System.Windows.Forms.DockStyle]::top
@@ -264,8 +332,8 @@ $tableLayoutPanel4 = New-Object System.Windows.Forms.TableLayoutPanel
 $tableLayoutPanel4.RowCount = 1
 $tableLayoutPanel4.ColumnCount = 2
 #$tableLayoutPanel4.AutoSize = $true
-$tableLayoutPanel4
-$tableLayoutPanel4.Size = New-Object System.Drawing.Size(560,200)
+
+$tableLayoutPanel4.Size = New-Object System.Drawing.Size(690,200)
 $tableLayoutPanel4.Controls.Add($GBemail, 0, 0);
 $tableLayoutPanel4.Controls.Add($EmailGV, 1, 0);
 #$tableLayoutPanel4.BackColor = 'green'
@@ -284,7 +352,8 @@ $form.controls.Add($tableLayoutPanel2)
 #$form.BackColor='yellow'
 
 #$form.controls.add($tableLayoutPanel2)
-
+$form.FormBorderStyle = 'FixedDialog'
+$form.MaximizeBox = $false
 #$form.controls.add($Panel)
 
 [void]$Form.ShowDialog()
