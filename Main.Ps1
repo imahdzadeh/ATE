@@ -18,15 +18,24 @@ $calendar = New-Object Windows.Forms.MonthCalendar -Property @{
 
 #$MainWindow.AutoSize = $true
 
-$form = New-Object Windows.Forms.Form -Property @{
+$Mainform = New-Object Windows.Forms.Form -Property @{
     StartPosition = [Windows.Forms.FormStartPosition]::CenterScreen
     Size          = New-Object Drawing.Size 800, 600
     Text          =            $shamsiYear.ToString() + "/" + 
                                ($shamsiMonth = $persianCalendar.GetMonth($gregorianDate)) + "/" + 
-                               ( $shamsiDay = $persianCalendar.GetDayOfMonth($gregorianDate)).ToString() + "`t`t`t`t`t`t`t`t`t`t " + "پارس طوبی تکیه" 
+                               ( $shamsiDay = $persianCalendar.GetDayOfMonth($gregorianDate)).ToString() + "`t`t`t`t`t`t`t`t`t`t" + "پارس طوبی تکیه" 
     Topmost       = $true
 }
-$form.AutoScale = $false
+$Secoform = New-Object Windows.Forms.Form -Property @{
+    StartPosition = [Windows.Forms.FormStartPosition]::CenterScreen
+    Size          = New-Object Drawing.Size 800, 600
+    Text          =            $shamsiYear.ToString() + "/" + 
+                               ($shamsiMonth = $persianCalendar.GetMonth($gregorianDate)) + "/" + 
+                               ( $shamsiDay = $persianCalendar.GetDayOfMonth($gregorianDate)).ToString() + "`t`t`t`t`t`t`t`t`t`t" + "پارس طوبی تکیه" 
+    Topmost       = $true
+}
+$Secoform.AutoScale = $false
+$Mainform.AutoScale = $false
 # Define the size, title and background color             = 
 
 $EmailGV = $null
@@ -51,7 +60,9 @@ Import-Csv 'C:\Users\Isar\Desktop\powershell\emails.csv' | foreach {
 
 
 $img3 = [System.Drawing.Image]::Fromfile('C:\Users\Isar\Desktop\powershell\img3.png')
-$circlepath = [System.Drawing.Image]::Fromfile('C:\Users\Isar\Desktop\powershell\circle.png')
+$avatar = [System.Drawing.Image]::Fromfile('D:\HST\IT\Root\images\avatar.png')
+$GH = [System.Drawing.Image]::Fromfile('D:\HST\IT\Root\images\pop.png')
+
 
 $pictureBox2 = new-object Windows.Forms.PictureBox
 $pictureBox2.Image = $img3
@@ -97,28 +108,40 @@ $listBox_DrawItem={
  if ($Sender.Items.Count -eq 0) {return}
  
    #Suppose item de type String
- $lbItem="  $($Sender.Items[$e.Index])"
-
+ $lbItem=$Sender.Items[$e.Index]
+ 
+ 
  #if ( $lbItem -match 'locked$')  
  #{ 
  
- $test = $e.Index
-    If ($e.Index -gt 8)
+ 
+    If ($e.Index -lt 8)
     {
-    $Color=[System.Drawing.Color]::green       
+        $Color=[System.Drawing.Color]::green       
     }
     Else
     {
-     $Color=[System.Drawing.Color]::red       
+        $Color=[System.Drawing.Color]::red       
     }
     try
     {
       $brush = new-object System.Drawing.SolidBrush($Color)
       $test = $lbItem.length
   #    $e.Graphics.FillRectangle($brush, $e.Bounds)
-   $e.Graphics.FillEllipse($brush,0,$e.Bounds.Y+3.5,7,7)
-  
-#     $e.Graphics.DrawImage($circlepath,0,$e.Bounds.Y+3.5,7,7)
+
+   If($lbItem -contains 'Gholamreza')
+   {
+        $e.Graphics.DrawImage($Gh,0,$e.Bounds.Y+2.5,25,25)
+         $e.Graphics.FillEllipse($brush,18,$e.Bounds.Y+21,8,8)
+   }
+   Else
+   {
+        $e.Graphics.DrawImage($avatar,0,$e.Bounds.Y+2.5,25,25)
+   } 
+
+ #     $e.Graphics.DrawImage($GH,0,$e.Bounds.Y+2.5,30,30)
+#     $e.Graphics.DrawImage($circlepath,0,$e.Bounds.Y+2.5,30,30)
+    
      
      
     }
@@ -127,24 +150,27 @@ $listBox_DrawItem={
       $brush.Dispose()
     }
   # }
- $e.Graphics.DrawString($lbItem, $e.Font, [System.Drawing.SystemBrushes]::ControlText, (new-object System.Drawing.PointF($e.Bounds.X, $e.Bounds.Y)))
+ #$e.Graphics.DrawString($lbItem, $e.Font, [System.Drawing.SystemBrushes]::ControlText, (new-object System.Drawing.PointF($e.Bounds.X, $e.Bounds.Y)))
+ $Yp = ($e.Bounds.Y) + 18 
+ $e.Graphics.DrawString($lbItem, $e.Font, [System.Drawing.SystemBrushes]::ControlText, (new-object System.Drawing.PointF(25, $Yp)))
 }
 $listBox = New-Object System.Windows.Forms.ListBox
 $listBox.Location = New-Object System.Drawing.Point(5,40)
 $listBox.Size = New-Object System.Drawing.Size(214,400)
 $listBox.Height = 200
 $listbox.FormattingEnabled = $True
+
 $listbox.TabIndex = 4
 $listBox.DrawMode = [System.Windows.Forms.DrawMode]::OwnerDrawFixed
 $listbox.DataBindings.DefaultDataSourceUpdateMode = 0
+$listBox.ItemHeight = 32
 $listBox.Add_DrawItem($listBox_DrawItem)
-$listbox.add_Click($action_si_click_sur_VMKO)
+#$listbox.add_Click($action_si_click_sur_VMKO)
+
+[void] $listBox.Items.Add('Gholamreza')
 [void] $listBox.Items.Add('User1')
 [void] $listBox.Items.Add('Ali')
-
 [void] $listBox.Items.Add('User3')
-$listBox.Items.Count
-[void] $listBox.Items.Add('Matyma')
 [void] $listBox.Items.Add('tesduser')
 [void] $listBox.Items.Add('chatuser')
 [void] $listBox.Items.Add('group')
@@ -189,9 +215,6 @@ $EmailLB.Height = 329
 [void] $EmailLB.Items.Add('')
 [void] $EmailLB.Items.Add('Trash')
 
-
-
-
 $Chatlabel = New-Object System.Windows.Forms.Label
 $Chatlabel.Location = New-Object System.Drawing.size(33,25)
 $Chatlabel.Size = New-Object System.Drawing.Size(25,15)
@@ -207,16 +230,6 @@ $GBChat.Controls.Add($Chatlabel)
 $GBChat.Controls.Add($pictureBox2)
 $GBChat.Controls.Add($Chatstatus)
 #$GBChat.Controls.Add($circle)
-
-
-
-$Panel = New-Object System.Windows.Forms.TableLayoutPanel
-$panel.Dock = "Fill"
-$panel.ColumnCount = 1
-$panel.RowCount = 1
-$panel.CellBorderStyle = "single"
-$panel.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent, 100)))
-$panel.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 100)))
 
 $calendar.Location = New-Object System.Drawing.Size(10,20)
 
@@ -239,7 +252,6 @@ $objTextBox1.Scrollbars = "vertical"
 $objTextBox1.AutoSize = $true
 $objTextBox1.Text = 'Google News is a news aggregator service developed by Google. `n sdfsdfsdfsfd'
 $objTextBox1.Dock = [System.Windows.Forms.DockStyle]::fill
-$objTextBox1.RightToLeft
 $groupBox4.Controls.Add($objLabel2)
 $groupBox4.Controls.Add($NewsLB)
 
@@ -273,8 +285,26 @@ $DesktopBtn.height            = 50
 #$AddPrinterBtn.location          = New-Object System.Drawing.Point(370,250)
 $DesktopBtn.Font              = 'Microsoft Sans Serif,10'
 $DesktopBtn.ForeColor         = "#000"
-
-
+$DesktopBtn.Add_Click({
+    # Call Sub menu 1
+ #   $MenuBox.Close()
+ #   $MenuBox.Dispose()
+ #   $ADBox.Topmost = $True
+    #$SecoForm.Add_Shown({$SecoForm.Activate()})
+<#
+$Secoform = New-Object Windows.Forms.Form -Property @{
+    StartPosition = [Windows.Forms.FormStartPosition]::CenterScreen
+    Size          = New-Object Drawing.Size 800, 600
+    Text          =            $shamsiYear.ToString() + "/" + 
+                               ($shamsiMonth = $persianCalendar.GetMonth($gregorianDate)) + "/" + 
+                               ( $shamsiDay = $persianCalendar.GetDayOfMonth($gregorianDate)).ToString() + "`t`t`t`t`t`t`t`t`t`t" + "پارس طوبی تکیه" 
+    Topmost       = $true
+}
+$Secoform.AutoScale = $false
+    [void] $SecoForm.Show()
+#>
+D:\HST\IT\Root\Desktop.ps1
+})
 
 $groupBox1 = New-Object System.Windows.Forms.GroupBox
 $groupBox1.Size = New-Object Drawing.Size 250, 200
@@ -289,7 +319,7 @@ $objLabel.Text = "تقویم"
 #$objLabel.Anchor = 'left,top'
 $groupBox1.Controls.Add($objLabel)
 $groupBox1.Controls.Add($calendar)
-#$form.Controls.Add($objLabel)
+#$Mainform.Controls.Add($objLabel)
 #$panel.controls.AddRange(@($Groupbox3))
 $groupBox2 = New-Object System.Windows.Forms.GroupBox
 $groupBox2.Controls.Add($AddPrinterBtn)
@@ -342,18 +372,20 @@ $tableLayoutPanel4.Dock = [System.Windows.Forms.DockStyle]::right
 
 
 
-$form.controls.Add($tableLayoutPanel1)
-
-$form.controls.Add($tableLayoutPanel3)
-$form.controls.Add($tableLayoutPanel4)
-$form.controls.Add($tableLayoutPanel2)
+$Mainform.controls.Add($tableLayoutPanel1)
+$Mainform.controls.Add($tableLayoutPanel3)
+$Mainform.controls.Add($tableLayoutPanel4)
+$Mainform.controls.Add($tableLayoutPanel2)
 #$panel.Dock = [System.Windows.Forms.DockStyle]::fill
 
-#$form.BackColor='yellow'
+#$Mainform.BackColor='yellow'
 
-#$form.controls.add($tableLayoutPanel2)
-$form.FormBorderStyle = 'FixedDialog'
-$form.MaximizeBox = $false
-#$form.controls.add($Panel)
+#$Mainform.controls.add($tableLayoutPanel2)
+$Mainform.FormBorderStyle = 'FixedDialog'
+$Mainform.MaximizeBox = $false
+$Secoform.FormBorderStyle = 'FixedDialog'
+$Secoform.MaximizeBox = $false
+#$Mainform.controls.add($Panel)
 
-[void]$Form.ShowDialog()
+[void]$Mainform.ShowDialog()
+$Mainform.Dispose()
