@@ -52,10 +52,15 @@ $EmailGV.SelectionMode = 'FullRowSelect'
 $EmailGV.AllowUserToResizeColumns = $false
 $EmailGV.AllowUserToResizeRows = $false
 
+Try{
+    Import-Csv 'C:\Users\Isar\Desktop\powershell\emails.csv' | foreach {
+        $EmailGV.Rows.Add($_.from,$_.subject,$_.time) | out-null
+    #    $EmailGV.Rows.Add($_.item[0].value) | out-    
+    }
+}
+Catch
+{
 
-Import-Csv 'C:\Users\Isar\Desktop\powershell\emails.csv' | foreach {
-    $EmailGV.Rows.Add($_.from,$_.subject,$_.time) | out-null
-#    $EmailGV.Rows.Add($_.item[0].value) | out-    
 }
 
 
@@ -260,10 +265,20 @@ $AddPrinterBtn.Anchor            = 'right'
 $AddPrinterBtn.BackColor         = "#d2d4d6"
 $AddPrinterBtn.text              = "امور پرسنلی"
 $AddPrinterBtn.width             = 100
-$AddPrinterBtn.height            = 50
+$AddPrinterBtn.height            = 35
 #$AddPrinterBtn.location          = New-Object System.Drawing.Point(370,250)
 $AddPrinterBtn.Font              = 'Microsoft Sans Serif,10'
 $AddPrinterBtn.ForeColor         = "#000"
+
+$Settings                   = New-Object system.Windows.Forms.Button
+$Settings.Anchor            = 'right'
+$Settings.BackColor         = "#d2d4d6"
+$Settings.text              = "تنظیمات"
+$Settings.width             = 100
+$Settings.height            = 35
+#$Settings.location          = New-Object System.Drawing.Point(370,250)
+$Settings.Font              = 'Microsoft Sans Serif,10'
+$Settings.ForeColor         = "#000"
 
 $ComposeBtn                   = New-Object system.Windows.Forms.Button
 $ComposeBtn.Location = New-Object System.Drawing.Size(1,0)
@@ -281,7 +296,7 @@ $DesktopBtn.Anchor            = 'right'
 $DesktopBtn.BackColor         = "#d2d4d6"
 $DesktopBtn.text              = "میز کار"
 $DesktopBtn.width             = 100
-$DesktopBtn.height            = 50
+$DesktopBtn.height            = 35
 #$AddPrinterBtn.location          = New-Object System.Drawing.Point(370,250)
 $DesktopBtn.Font              = 'Microsoft Sans Serif,10'
 $DesktopBtn.ForeColor         = "#000"
@@ -338,11 +353,12 @@ $tableLayoutPanel2.AutoSize = $true
 #$tableLayoutPanel2.Location = New-Object System.Drawing.Size(220,10)
 
 $tableLayoutPanel1 = New-Object System.Windows.Forms.TableLayoutPanel
-$tableLayoutPanel1.RowCount = 2
+$tableLayoutPanel1.RowCount = 3
 $tableLayoutPanel1.ColumnCount = 1
 #$tableLayoutPanel1.Controls.Add($groupBox1, 1, 0);
 $tableLayoutPanel1.Controls.Add($AddPrinterBtn, 0, 0);
 $tableLayoutPanel1.Controls.Add($DesktopBtn, 0, 1);
+$tableLayoutPanel1.Controls.Add($Settings, 0, 2);
 #$tableLayoutPanel1.Controls.Add($groupBox3, 0, 2);
 #$tableLayoutPanel1.Controls.Add(, 2, 2);
 $tableLayoutPanel1.Dock = [System.Windows.Forms.DockStyle]::bottom
