@@ -1,4 +1,9 @@
-﻿[void] [System.Windows.Forms.Application]::EnableVisualStyles()
+﻿Add-Type -AssemblyName System.Windows.Forms
+Add-Type -AssemblyName System.Drawing
+
+$linktest = 'D:\HST\IT\Root\Desktop.ps1'
+
+[void] [System.Windows.Forms.Application]::EnableVisualStyles()
 $persianCalendar = New-Object System.Globalization.PersianCalendar
 $gregorianDate = [System.TimeZoneInfo]::ConvertTimeBySystemTimeZoneId([DateTime]::Now,"Iran Standard Time")
 # Convert the Gregorian date to Shamsi (Jalali) calendar
@@ -318,7 +323,9 @@ $Secoform = New-Object Windows.Forms.Form -Property @{
 $Secoform.AutoScale = $false
     [void] $SecoForm.Show()
 #>
-D:\HST\IT\Root\Desktop.ps1
+& $linktest
+
+#D:\HST\IT\Root\Desktop.ps1
 })
 
 $groupBox1 = New-Object System.Windows.Forms.GroupBox
