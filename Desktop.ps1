@@ -83,8 +83,19 @@ $EmailGV.AllowUserToResizeRows = $false
 $EmailGV.Columns[1].HeaderText = 'شناسه'
 $EmailGV.Columns[0].HeaderText = 'وضعیت'
 $EmailGV.AllowUserToAddRows = $false
+$EmailGV.ReadOnly = $true
 $EmailGV.ColumnHeadersDefaultCellStyle.Alignment = [System.Drawing.ContentAlignment]::MiddleCenter
 $EmailGV.DefaultCellStyle.Alignment = [System.Drawing.ContentAlignment]::bottomright
+$EmailGV.AllowUserToOrderColumns = $false
+$EmailGV.RowHeadersWidthSizeMode = 1
+#$EmailGV.AutoSizeRowsMode = $false
+$EmailGV.ColumnHeadersHeightSizeMode = 1
+foreach ($datagridviewcolumn in $EmailGV.columns) {
+    $datagridviewcolumn.sortmode = 0
+}
+$EmailGV.rowh
+
+
 
 #$EmailGV.header = [System.Drawing.ContentAlignment]::bottomright
 
