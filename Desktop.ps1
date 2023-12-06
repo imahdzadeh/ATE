@@ -34,7 +34,8 @@ $Utf8NoBomEncoding = New-Object System.Text.UTF8Encoding $False
 [System.IO.File]::WriteAllLines('D:\HST\IT\Root\sample.xml', $MyRawString, $Utf8NoBomEncoding)
 $test = Import-Clixml -Path 'D:\HST\IT\Root\sample.xml'
  $EmailGV.rows.Clear()
-$EmailGV.Rows.Add('باطل شده','شناسه')
+[void]$EmailGV.Rows.Add('باطل شده','شناسه')
+[void]$EmailGV.Rows.Add('باطل شده2','2شناسه')
 
 
 #$EmailGV = [System.Management.Automation.PSSerializer]::Deserialize($test)

@@ -39,12 +39,18 @@ $EmailGV.AllowUserToOrderColumns = $false
 $EmailGV.RowHeadersWidthSizeMode = 1
 #$EmailGV.AutoSizeRowsMode = $false
 $EmailGV.ColumnHeadersHeightSizeMode = 1
+$EmailGV.EnableHeadersVisualStyles = $false
+#$EmailGV.DefaultCellStyle.SelectionBackColor= $EmailGV.DefaultCellStyle.BackColor
+#$EmailGV.DefaultCellStyle.SelectionForeColor= $EmailGV.DefaultCellStyle.ForeColor
+$EmailGV.ColumnHeadersDefaultCellStyle.SelectionBackColor='window'
+#$EmailGV.DefaultCellStyle.BackColor
+#$EmailGV.DefaultCellStyle.ForeColor
 foreach ($datagridviewcolumn in $EmailGV.columns) {
     $datagridviewcolumn.sortmode = 0
 }
 
 #$EmailGV | Get-Member
-, $EmailGV | Export-Clixml -Path D:\HST\IT\Root\sample.xml
+$EmailGV | Export-Clixml -Path D:\HST\IT\Root\sample.xml
 #$EmailGV | ConvertTo-JSON -Depth 4 | Out-File D:\HST\IT\Root\sample.txt
 
 #$SecoForm.Controls.Add($textBox)
