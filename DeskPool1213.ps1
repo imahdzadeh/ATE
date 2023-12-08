@@ -1,5 +1,6 @@
 ﻿Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
+Add-Type -AssemblyName System.Management.Automation
 <#
 $persianCalendar = New-Object System.Globalization.PersianCalendar
 $gregorianDate = [System.TimeZoneInfo]::ConvertTimeBySystemTimeZoneId([DateTime]::Now,"Iran Standard Time")
@@ -49,11 +50,28 @@ foreach ($datagridviewcolumn in $EmailGV.columns) {
     $datagridviewcolumn.sortmode = 0
 }
 
-#$EmailGV | Get-Member
-$EmailGV | Export-Clixml -Path D:\HST\IT\Root\sample.xml
+<#
+$AddPrinterBtn                   = New-Object system.Windows.Forms.Button
+$AddPrinterBtn.Anchor            = 'right'
+$AddPrinterBtn.BackColor         = "#d2d4d6"
+$AddPrinterBtn.text              = "امور پرسنلی"
+$AddPrinterBtn.width             = 100
+$AddPrinterBtn.height            = 35
+#$AddPrinterBtn.location          = New-Object System.Drawing.Point(370,250)
+$AddPrinterBtn.Font              = 'Microsoft Sans Serif,10'
+$AddPrinterBtn.ForeColor         = "#000"
+#>
+#$Utf8NoBomEncoding = New-Object System.Text.UTF8Encoding $false
+
+#$AddPrinterBtn | ConvertTo-Json | out-file 'D:\HST\IT\Root\sample.jso'
+
+#[System.IO.File]::WriteAllLines('D:\HST\IT\Root\sample.xml', [System.Management.Automation.PSSerializer]::Serialize($AddPrinterBtn), $Utf8NoBomEncoding)
+
+#[System.Management.Automation.PSSerializer]::serialize($test) | out-file 'D:\HST\IT\Root\sample.jso'
+$EmailGV | Export-Clixml -Path 'D:\HST\IT\Root\sample.xml' -Encoding UTF8
 #$EmailGV | ConvertTo-JSON -Depth 4 | Out-File D:\HST\IT\Root\sample.txt
 
-#$SecoForm.Controls.Add($textBox)
+$EmailGV.ColumnCount
 
 #$SecoForm.Controls.Add($DesktopGB)
 

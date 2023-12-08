@@ -84,10 +84,17 @@ $EmailGV.Columns[1].HeaderText = 'شناسه'
 $EmailGV.Columns[0].HeaderText = 'وضعیت'
 $EmailGV.AllowUserToAddRows = $false
 $EmailGV.ReadOnly = $true
+$EmailGV.ReadOnly = $true
 $EmailGV.ColumnHeadersDefaultCellStyle.Alignment = [System.Drawing.ContentAlignment]::MiddleCenter
 $EmailGV.DefaultCellStyle.Alignment = [System.Drawing.ContentAlignment]::bottomright
 $EmailGV.AllowUserToOrderColumns = $false
 $EmailGV.RowHeadersWidthSizeMode = 1
+#$EmailGV.AutoSizeRowsMode = $false
+$EmailGV.ColumnHeadersHeightSizeMode = 1
+$EmailGV.EnableHeadersVisualStyles = $false
+#$EmailGV.DefaultCellStyle.SelectionBackColor= $EmailGV.DefaultCellStyle.BackColor
+#$EmailGV.DefaultCellStyle.SelectionForeColor= $EmailGV.DefaultCellStyle.ForeColor
+$EmailGV.ColumnHeadersDefaultCellStyle.SelectionBackColor='window'
 #$EmailGV.AutoSizeRowsMode = $false
 $EmailGV.ColumnHeadersHeightSizeMode = 1
 foreach ($datagridviewcolumn in $EmailGV.columns) {
@@ -173,4 +180,4 @@ $SecoForm.Controls.Add($DesktopGB)
 
 #$Secoform.AutoScale = $false
 #[void] $SecoForm.ShowDialog()
-[void] $SecoForm.Show()
+[void] $SecoForm.ShowDialog()

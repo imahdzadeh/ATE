@@ -328,6 +328,15 @@ $Secoform.AutoScale = $false
 #D:\HST\IT\Root\Desktop.ps1
 })
 
+$MainPanel = New-Object System.Windows.Forms.TableLayoutPanel
+$MainPanel.Dock = "Fill"
+$MainPanel.ColumnCount = 1
+$MainPanel.BackColor='yellow'
+$MainPanel.RowCount = 1
+$MainPanel.CellBorderStyle = "single"
+$MainPanel.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent, 100)))
+$MainPanel.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 100)))
+
 $groupBox1 = New-Object System.Windows.Forms.GroupBox
 $groupBox1.Size = New-Object Drawing.Size 250, 200
 #$groupBox1.text = "تقویم"
@@ -354,7 +363,7 @@ $tableLayoutPanel2.RowCount = 1
 $tableLayoutPanel2.ColumnCount = 2
 $tableLayoutPanel2.Controls.Add($groupBox1, 0, 0);
 $tableLayoutPanel2.Controls.Add($groupBox4, 1, 0);
-#$tableLayoutPanel2.BackColor = 'blue'
+$tableLayoutPanel2.BackColor = 'blue'
 $tableLayoutPanel2.Dock = [System.Windows.Forms.DockStyle]::bottom
 $tableLayoutPanel2.AutoSize = $true
 #$tableLayoutPanel2.Location = New-Object System.Drawing.Size(220,10)
@@ -369,7 +378,7 @@ $tableLayoutPanel1.Controls.Add($Settings, 0, 2);
 #$tableLayoutPanel1.Controls.Add($groupBox3, 0, 2);
 #$tableLayoutPanel1.Controls.Add(, 2, 2);
 $tableLayoutPanel1.Dock = [System.Windows.Forms.DockStyle]::bottom
-#$tableLayoutPanel1.BackColor = 'gray'
+$tableLayoutPanel1.BackColor = 'orange'
 $tableLayoutPanel1.AutoSize= $true
 
 $tableLayoutPanel3 = New-Object System.Windows.Forms.TableLayoutPanel
@@ -377,29 +386,34 @@ $tableLayoutPanel3.RowCount = 1
 $tableLayoutPanel3.ColumnCount = 1
 $tableLayoutPanel3.Size = New-Object System.Drawing.Size(150,250)
 $tableLayoutPanel3.Controls.Add($GBChat, 0, 0);
-#$tableLayoutPanel3.BackColor = 'red'
+$tableLayoutPanel3.BackColor = 'red'
 $tableLayoutPanel3.Dock = [System.Windows.Forms.DockStyle]::top
-#$tableLayoutPanel3.AutoSize = $true
+$tableLayoutPanel3.AutoSize = $true
 
 $tableLayoutPanel4 = New-Object System.Windows.Forms.TableLayoutPanel
 $tableLayoutPanel4.RowCount = 1
 $tableLayoutPanel4.ColumnCount = 2
-#$tableLayoutPanel4.AutoSize = $true
+$tableLayoutPanel4.AutoSize = $true
 
 $tableLayoutPanel4.Size = New-Object System.Drawing.Size(690,200)
 $tableLayoutPanel4.Controls.Add($GBemail, 0, 0);
 $tableLayoutPanel4.Controls.Add($EmailGV, 1, 0);
-#$tableLayoutPanel4.BackColor = 'green'
+$tableLayoutPanel4.BackColor = 'green'
 $tableLayoutPanel4.Dock = [System.Windows.Forms.DockStyle]::right
-#$tableLayoutPanel4.AutoSize = $true
+$tableLayoutPanel4.AutoSize = $true
 
-
+#$MainPanel.Controls.Add($tableLayoutPanel1,0,0)
+#$MainPanel.Controls.Add($tableLayoutPanel2,0,0)
+#$MainPanel.Controls.Add($tableLayoutPanel3,0,0)
+#$MainPanel.Controls.Add($tableLayoutPanel4,0,0)
 
 $Mainform.controls.Add($tableLayoutPanel1)
 $Mainform.controls.Add($tableLayoutPanel3)
 $Mainform.controls.Add($tableLayoutPanel4)
 $Mainform.controls.Add($tableLayoutPanel2)
 #$panel.Dock = [System.Windows.Forms.DockStyle]::fill
+
+#$Mainform.controls.Add($MainPanel)
 
 #$Mainform.BackColor='yellow'
 
