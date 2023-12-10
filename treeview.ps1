@@ -55,4 +55,4 @@
 
 # call the function to show the directory tree 
 # take off the -Verbose switch if you do not want console output
-Show-DirectoryTree -RootFolder 'C:\msi' -Verbose
+Show-DirectoryTree -RootFolder 'D:\hst\Production\Projects' -Verbose

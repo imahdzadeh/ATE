@@ -12,18 +12,25 @@ $shamsiMonth = $persianCalendar.GetMonth($gregorianDate)
 $shamsiDay = $persianCalendar.GetDayOfMonth($gregorianDate)
 
 enum columnHeaders{
- ردیف = 5
- مرحله = 4
- تاریخ = 3
- شناسه = 2
- وضعیت = 1
+ MaterialCode = 1
+ Ratio = 2
+ Weightml = 3
+ Commnets = 4
 }
 
-$ProdFolders = New-Object 'system.collections.generic.dictionary[string,string]'
-$ProdFolders['Tests'] = 'آزمایش'
-$ProdFolders['RemProd'] = 'محصول حذف شده'
-$ProdFolders['Products'] = 'محصول'
-$ProdFolders['DisTests'] = 'آزمایش ابطال شده'
+$ProdFolders = New-Object 'system.collections.generic.dictionary[string,boolean]'
+$ProdFolders['Material Code'] = $true
+$ProdFolders['Ratio %'] = $false
+$ProdFolders['Weight ml'] = $true
+$ProdFolders['Commnets'] = $true
+
+$DGVColType = New-Object 'system.collections.generic.dictionary[string,string]'
+$DGVColType['Material Code'] = 'System.Windows.Forms.DataGridViewTextBoxColumn'
+$DGVColType['Ratio %'] = 'System.Windows.Forms.DataGridViewTextBoxColumn'
+$DGVColType['Weight ml'] = 'System.Windows.Forms.DataGridViewTextBoxColumn'
+$DGVColType['Commnets'] = 'System.Windows.Forms.DataGridViewTextBoxColumn'
+
+#$test = New-Object $DGVColType['Commnets']
 
 $Secoform = New-Object Windows.Forms.Form -Property @{
     StartPosition = [Windows.Forms.FormStartPosition]::CenterScreen
@@ -33,7 +40,16 @@ $Secoform = New-Object Windows.Forms.Form -Property @{
                                ( $shamsiDay = $persianCalendar.GetDayOfMonth($gregorianDate)).ToString() + "`t`t`t`t`t`t`t`t`t`t" + "پارس طوبی تکیه" 
     Topmost       = $true
 }
-$ProdFolders.Keys -contains 'tests'
+
+$DGVSourtable = New-Object system.Data.DataTable
+Import-Csv "D:\HST\Production\Projects\Ellie\Gel Nail Polish\Tests\PRF1El11 - copy3.csv" | foreach {
+    $col = New-Object System.Data.DataColumn
+    $col.DataType = [string]
+    $col.ColumnName = $_.type
+    $test
+#    $EmailGV.Rows.Add($_.from,$_.subject,$_.time) | out-null
+#    $EmailGV.Rows.Add($_.item[0].value) | out-    
+}
 
 Function funDisAllCB{
     $ProdFolders.Keys | % {
@@ -41,7 +57,7 @@ Function funDisAllCB{
         $thisCB = $DesktopGB.Controls | Where-Object {$_.Name -eq  $thisKey}      
         If ($thisCB -ne $null){ $thisCB.Dispose()}       
     } 
-    $EmailGV.Rows.Clear()
+  #  $EmailGV.Rows.Clear()
     $DesktopBtn.Enabled = $false
 }
 
@@ -52,7 +68,7 @@ Function funCBChUNch{
         $thisCB = $DesktopGB.Controls | Where-Object {$_.Name -eq $thisCB}
         If ($thisCB.Checked){$bolfunCBChUNch = $true}    
     }
-    $EmailGV.Rows.Clear()
+ #   $EmailGV.Rows.Clear()
     If ($bolfunCBChUNch)
     {$DesktopBtn.Enabled = $true}
     Else
@@ -60,7 +76,7 @@ Function funCBChUNch{
 }
 
 Function funShowInfo{
-    $EmailGV.rows.Clear()
+ #   $EmailGV.rows.Clear()
     $intIncre = 0
     Get-ChildItem -Path "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)" -Directory | foreach {       
         $thisFol = $_.Name
@@ -83,6 +99,106 @@ Function funShowInfo{
         }    
     }
 }
+
+$ProdLB_DrawItem={
+ param(
+  [System.Object] $sender, 
+  [System.Windows.Forms.DrawItemEventArgs] $e
+ )
+   #Suppose Sender de type Listbox
+ if ($Sender.Items.Count -eq 0) {return}
+ 
+   #Suppose item de type String
+ $lbItem=$Sender.Items[$e.Index]
+ #[System.Windows.Forms.ControlPaint]::DrawCheckBox($e.Graphics,$e.Bounds.X, $e.Bounds.Top + 1, 15, 15, [System.Windows.Forms.ButtonState]::Checked)
+ #[System.Windows.Forms.ControlPaint]::DrawButton($e.Graphics,$e.Bounds.X, $e.Bounds.Top + 1, 15, 15)
+ [System.Windows.Forms.ControlPaint]::DrawLabel($e.Graphics,$e.Bounds.X, $e.Bounds.Top + 1, 15, 15,[System.Windows.Forms.ButtonState]::Checked)
+ #[System.Windows.Forms.ControlPaint]::DrawCheckBox()
+ #if ( $lbItem -match 'locked$')  
+ #{ 
+ 
+    If ($e.Index -lt 8)
+    {
+        $Color=[System.Drawing.Color]::green       
+    }
+    Else
+    {
+        $Color=[System.Drawing.Color]::red       
+    }
+    try
+    {
+
+      $brush = new-object System.Drawing.SolidBrush($Color)
+      $test = $lbItem.length
+  #    $e.Graphics.FillRectangle($brush, $e.Bounds)
+  <#
+   If($lbItem -contains 'Gholamreza')
+   {
+        $e.Graphics.DrawImage($Gh,0,$e.Bounds.Y+2.5,25,25)
+         $e.Graphics.FillEllipse($brush,18,$e.Bounds.Y+21,8,8)
+   }
+   Else
+   {
+        $e.Graphics.DrawImage($avatar,0,$e.Bounds.Y+2.5,25,25)
+   } 
+   #>
+ #     $e.Graphics.DrawImage($GH,0,$e.Bounds.Y+2.5,30,30)
+#     $e.Graphics.DrawImage($circlepath,0,$e.Bounds.Y+2.5,30,30)
+        
+    }
+    finally
+    {
+      $brush.Dispose()
+    }
+  # }
+ #$e.Graphics.DrawString($lbItem, $e.Font, [System.Drawing.SystemBrushes]::ControlText, (new-object System.Drawing.PointF($e.Bounds.X, $e.Bounds.Y)))
+ $Yp = ($e.Bounds.Y) + 18 
+ $e.Graphics.DrawString($lbItem, $e.Font, [System.Drawing.SystemBrushes]::ControlText, (new-object System.Drawing.PointF(25, $Yp)))
+ 
+}
+
+
+
+$ProdLB = New-Object System.Windows.Forms.ListBox
+$ProdLB.Location = New-Object System.Drawing.Point(50,100)
+$ProdLB.Size = New-Object System.Drawing.Size(700,400)
+$ProdLB.Height = 400
+$ProdLB.FormattingEnabled = $True
+
+$ProdLB.TabIndex = 4
+$ProdLB.DrawMode = [System.Windows.Forms.DrawMode]::OwnerDrawFixed
+$ProdLB.DataBindings.DefaultDataSourceUpdateMode = 0
+$ProdLB.ItemHeight = 20
+
+
+        $ListBoxCB = New-Object System.Windows.Forms.CheckBox
+        $ListBoxCB.Text = 'sdfsdf'
+  #      $ListBoxCB.Size = 20
+#        $ProdLB.Controls.Add($ListBoxCB)
+                $ListBoxtB = New-Object System.Windows.Forms.TextBox
+        $ListBoxtB.Text = 'sdfsdf'
+  #      $ListBoxCB.Size = 20
+ #       $ProdLB.Controls.Add($ListBoxtB)
+#$ProdLB.Add_DrawItem($ProdLB_DrawItem)
+#$ProdLB.add_Click($action_si_click_sur_VMKO)
+[void] $ProdLB.Items.Add('sdfsdfsdf')
+<#
+[void] $ProdLB.Items.Add('User1')
+[void] $ProdLB.Items.Add('Ali')
+[void] $ProdLB.Items.Add('User3')
+[void] $ProdLB.Items.Add('tesduser')
+[void] $ProdLB.Items.Add('chatuser')
+[void] $ProdLB.Items.Add('group')
+[void] $ProdLB.Items.Add('user12')
+[void] $ProdLB.Items.Add('offile')
+[void] $ProdLB.Items.Add('usr5')
+[void] $ProdLB.Items.Add('echo')
+[void] $ProdLB.Items.Add('noname')
+[void] $ProdLB.Items.Add('noname')
+[void] $ProdLB.Items.Add('noname')
+[void] $ProdLB.Items.Add('noname')
+[void] $ProdLB.Items.Add('noname')
+#>
 
 $DesktopBtn = New-Object system.Windows.Forms.Button
 $DesktopBtn.Location = New-Object System.Drawing.Size(630,100) 
@@ -124,18 +240,23 @@ $EmailGV.RowHeadersVisible = $false
 $EmailGV.SelectionMode = 'FullRowSelect'
 $EmailGV.AllowUserToResizeColumns = $false
 $EmailGV.AllowUserToResizeRows = $false
-$HearderWidth = 0
-[columnHeaders].GetEnumNames() | foreach {
-$test = ([int]([columnHeaders]::$_)-1)
+
+$HeaderWidth = 0
+
+
+$ProdFolders.Keys | foreach {
+$test = $($ProdFolders.Keys).IndexOf($_)
     $EmailGV.Columns[$test].HeaderText = $_
-    $HearderWidth = $HearderWidth + ($_.Length * 25)
-    $EmailGV.Columns[$test].Width = $_.Length * 25
+    $HeaderWidth = $HeaderWidth + ($_.Length * 15)
+    $EmailGV.Columns[$test].Width = $_.Length *15
+  #  $EmailGV.Columns[$test].CellType = 'DataGridViewComboBoxColumn'
+    $test = $ProdFolders[$_]
+    $EmailGV.Columns[$ProdFolders[$_]].ReadOnly = $ProdFolders[$_] 
 }
-$HearderWidth = $HearderWidth + 3 
-$EmailGV.Size=New-Object System.Drawing.Size($HearderWidth,350)
+$HeaderWidth = $HeaderWidth + 3 
+$EmailGV.Size=New-Object System.Drawing.Size($HeaderWidth,350)
 $EmailGV.AllowUserToAddRows = $false
-$EmailGV.ReadOnly = $true
-$EmailGV.ReadOnly = $true
+$EmailGV.ReadOnly = $false
 $EmailGV.ColumnHeadersDefaultCellStyle.Alignment = [System.Drawing.ContentAlignment]::MiddleCenter
 $EmailGV.DefaultCellStyle.Alignment = [System.Drawing.ContentAlignment]::bottomright
 $EmailGV.AllowUserToOrderColumns = $false
@@ -151,6 +272,9 @@ $EmailGV.ColumnHeadersHeightSizeMode = 1
 foreach ($datagridviewcolumn in $EmailGV.columns) {
     $datagridviewcolumn.sortmode = 0
 }
+#$EmailGV.Rows.Add('sdfsd',$ListBoxtB,$Date,$keys,$intIncre,'sdsdf','sdfsdf')
+#$EmailGV.columns.Item(1)
+
 
 $ProdCatLB = $null
 $ProdCatLB = New-Object System.Windows.Forms.Combobox 
@@ -162,8 +286,7 @@ $ProdCatLB.AutoCompleteMode = 'Append'
 $ProdCatLB.Enabled = $false
 $ProdCatLB.Add_SelectedIndexChanged({
     $intIncr = 0
-    Get-ChildItem -Path "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)" -Directory | 
-    Where-Object {$ProdFolders.Keys -Contains $_.Name} |  foreach {
+    Get-ChildItem -Path "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)" -Directory | foreach {
         $intIncr = $intIncr + 1
         New-Variable -Force -Name $_.Name -Value (New-Object System.Windows.Forms.CheckBox)
         $thisCB = Get-Variable -ValueOnly -Include $_.Name
@@ -194,21 +317,23 @@ $ProdLbl.TextAlign=[System.Drawing.ContentAlignment]::bottomright
 $GBLbl = New-Object System.Windows.Forms.label
 $GBLbl.Location = New-Object System.Drawing.size(520,-5)
 $GBLbl.Size = New-Object System.Drawing.Size(250,20) 
-$GBLbl.Text = "نمایش و دسترسی به محصولات در حال آزمایش و باطل شده ها" 
+$GBLbl.Text = "ایجاد و تغییر آزمایش برای محصولات جدید" 
 $GBLbl.TextAlign=[System.Drawing.ContentAlignment]::bottomright
 
 $DesktopGB = New-Object system.Windows.Forms.Groupbox
-$DesktopGB.Size = New-Object System.Drawing.Size(500,300)
+$DesktopGB.Size = New-Object System.Drawing.Size(500,550)
 #$DesktopGB.Dock = [System.Windows.Forms.DockStyle]::Fill
 $DesktopGB.AutoSize = $true
+#$DesktopGB.BackColor = 'red'
 
 $DesktopGB.Controls.Add($GBLbl)
 $DesktopGB.Controls.Add($ProdLbl)
 $DesktopGB.Controls.Add($ProjLbl)
+#$DesktopGB.Controls.Add($ProdLB)
 $DesktopGB.Controls.Add($EmailGV)
 $DesktopGB.Controls.Add($ProdCatLB)
 $DesktopGB.Controls.Add($PrjNameLB)
-$DesktopGB.Controls.Add($DesktopBtn)
+#$DesktopGB.Controls.Add($DesktopBtn)
 
 $SecoForm.Controls.Add($DesktopGB)
 
