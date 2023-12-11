@@ -3,6 +3,7 @@ Add-Type -AssemblyName System.Drawing
 
 $ProdRoot = "$env:comroot\Production\Projects\"
 $ProjNames = Get-ChildItem -Path $ProdRoot -Directory | ForEach-Object{$_.Name}
+$strCBPeopName = "Material Code"
 [void] [System.Windows.Forms.Application]::EnableVisualStyles()
 $persianCalendar = New-Object System.Globalization.PersianCalendar
 $gregorianDate = [System.TimeZoneInfo]::ConvertTimeBySystemTimeZoneId([DateTime]::Now,"Iran Standard Time")
@@ -25,10 +26,10 @@ $ProdFolders['Weight ml'] = $true
 $ProdFolders['Commnets'] = $true
 
 $DGVColType = New-Object 'system.collections.generic.dictionary[string,string]'
-$DGVColType['Material Code'] = 'System.Windows.Forms.DataGridViewTextBoxColumn'
+$DGVColType['Material Code'] = 'System.Windows.Forms.DataGridViewComboBoxColumn'
 $DGVColType['Ratio %'] = 'System.Windows.Forms.DataGridViewTextBoxColumn'
 $DGVColType['Weight ml'] = 'System.Windows.Forms.DataGridViewTextBoxColumn'
-$DGVColType['Commnets'] = 'System.Windows.Forms.DataGridViewTextBoxColumn'
+$DGVColType['Comments'] = 'System.Windows.Forms.DataGridViewTextBoxColumn'
 
 #$test = New-Object $DGVColType['Commnets']
 
@@ -41,15 +42,43 @@ $Secoform = New-Object Windows.Forms.Form -Property @{
     Topmost       = $true
 }
 
-$DGVSourtable = New-Object system.Data.DataTable
+$DGVComboBox = New-Object system.Data.DataTable
+$DGVColType.Keys | foreach{
+$col = New-Object System.Data.DataColumn
+$col.DataType = [string]
+$col.ColumnName = $_
+$DGVComboBox.Columns.Add($col)
+}
+#$DGVComboBox.Columns.Count
 Import-Csv "D:\HST\Production\Projects\Ellie\Gel Nail Polish\Tests\PRF1El11 - copy3.csv" | foreach {
-    $col = New-Object System.Data.DataColumn
-    $col.DataType = [string]
-    $col.ColumnName = $_.type
-    $test
+#$CSVColName = $objSource[0].PSobject.Properties.Name
+<#
+$DGVColType.Keys | select -ExpandProperty $strCBPeopName | Foreach {
+
+}
+#>
+
+    $row = $DGVComboBox.NewRow() 
+ #   $row.$strCBPeopName=$_
+  #  $DGVComboBox.Rows.Add($row)
+   foreach($column in $DGVColType.Keys)
+    {
+        $row.$column=$_.$column
+    }
+    $DGVComboBox.Rows.Add($row)
+}
+
+  
+#    $DGVComboBox.Rows.Add($row)
+
+#$col = $DGVColType['Commnets']
+
+#    $col = New-Object System.Data.DataColumn
+#    $col = $DGVColType['Commnets']
+ #   $col.DataType = [string]
+
 #    $EmailGV.Rows.Add($_.from,$_.subject,$_.time) | out-null
 #    $EmailGV.Rows.Add($_.item[0].value) | out-    
-}
 
 Function funDisAllCB{
     $ProdFolders.Keys | % {
@@ -78,26 +107,10 @@ Function funCBChUNch{
 Function funShowInfo{
  #   $EmailGV.rows.Clear()
     $intIncre = 0
-    Get-ChildItem -Path "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)" -Directory | foreach {       
-        $thisFol = $_.Name
-        $thisCB = $DesktopGB.Controls | Where-Object {$_.Name -eq $thisFol}        
-        If ($thisCB.Checked)
-        {
-             Get-ChildItem -Path "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$($_.Name)" -file  | foreach {
-                    $intIncre = $intIncre + 1
-                    $latestchange = $null
-                    $Date = $null
-                    Import-Csv $_.FullName | select -ExpandProperty 'latest change' | foreach {
-                        If ($_ -ne $null ){$keys = $_}
-                    }
-                    Import-Csv $_.FullName | select -ExpandProperty 'date' | foreach {
-                        If ($_ -ne $null ){$Date = $_}
-                    }                                      
-                    $EmailGV.Rows.Add($ProdFolders[$thisFol],$_.name,$Date,$keys,$intIncre)
-                }
-
-        }    
+    Import-Csv -Path "D:\HST\Production\Projects\Ellie\Gel Nail Polish\Tests\PRF1El11 - copy3.csv" | foreach {       
+   
     }
+     $EmailGV.Rows.Add($_.'Material Code',$_.name,$Date,$keys,$intIncre)
 }
 
 $ProdLB_DrawItem={
@@ -232,27 +245,55 @@ $PrjNameLB.Add_SelectedIndexChanged({
     funDisAllCB 
 })
 
+$DataTable2 = New-Object System.Data.DataTable
+[void] $DataTable2.Columns.Add("RGB")
+[void] $DataTable2.Columns.Add("Color")
+# Manually add rows. You can programmatically add the rows as well 
+[void] $DataTable2.Rows.Add("ff0000", "red")
+[void] $DataTable2.Rows.Add("00ff00", "green")
+[void] $DataTable2.Rows.Add("0000ff", "blue")
+
 $EmailGV = $null
 $EmailGV = New-Object System.Windows.Forms.DataGridView
 $EmailGV.Location = New-Object System.Drawing.size(100,150)
-$EmailGV.ColumnCount = ([columnHeaders].GetEnumNames()).Length
+#$EmailGV.ColumnCount = ([columnHeaders].GetEnumNames()).Length
 $EmailGV.RowHeadersVisible = $false
 $EmailGV.SelectionMode = 'FullRowSelect'
 $EmailGV.AllowUserToResizeColumns = $false
 $EmailGV.AllowUserToResizeRows = $false
 
 $HeaderWidth = 0
+$DGVColType.Keys | foreach {
 
+$col = New-Object $DGVColType[$_]
+$col.HeaderText = $_
+$col.DataPropertyName = $_
+$HeaderWidth = $HeaderWidth + ($_.Length * 15)
+$col.Width = ($_.Length * 15)
+If ($_ -eq 'material code')
+{
+    $col.DataSource = $DGVComboBox
+    $col.ValueMember = $_
+    $col.DisplayMember = $_
+}
+$EmailGV.columns.Add($col )
 
+}
+
+<#
 $ProdFolders.Keys | foreach {
 $test = $($ProdFolders.Keys).IndexOf($_)
     $EmailGV.Columns[$test].HeaderText = $_
     $HeaderWidth = $HeaderWidth + ($_.Length * 15)
     $EmailGV.Columns[$test].Width = $_.Length *15
-  #  $EmailGV.Columns[$test].CellType = 'DataGridViewComboBoxColumn'
+   
+ #  $EmailGV.Columns[$test].CellType = 'DataGridViewComboBoxColumn'
+    $EmailGV.Columns[$test].ValueType.Name
     $test = $ProdFolders[$_]
     $EmailGV.Columns[$ProdFolders[$_]].ReadOnly = $ProdFolders[$_] 
 }
+#>
+
 $HeaderWidth = $HeaderWidth + 3 
 $EmailGV.Size=New-Object System.Drawing.Size($HeaderWidth,350)
 $EmailGV.AllowUserToAddRows = $false
@@ -272,6 +313,38 @@ $EmailGV.ColumnHeadersHeightSizeMode = 1
 foreach ($datagridviewcolumn in $EmailGV.columns) {
     $datagridviewcolumn.sortmode = 0
 }
+$EmailGV.DataSource = $DGVComboBox 
+<#
+$str = $null
+Import-Csv -Path "D:\HST\Production\Projects\Ellie\Gel Nail Polish\Tests\PRF1El11 - copy3.csv" | foreach {  
+$test = $_ 
+#$DGVColType.Keys -join ','
+$DGVColType.Keys | foreach {
+    If ($str -eq $null)
+    {
+        $str = $test.$_
+    }
+    Else
+    {
+        $str = "$str,$($test.$_)"
+    }
+}
+    Try
+    {
+        
+  #     [void]$EmailGV.Rows.Add($_.'Material Code',$_.'Ratio %',$_.'Weight ml',$_.'Comments')
+   #    [void]$EmailGV.Rows.Add( ($DGVColType.Keys -join ','))
+      
+ #      [void]$EmailGV.Rows.Add($str)
+        
+       }
+    Catch
+    {
+        Write-Host $_.ScriptStackTrace
+    }
+}
+ #>  
+
 #$EmailGV.Rows.Add('sdfsd',$ListBoxtB,$Date,$keys,$intIncre,'sdsdf','sdfsdf')
 #$EmailGV.columns.Item(1)
 
