@@ -42,14 +42,21 @@ $Secoform = New-Object Windows.Forms.Form -Property @{
     Topmost       = $true
 }
 
-$DGVComboBox = New-Object system.Data.DataTable
+$DGVCBColumn = New-Object system.Data.DataTable
+[void]$DGVCBColumn.Columns.Add($strCBPeopName)
+Import-Csv "D:\HST\Production\Material Info\SUI1PR121.csv" | Select -ExpandProperty $strCBPeopName | foreach {
+[void]$DGVCBColumn.Rows.Add($_)
+
+}
+
+$DGVDataTab = New-Object system.Data.DataTable
 $DGVColType.Keys | foreach{
 $col = New-Object System.Data.DataColumn
 $col.DataType = [string]
 $col.ColumnName = $_
-$DGVComboBox.Columns.Add($col)
+$DGVDataTab.Columns.Add($col)
 }
-#$DGVComboBox.Columns.Count
+#$DGVDataTab.Columns.Count
 Import-Csv "D:\HST\Production\Projects\Ellie\Gel Nail Polish\Tests\PRF1El11 - copy3.csv" | foreach {
 #$CSVColName = $objSource[0].PSobject.Properties.Name
 <#
@@ -58,18 +65,17 @@ $DGVColType.Keys | select -ExpandProperty $strCBPeopName | Foreach {
 }
 #>
 
-    $row = $DGVComboBox.NewRow() 
+    $row = $DGVDataTab.NewRow() 
  #   $row.$strCBPeopName=$_
-  #  $DGVComboBox.Rows.Add($row)
+  #  $DGVDataTab.Rows.Add($row)
    foreach($column in $DGVColType.Keys)
     {
         $row.$column=$_.$column
     }
-    $DGVComboBox.Rows.Add($row)
+    $DGVDataTab.Rows.Add($row)
 }
-
   
-#    $DGVComboBox.Rows.Add($row)
+#    $DGVDataTab.Rows.Add($row)
 
 #$col = $DGVColType['Commnets']
 
@@ -264,35 +270,20 @@ $EmailGV.AllowUserToResizeRows = $false
 
 $HeaderWidth = 0
 $DGVColType.Keys | foreach {
-
-$col = New-Object $DGVColType[$_]
-$col.HeaderText = $_
-$col.DataPropertyName = $_
-$HeaderWidth = $HeaderWidth + ($_.Length * 15)
-$col.Width = ($_.Length * 15)
-If ($_ -eq 'material code')
-{
-    $col.DataSource = $DGVComboBox
-    $col.ValueMember = $_
-    $col.DisplayMember = $_
-}
-$EmailGV.columns.Add($col )
-
-}
-
-<#
-$ProdFolders.Keys | foreach {
-$test = $($ProdFolders.Keys).IndexOf($_)
-    $EmailGV.Columns[$test].HeaderText = $_
+    $col = New-Object $DGVColType[$_]
+    $col.HeaderText = $_
+    $col.DataPropertyName = $_
     $HeaderWidth = $HeaderWidth + ($_.Length * 15)
-    $EmailGV.Columns[$test].Width = $_.Length *15
-   
- #  $EmailGV.Columns[$test].CellType = 'DataGridViewComboBoxColumn'
-    $EmailGV.Columns[$test].ValueType.Name
-    $test = $ProdFolders[$_]
-    $EmailGV.Columns[$ProdFolders[$_]].ReadOnly = $ProdFolders[$_] 
+    $col.Width = ($_.Length * 15)
+    If ($_ -eq $strCBPeopName){
+       $col.DataSource = $DGVCBColumn
+
+  #      $col.DataSource = $test
+        $col.ValueMember = $_
+        $col.DisplayMember = $_
+    }
+    [void]$EmailGV.columns.Add($col)
 }
-#>
 
 $HeaderWidth = $HeaderWidth + 3 
 $EmailGV.Size=New-Object System.Drawing.Size($HeaderWidth,350)
@@ -313,7 +304,7 @@ $EmailGV.ColumnHeadersHeightSizeMode = 1
 foreach ($datagridviewcolumn in $EmailGV.columns) {
     $datagridviewcolumn.sortmode = 0
 }
-$EmailGV.DataSource = $DGVComboBox 
+$EmailGV.DataSource = $DGVDataTab 
 <#
 $str = $null
 Import-Csv -Path "D:\HST\Production\Projects\Ellie\Gel Nail Polish\Tests\PRF1El11 - copy3.csv" | foreach {  
