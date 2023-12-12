@@ -1,33 +1,5 @@
 ﻿
-. "$($PSScriptRoot)\config\$(($PSCommandPath.Split('\') | select -last 1) -replace ('.ps1$','var.ps1'))"
-#. 'D:\HST\IT\Root\PrdTestCreationvar.ps1'
-
-
-#. .\PrdTestCreationVar.ps1
-#[void] [System.Windows.Forms.Application]::EnableVisualStyles()
-<#
-$ProdFolders = New-Object 'system.collections.generic.dictionary[string,boolean]'
-$ProdFolders['Material Code'] = $true
-$ProdFolders['Ratio %'] = $false
-$ProdFolders['Weight ml'] = $true
-$ProdFolders['Commnets'] = $true
-
-$DGVColType = New-Object 'system.collections.generic.dictionary[string,string]'
-$DGVColType['Material Code'] = 'System.Windows.Forms.DataGridViewComboBoxColumn'
-$DGVColType['Ratio %'] = 'System.Windows.Forms.DataGridViewTextBoxColumn'
-$DGVColType['Weight ml'] = 'System.Windows.Forms.DataGridViewTextBoxColumn'
-$DGVColType['Comments'] = 'System.Windows.Forms.DataGridViewTextBoxColumn'
-#>
-#$test = New-Object $DGVColType['Commnets']
-
-$Secoform = New-Object Windows.Forms.Form -Property @{
-    StartPosition = [Windows.Forms.FormStartPosition]::CenterScreen
-    Size          = New-Object Drawing.Size 800, 600
-    Text          =            $shamsiYear.ToString() + "/" + 
-                               ($shamsiMonth = $persianCalendar.GetMonth($gregorianDate)) + "/" + 
-                               ( $shamsiDay = $persianCalendar.GetDayOfMonth($gregorianDate)).ToString() + "`t`t`t`t`t`t`t`t`t`t" + "پارس طوبی تکیه" 
-    Topmost       = $true
-}
+. "$(Split-Path $PSScriptRoot -Parent)\config\$(($PSCommandPath.Split('\') | select -last 1) -replace ('.ps1$','var.ps1'))"
 
 $DGVCBInfo = New-Object system.Data.DataTable
 $DGVCBInfoVer = gci "$confRoot\$ConFol" -file | Foreach{
@@ -344,24 +316,20 @@ foreach($row3 in $DGVCBInfo){
     $colDT.DataType = [string]
     $colDT.ColumnName = $row3.Name
     $DGVDataTab.Columns.Add($colDT)
-#$row3.Type
- #   $col = New-Object $DGVColType[$row3.Name]
     $col = New-Object $row3.Type
-#    $col = New-Object System.Windows.Forms.DataGridViewTextBoxColu
     $col.HeaderText = $row3.Name
     $col.DataPropertyName = $row3.Name
     $HeaderWidth = $HeaderWidth + $row3.SizeX
     $col.Width = $row3.SizeX
     $col.DefaultCellStyle.Alignment = $row3.Alignment
- #   If ($row3.Name -eq $strCBPeopName){
     If ($row3.Type -eq 'System.Windows.Forms.DataGridViewComboBoxColumn'){
         $col.DataSource = $DGVCBColumn
         $col.ValueMember = $row3.Name
         $col.DisplayMember = $row3.Name
     }
     [void]$EmailGV.columns.Add($col)
-
 }
+
 <#
 $HeaderWidth = 0
 $DGVColType.Keys | foreach {
