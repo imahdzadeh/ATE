@@ -2,8 +2,12 @@
 Add-Type -AssemblyName System.Drawing
 
 $ProdRoot = "$env:comroot\Production\Projects\"
+$confRoot = "$env:comroot\IT\Root\Config"
+$ConFol = "PRF" 
 $ProjNames = Get-ChildItem -Path $ProdRoot -Directory | ForEach-Object{$_.Name}
 $strCBPeopName = 'Material Code'
+$FileExt = ".csv"
+$FolderNameTests = "Tests"
 [void] [System.Windows.Forms.Application]::EnableVisualStyles()
 $persianCalendar = New-Object System.Globalization.PersianCalendar
 $gregorianDate = [System.TimeZoneInfo]::ConvertTimeBySystemTimeZoneId([DateTime]::Now,"Iran Standard Time")
@@ -43,8 +47,12 @@ $Secoform = New-Object Windows.Forms.Form -Property @{
 }
 
 $DGVCBInfo = New-Object system.Data.DataTable
+$DGVCBInfoVer = gci "$confRoot\$ConFol" -file | Foreach{
+  $_ -replace '^PRF', ''
+  } | Select-Object *, @{ n = "IntVal"; e = {[int]($_)}} | Sort-Object IntVal | Select-Object -Last 1
+
 $DGVCBInfoCol = @()
-(Get-Content "D:\HST\IT\Root\Config\DeskNewTestCombo.c" | select -First 1) -split "," | foreach {
+(Get-Content "$confRoot\$ConFol\$ConFol$($DGVCBInfoVer.IntVal)" | select -First 1) -split "," | foreach {
 $DGVCBInfoCol += $_
 $col2 = New-Object System.Data.DataColumn
 $col2.DataType = [string]
@@ -52,7 +60,7 @@ $col2.ColumnName = $_
 $DGVCBInfo.Columns.Add($col2)
 }
 
-Import-Csv "D:\HST\IT\Root\Config\DeskNewTestCombo.c" |  foreach {
+Import-Csv "$confRoot\$ConFol\$ConFol$($DGVCBInfoVer.IntVal)" |  foreach {
     $row2 = $DGVCBInfo.NewRow() 
     foreach($column in $DGVCBInfoCol){
         $row2.$column=$_.$column
@@ -68,13 +76,15 @@ Import-Csv "D:\HST\Production\Material Info\SUI1PR121.csv" | Select -ExpandPrope
 
 }
 
-$DGVDataTab = New-Object system.Data.DataTable
+
+<#
 $DGVColType.Keys | foreach{
 $col = New-Object System.Data.DataColumn
 $col.DataType = [string]
 $col.ColumnName = $_
 $DGVDataTab.Columns.Add($col)
 }
+#>
 #$DGVDataTab.Columns.Count
 
   
@@ -106,6 +116,10 @@ Function funNewRBClick{
     $DesktopBtn.Enabled = $true
     $ProdLB.Items.Clear()
     $ProdLB.Text = $null
+    $EmailGV.Enabled = $false 
+    If ($EmailGV.Rows.Count -gt 0){
+        $DGVDataTab.Clear()
+    }
 } 
 
 Function funOldRBClick{
@@ -113,7 +127,8 @@ Function funOldRBClick{
     $DesktopBtn.Enabled = $false
     $ProdLB.Items.Clear()
     $ProdLB.Text = $null
-    $PRFFiles = Get-ChildItem -Path "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\Tests" -File | ForEach-Object{$_.Name}
+    $EmailGV.Enabled = $false 
+    $PRFFiles = (Get-ChildItem -Path "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$FolderNameTests" -File | ForEach-Object{$_.Name}).TrimEnd($FileExt)
     If ($PRFFiles -ne $null)
     {
         $ProdLB.Items.AddRange($PRFFiles)
@@ -129,8 +144,14 @@ Function funDisAllCB{
     $ProdLB.Items.Clear()
     $ProdLB.Text = $null
     $RBGroup.Enabled = $false
+    $TotPercentIB.Text = $null
+    $TotMlIB.Text = $null
+    $EmailGV.Enabled = $false
+    $TotLbl.Visible = $false
+    $TotPercentIB.Visible = $false
+    $TotMlIB.Visible = $false 
     If ($EmailGV.Rows.Count -gt 0){
-        $EmailGV.DataSource = $null
+        $DGVDataTab.Clear()
     }
 }
 
@@ -152,21 +173,27 @@ Function funShowInfo{
 <#
  #   $EmailGV.rows.Clear()
     $intIncre = 0
-    Import-Csv -Path "D:\HST\Production\Projects\Ellie\Gel Nail Polish\Tests\PRF1El11 - copy3.csv" | foreach {       
+    Import-Csv -Path "D:\HST\Production\Projects\Ellie\Gel Nail Polish\$FolderNameTests\PRF1El11 - copy3.csv" | foreach {       
    
     }
      $EmailGV.Rows.Add($_.'Material Code',$_.name,$Date,$keys,$intIncre)
 #>
+    $EmailGV.Enabled = $true
+    $TotLbl.Visible = $true
+    $TotPercentIB.Visible = $true
+    $TotMlIB.Visible = $true
     If ($NewRB.Checked){
-        
+        $ToNatural = {[regex]::Replace($_, '^[A-Za-z]*\d*[A-Za-z]*(\d+).csv', '$1')} 
+        $NewFileName  = gci "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$FolderNameTests" -file | sort $ToNatural | select -First 1
+         $test
     }
     Else
     {
-        Import-Csv "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\Tests\$($ProdLB.SelectedItem)" | foreach {
+        Import-Csv "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$FolderNameTests\$($ProdLB.SelectedItem)$fileExt" | foreach {
             $row = $DGVDataTab.NewRow() 
-            foreach($column in $DGVColType.Keys)
-            {
-                $row.$column=$_.$column
+            foreach($column in $DGVDataTab.Columns)
+            {            
+                $row.($column.columnname)=$_.($column.columnname)
             }
             $DGVDataTab.Rows.Add($row)
         }
@@ -177,6 +204,7 @@ Function funDeskBtnClick{
 
 }
 
+<#
 $ProdLB_DrawItem={
  param(
   [System.Object] $sender, 
@@ -208,7 +236,7 @@ $ProdLB_DrawItem={
       $brush = new-object System.Drawing.SolidBrush($Color)
       $test = $lbItem.length
   #    $e.Graphics.FillRectangle($brush, $e.Bounds)
-  <#
+  
    If($lbItem -contains 'Gholamreza')
    {
         $e.Graphics.DrawImage($Gh,0,$e.Bounds.Y+2.5,25,25)
@@ -218,7 +246,7 @@ $ProdLB_DrawItem={
    {
         $e.Graphics.DrawImage($avatar,0,$e.Bounds.Y+2.5,25,25)
    } 
-   #>
+   
  #     $e.Graphics.DrawImage($GH,0,$e.Bounds.Y+2.5,30,30)
 #     $e.Graphics.DrawImage($circlepath,0,$e.Bounds.Y+2.5,30,30)
         
@@ -233,7 +261,7 @@ $ProdLB_DrawItem={
  $e.Graphics.DrawString($lbItem, $e.Font, [System.Drawing.SystemBrushes]::ControlText, (new-object System.Drawing.PointF(25, $Yp)))
  
 }
-
+#>
 
 
 $ProdLB = New-Object System.Windows.Forms.ListBox
@@ -326,7 +354,13 @@ $EmailGV.SelectionMode = 'FullRowSelect'
 $EmailGV.AllowUserToResizeColumns = $false
 $EmailGV.AllowUserToResizeRows = $false
 $HeaderWidth = 0
+
+$DGVDataTab = New-Object system.Data.DataTable
 foreach($row3 in $DGVCBInfo){
+    $colDT = New-Object System.Data.DataColumn
+    $colDT.DataType = [string]
+    $colDT.ColumnName = $row3.Name
+    $DGVDataTab.Columns.Add($colDT)
 #$row3.Type
  #   $col = New-Object $DGVColType[$row3.Name]
     $col = New-Object $row3.Type
@@ -336,7 +370,8 @@ foreach($row3 in $DGVCBInfo){
     $HeaderWidth = $HeaderWidth + $row3.SizeX
     $col.Width = $row3.SizeX
     $col.DefaultCellStyle.Alignment = $row3.Alignment
-    If ($row3.Name -eq $strCBPeopName){
+ #   If ($row3.Name -eq $strCBPeopName){
+    If ($row3.Type -eq 'System.Windows.Forms.DataGridViewComboBoxColumn'){
         $col.DataSource = $DGVCBColumn
         $col.ValueMember = $row3.Name
         $col.DisplayMember = $row3.Name
@@ -364,7 +399,7 @@ $DGVColType.Keys | foreach {
 #>
 $HeaderWidth = $HeaderWidth + 3 
 $EmailGV.Size=New-Object System.Drawing.Size($HeaderWidth,350)
-$EmailGV.AllowUserToAddRows = $false
+$EmailGV.AllowUserToAddRows = $true
 $EmailGV.ReadOnly = $false
 $EmailGV.ColumnHeadersDefaultCellStyle.Alignment = [System.Drawing.ContentAlignment]::MiddleCenter
 #$EmailGV.DefaultCellStyle.Alignment = [System.Drawing.ContentAlignment]::bottomLeft
@@ -381,10 +416,12 @@ $EmailGV.ColumnHeadersHeightSizeMode = 1
 foreach ($datagridviewcolumn in $EmailGV.columns) {
     $datagridviewcolumn.sortmode = 0
 }
-$EmailGV.DataSource = $DGVDataTab 
+$EmailGV.DataSource = $DGVDataTab
+$EmailGV.Enabled = $false 
+$EmailGV.DefaultCellStyle.BackColor = 'lightgreen'
 <#
 $str = $null
-Import-Csv -Path "D:\HST\Production\Projects\Ellie\Gel Nail Polish\Tests\PRF1El11 - copy3.csv" | foreach {  
+Import-Csv -Path "D:\HST\Production\Projects\Ellie\Gel Nail Polish\$FolderNameTests\PRF1El11 - copy3.csv" | foreach {  
 $test = $_ 
 #$DGVColType.Keys -join ','
 $DGVColType.Keys | foreach {
@@ -465,15 +502,17 @@ $TotLbl.Size = New-Object System.Drawing.Size(80,15)
 $TotLbl.Text = "Total" 
 $TotLbl.TextAlign=[System.Drawing.ContentAlignment]::bottomright
 $TotLbl.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 9, [System.Drawing.FontStyle]::Bold)
+$TotLbl.Visible = $false
 
 $TotPercentIB = New-Object System.Windows.Forms.Label
 $TotPercentIB.Location = New-Object System.Drawing.size(240,500)
 $TotPercentIB.Size = New-Object System.Drawing.Size(50,20)
 #$TotPercentIB.Enabled = $false
 $TotPercentIB.TextAlign=[System.Drawing.ContentAlignment]::middlecenter
-$TotPercentIB.Text = 100
+#$TotPercentIB.Text = 100
 $TotPercentIB.BackColor = 'lightgreen'
 $TotPercentIB.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 9, [System.Drawing.FontStyle]::Bold)
+$TotPercentIB.Visible = $false
 
 $TotMlIB = New-Object System.Windows.Forms.TextBox
 $TotMlIB.Location = New-Object System.Drawing.size(310,500)
@@ -481,6 +520,7 @@ $TotMlIB.Size = New-Object System.Drawing.Size(50,15)
 $TotMlIB.Text = 200
 $TotMlIB.TextAlign = 'Center'
 $TotMlIB.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 9, [System.Drawing.FontStyle]::Bold)
+$TotMlIB.Visible = $false
 
 
 $GBLbl = New-Object System.Windows.Forms.label
@@ -554,6 +594,7 @@ $DesktopGB.Controls.Add($EmailGV)
 $DesktopGB.Controls.Add($ProdCatLB)
 $DesktopGB.Controls.Add($PrjNameLB)
 $DesktopGB.Controls.Add($DesktopBtn)
+
 
 $SecoForm.Controls.Add($DesktopGB)
 
