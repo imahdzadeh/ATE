@@ -3,4 +3,3 @@ Material Code,System.Windows.Forms.DataGridViewComboBoxColumn,130,50,BottomLeft
 Ratio %,System.Windows.Forms.DataGridViewTextBoxColumn,50,50,MiddleCenter
 Weight ml,System.Windows.Forms.DataGridViewTextBoxColumn,50,50,MiddleCenter
 Comments,System.Windows.Forms.DataGridViewTextBoxColumn,300,50,BottomRight
-date,System.Windows.Forms.DataGridViewTextBoxColumn,50,50,BottomRight

@@ -1,28 +1,11 @@
-﻿Add-Type -AssemblyName System.Windows.Forms
-Add-Type -AssemblyName System.Drawing
+﻿
+. "$($PSScriptRoot)\config\$(($PSCommandPath.Split('\') | select -last 1) -replace ('.ps1$','var.ps1'))"
+#. 'D:\HST\IT\Root\PrdTestCreationvar.ps1'
 
-$ProdRoot = "$env:comroot\Production\Projects\"
-$confRoot = "$env:comroot\IT\Root\Config"
-$ConFol = "PRF" 
-$ProjNames = Get-ChildItem -Path $ProdRoot -Directory | ForEach-Object{$_.Name}
-$strCBPeopName = 'Material Code'
-$FileExt = ".csv"
-$FolderNameTests = "Tests"
-[void] [System.Windows.Forms.Application]::EnableVisualStyles()
-$persianCalendar = New-Object System.Globalization.PersianCalendar
-$gregorianDate = [System.TimeZoneInfo]::ConvertTimeBySystemTimeZoneId([DateTime]::Now,"Iran Standard Time")
-# Convert the Gregorian date to Shamsi (Jalali) calendar
-$shamsiYear = $persianCalendar.GetYear($gregorianDate)
-$shamsiMonth = $persianCalendar.GetMonth($gregorianDate)
-$shamsiDay = $persianCalendar.GetDayOfMonth($gregorianDate)
 
-enum columnHeaders{
- MaterialCode = 1
- Ratio = 2
- Weightml = 3
- Commnets = 4
-}
-
+#. .\PrdTestCreationVar.ps1
+#[void] [System.Windows.Forms.Application]::EnableVisualStyles()
+<#
 $ProdFolders = New-Object 'system.collections.generic.dictionary[string,boolean]'
 $ProdFolders['Material Code'] = $true
 $ProdFolders['Ratio %'] = $false
@@ -34,7 +17,7 @@ $DGVColType['Material Code'] = 'System.Windows.Forms.DataGridViewComboBoxColumn'
 $DGVColType['Ratio %'] = 'System.Windows.Forms.DataGridViewTextBoxColumn'
 $DGVColType['Weight ml'] = 'System.Windows.Forms.DataGridViewTextBoxColumn'
 $DGVColType['Comments'] = 'System.Windows.Forms.DataGridViewTextBoxColumn'
-
+#>
 #$test = New-Object $DGVColType['Commnets']
 
 $Secoform = New-Object Windows.Forms.Form -Property @{
