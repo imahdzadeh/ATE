@@ -3,7 +3,7 @@ Add-Type -AssemblyName System.Drawing
 
 $ProdRoot = "$env:comroot\Production\Projects\"
 $ProjNames = Get-ChildItem -Path $ProdRoot -Directory | ForEach-Object{$_.Name}
-$strCBPeopName = "Material Code"
+$strCBPeopName = 'Material Code'
 [void] [System.Windows.Forms.Application]::EnableVisualStyles()
 $persianCalendar = New-Object System.Globalization.PersianCalendar
 $gregorianDate = [System.TimeZoneInfo]::ConvertTimeBySystemTimeZoneId([DateTime]::Now,"Iran Standard Time")
@@ -42,6 +42,25 @@ $Secoform = New-Object Windows.Forms.Form -Property @{
     Topmost       = $true
 }
 
+$DGVCBInfo = New-Object system.Data.DataTable
+$DGVCBInfoCol = @()
+(Get-Content "D:\HST\IT\Root\Config\DeskNewTestCombo.c" | select -First 1) -split "," | foreach {
+$DGVCBInfoCol += $_
+$col2 = New-Object System.Data.DataColumn
+$col2.DataType = [string]
+$col2.ColumnName = $_
+$DGVCBInfo.Columns.Add($col2)
+}
+
+Import-Csv "D:\HST\IT\Root\Config\DeskNewTestCombo.c" |  foreach {
+    $row2 = $DGVCBInfo.NewRow() 
+    foreach($column in $DGVCBInfoCol){
+        $row2.$column=$_.$column
+    }
+    [void]$DGVCBInfo.Rows.Add($row2)
+}
+
+
 $DGVCBColumn = New-Object system.Data.DataTable
 [void]$DGVCBColumn.Columns.Add($strCBPeopName)
 Import-Csv "D:\HST\Production\Material Info\SUI1PR121.csv" | Select -ExpandProperty $strCBPeopName | foreach {
@@ -57,23 +76,7 @@ $col.ColumnName = $_
 $DGVDataTab.Columns.Add($col)
 }
 #$DGVDataTab.Columns.Count
-Import-Csv "D:\HST\Production\Projects\Ellie\Gel Nail Polish\Tests\PRF1El11 - copy3.csv" | foreach {
-#$CSVColName = $objSource[0].PSobject.Properties.Name
-<#
-$DGVColType.Keys | select -ExpandProperty $strCBPeopName | Foreach {
 
-}
-#>
-
-    $row = $DGVDataTab.NewRow() 
- #   $row.$strCBPeopName=$_
-  #  $DGVDataTab.Rows.Add($row)
-   foreach($column in $DGVColType.Keys)
-    {
-        $row.$column=$_.$column
-    }
-    $DGVDataTab.Rows.Add($row)
-}
   
 #    $DGVDataTab.Rows.Add($row)
 
@@ -84,16 +87,51 @@ $DGVColType.Keys | select -ExpandProperty $strCBPeopName | Foreach {
  #   $col.DataType = [string]
 
 #    $EmailGV.Rows.Add($_.from,$_.subject,$_.time) | out-null
-#    $EmailGV.Rows.Add($_.item[0].value) | out-    
+#    $EmailGV.Rows.Add($_.item[0].value) | out-   
+
+$SecoForm.Add_Closing({param($sender,$e)
+<#
+    $result = [System.Windows.Forms.MessageBox]::Show(`
+        "Are you sure you want to exit?", `
+        "Close", [System.Windows.Forms.MessageBoxButtons]::YesNo)
+    if ($result -ne [System.Windows.Forms.DialogResult]::Yes)
+    {
+        $e.Cancel= $true
+    }
+#>
+})
+
+Function funNewRBClick{
+    $ProdLB.Enabled = $false
+    $DesktopBtn.Enabled = $true
+    $ProdLB.Items.Clear()
+    $ProdLB.Text = $null
+} 
+
+Function funOldRBClick{
+    $ProdLB.Enabled = $true
+    $DesktopBtn.Enabled = $false
+    $ProdLB.Items.Clear()
+    $ProdLB.Text = $null
+    $PRFFiles = Get-ChildItem -Path "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\Tests" -File | ForEach-Object{$_.Name}
+    If ($PRFFiles -ne $null)
+    {
+        $ProdLB.Items.AddRange($PRFFiles)
+    } 
+} 
 
 Function funDisAllCB{
-    $ProdFolders.Keys | % {
-        $thisKey = $_
-        $thisCB = $DesktopGB.Controls | Where-Object {$_.Name -eq  $thisKey}      
-        If ($thisCB -ne $null){ $thisCB.Dispose()}       
-    } 
+    $NewRB.Checked = $false
+    $OldRB.Checked = $false
   #  $EmailGV.Rows.Clear()
     $DesktopBtn.Enabled = $false
+    $ProdLB.Enabled = $false
+    $ProdLB.Items.Clear()
+    $ProdLB.Text = $null
+    $RBGroup.Enabled = $false
+    If ($EmailGV.Rows.Count -gt 0){
+        $EmailGV.DataSource = $null
+    }
 }
 
 Function funCBChUNch{
@@ -111,12 +149,32 @@ Function funCBChUNch{
 }
 
 Function funShowInfo{
+<#
  #   $EmailGV.rows.Clear()
     $intIncre = 0
     Import-Csv -Path "D:\HST\Production\Projects\Ellie\Gel Nail Polish\Tests\PRF1El11 - copy3.csv" | foreach {       
    
     }
      $EmailGV.Rows.Add($_.'Material Code',$_.name,$Date,$keys,$intIncre)
+#>
+    If ($NewRB.Checked){
+        
+    }
+    Else
+    {
+        Import-Csv "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\Tests\$($ProdLB.SelectedItem)" | foreach {
+            $row = $DGVDataTab.NewRow() 
+            foreach($column in $DGVColType.Keys)
+            {
+                $row.$column=$_.$column
+            }
+            $DGVDataTab.Rows.Add($row)
+        }
+    }
+}
+
+Function funDeskBtnClick{
+
 }
 
 $ProdLB_DrawItem={
@@ -220,11 +278,11 @@ $ProdLB.ItemHeight = 20
 #>
 
 $DesktopBtn = New-Object system.Windows.Forms.Button
-$DesktopBtn.Location = New-Object System.Drawing.Size(630,100) 
+$DesktopBtn.Location = New-Object System.Drawing.Size(632,110) 
 $DesktopBtn.BackColor = "#d2d4d6"
-$DesktopBtn.text = "نمایش اطلاعات"
+$DesktopBtn.text = "اجرای انتخابهای بالا"
 $DesktopBtn.width = 120
-$DesktopBtn.height = 30
+$DesktopBtn.height = 35
 $DesktopBtn.Font = 'Microsoft Sans Serif,10'
 $DesktopBtn.ForeColor = "#000"
 $DesktopBtn.Enabled = $false
@@ -267,7 +325,26 @@ $EmailGV.RowHeadersVisible = $false
 $EmailGV.SelectionMode = 'FullRowSelect'
 $EmailGV.AllowUserToResizeColumns = $false
 $EmailGV.AllowUserToResizeRows = $false
+$HeaderWidth = 0
+foreach($row3 in $DGVCBInfo){
+#$row3.Type
+ #   $col = New-Object $DGVColType[$row3.Name]
+    $col = New-Object $row3.Type
+#    $col = New-Object System.Windows.Forms.DataGridViewTextBoxColu
+    $col.HeaderText = $row3.Name
+    $col.DataPropertyName = $row3.Name
+    $HeaderWidth = $HeaderWidth + $row3.SizeX
+    $col.Width = $row3.SizeX
+    $col.DefaultCellStyle.Alignment = $row3.Alignment
+    If ($row3.Name -eq $strCBPeopName){
+        $col.DataSource = $DGVCBColumn
+        $col.ValueMember = $row3.Name
+        $col.DisplayMember = $row3.Name
+    }
+    [void]$EmailGV.columns.Add($col)
 
+}
+<#
 $HeaderWidth = 0
 $DGVColType.Keys | foreach {
     $col = New-Object $DGVColType[$_]
@@ -284,13 +361,13 @@ $DGVColType.Keys | foreach {
     }
     [void]$EmailGV.columns.Add($col)
 }
-
+#>
 $HeaderWidth = $HeaderWidth + 3 
 $EmailGV.Size=New-Object System.Drawing.Size($HeaderWidth,350)
 $EmailGV.AllowUserToAddRows = $false
 $EmailGV.ReadOnly = $false
 $EmailGV.ColumnHeadersDefaultCellStyle.Alignment = [System.Drawing.ContentAlignment]::MiddleCenter
-$EmailGV.DefaultCellStyle.Alignment = [System.Drawing.ContentAlignment]::bottomright
+#$EmailGV.DefaultCellStyle.Alignment = [System.Drawing.ContentAlignment]::bottomLeft
 $EmailGV.AllowUserToOrderColumns = $false
 $EmailGV.RowHeadersWidthSizeMode = 1
 #$EmailGV.AutoSizeRowsMode = $false
@@ -349,6 +426,8 @@ $ProdCatLB.AutoCompleteSource = 'ListItems'
 $ProdCatLB.AutoCompleteMode = 'Append'
 $ProdCatLB.Enabled = $false
 $ProdCatLB.Add_SelectedIndexChanged({
+    $RBGroup.Enabled = $true
+<#
     $intIncr = 0
     Get-ChildItem -Path "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)" -Directory | foreach {
         $intIncr = $intIncr + 1
@@ -361,9 +440,10 @@ $ProdCatLB.Add_SelectedIndexChanged({
         $thisCB.Add_CheckStateChanged({funCBChUNch}.GetNewClosure())
 #       Alternative way of adding a function
 #       $thisCB.Add_CheckStateChanged({param($Sender,$EventArgs) Write-Host $Sender.Text})
-        $DesktopGB.Controls.Add($thisCB)  
+#        $DesktopGB.Controls.Add($thisCB)  
         
     }
+#>
 })
 
 $ProjLbl = New-Object System.Windows.Forms.label
@@ -378,6 +458,31 @@ $ProdLbl.Size = New-Object System.Drawing.Size(80,20)
 $ProdLbl.Text = ":نوع محصول" 
 $ProdLbl.TextAlign=[System.Drawing.ContentAlignment]::bottomright
 
+
+$TotLbl = New-Object System.Windows.Forms.label
+$TotLbl.Location = New-Object System.Drawing.size(99,502)
+$TotLbl.Size = New-Object System.Drawing.Size(80,15) 
+$TotLbl.Text = "Total" 
+$TotLbl.TextAlign=[System.Drawing.ContentAlignment]::bottomright
+$TotLbl.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 9, [System.Drawing.FontStyle]::Bold)
+
+$TotPercentIB = New-Object System.Windows.Forms.Label
+$TotPercentIB.Location = New-Object System.Drawing.size(240,500)
+$TotPercentIB.Size = New-Object System.Drawing.Size(50,20)
+#$TotPercentIB.Enabled = $false
+$TotPercentIB.TextAlign=[System.Drawing.ContentAlignment]::middlecenter
+$TotPercentIB.Text = 100
+$TotPercentIB.BackColor = 'lightgreen'
+$TotPercentIB.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 9, [System.Drawing.FontStyle]::Bold)
+
+$TotMlIB = New-Object System.Windows.Forms.TextBox
+$TotMlIB.Location = New-Object System.Drawing.size(310,500)
+$TotMlIB.Size = New-Object System.Drawing.Size(50,15)
+$TotMlIB.Text = 200
+$TotMlIB.TextAlign = 'Center'
+$TotMlIB.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 9, [System.Drawing.FontStyle]::Bold)
+
+
 $GBLbl = New-Object System.Windows.Forms.label
 $GBLbl.Location = New-Object System.Drawing.size(520,-5)
 $GBLbl.Size = New-Object System.Drawing.Size(250,20) 
@@ -390,6 +495,57 @@ $DesktopGB.Size = New-Object System.Drawing.Size(500,550)
 $DesktopGB.AutoSize = $true
 #$DesktopGB.BackColor = 'red'
 
+$OldRB = New-Object System.Windows.Forms.RadioButton
+$OldRB.Location = New-Object System.Drawing.size(140,12)
+$OldRB.Size = New-Object System.Drawing.Size(100,20) 
+$OldRB.Text = "تغییر آزمایش موجود" 
+$OldRB.Add_Click({
+funOLDRBClick
+})
+$OldRB.TextAlign=[System.Drawing.ContentAlignment]::bottomright
+#$NeworOldRB.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 9, [System.Drawing.FontStyle]::Bold)
+
+$NewRB = New-Object System.Windows.Forms.RadioButton
+$NewRB.Location = New-Object System.Drawing.size(255,12)
+$NewRB.Size = New-Object System.Drawing.Size(90,20) 
+
+$NewRB.Text = "ایجاد آزمایش جدید" 
+$NewRB.Add_Click({
+funNEWRBClick
+})
+$NewRB.TextAlign=[System.Drawing.ContentAlignment]::bottomright
+
+
+
+$ProdLB = New-Object System.Windows.Forms.ComboBox
+$ProdLB.Location = New-Object System.Drawing.size(10,10)
+$ProdLB.Size = New-Object System.Drawing.Size(120,30)
+$ProdLB.AutoCompleteSource = 'ListItems'
+$ProdLB.AutoCompleteMode = 'Append'
+#$ProdLB.Text = 200
+$ProdLB.Enabled = $false
+$ProdLB.Add_SelectedIndexChanged({
+
+  $DesktopBtn.Enabled = $True  
+
+})
+#$ProdLB.TextAlign = 'Center'
+#$ProdLB.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 9, [System.Drawing.FontStyle]::Bold)
+
+
+$RBGroup = New-Object System.Windows.Forms.GroupBox
+$RBGroup.Location = '400,70'
+$RBGroup.size = '350,35'
+$RBGroup.Enabled = $false
+$RBGroup.Padding = 1
+
+$RBGroup.Controls.AddRange(@($OldRB,$NewRB))
+$RBGroup.Controls.Add($ProdLB)
+
+$DesktopGB.Controls.Add($RBGroup)
+$DesktopGB.Controls.Add($TotPercentIB)
+$DesktopGB.Controls.Add($TotMlIB)
+$DesktopGB.Controls.Add($TotLbl)
 $DesktopGB.Controls.Add($GBLbl)
 $DesktopGB.Controls.Add($ProdLbl)
 $DesktopGB.Controls.Add($ProjLbl)
@@ -397,7 +553,7 @@ $DesktopGB.Controls.Add($ProjLbl)
 $DesktopGB.Controls.Add($EmailGV)
 $DesktopGB.Controls.Add($ProdCatLB)
 $DesktopGB.Controls.Add($PrjNameLB)
-#$DesktopGB.Controls.Add($DesktopBtn)
+$DesktopGB.Controls.Add($DesktopBtn)
 
 $SecoForm.Controls.Add($DesktopGB)
 
