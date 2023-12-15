@@ -23,7 +23,7 @@ $DGVCBInfo.Columns.Add($col2)
 $DGVCBColumn = New-Object system.Data.DataTable
 [void]$DGVCBColumn.Columns.Add($strCBPeopName)
 #Import-Csv "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\Material Info\MAC1PR121.csv" | Select -ExpandProperty $strCBPeopName | foreach {
-    Import-Csv "D:\HST\Production\Projects\Ellie\Gel Nail Polish\Material Info\MAC1PR121.csv" | Select -ExpandProperty $strCBPeopName | foreach {
+    Import-Csv "D:\ATE\Production\Projects\Ellie\Gel Nail Polish\Material Info\MAC1PR121.csv" | Select -ExpandProperty $strCBPeopName | foreach {
     [void]$DGVCBColumn.Rows.Add($_)
 } 
  
@@ -31,7 +31,7 @@ $DGVCBColumn = New-Object system.Data.DataTable
 
 #[void]$DGVCBColumn.Columns.Add($strCBPeopName)
 
- #  Import-Csv "D:\HST\Production\Projects\Ellie\Gel Nail Polish\Material Info\MAC1PR121.csv" | Select -ExpandProperty $strCBPeopName | foreach {
+ #  Import-Csv "D:\ATE\Production\Projects\Ellie\Gel Nail Polish\Material Info\MAC1PR121.csv" | Select -ExpandProperty $strCBPeopName | foreach {
 #Import-Csv "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\Material Info\MAC1PR121.csv" | Select -ExpandProperty $strCBPeopName | foreach {
  #   [void]$DGVCBColumn.Rows.Add($_)
 #}
@@ -175,7 +175,7 @@ Function funShowInfo{
     $DGVCBColumn.Columns.Clear()
     [void]$DGVCBColumn.Columns.Add($strCBPeopName)
  #   Import-Csv "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\Material Info\MAC1PR121.csv" | Select -ExpandProperty $strCBPeopName | foreach {
-    Import-Csv "D:\HST\Production\Projects\Ellie\Gel Nail Polish\Material Info\MAC1PR121.csv" | Select -ExpandProperty $strCBPeopName | foreach {
+    Import-Csv "D:\ATE\Production\Projects\Ellie\Gel Nail Polish\Material Info\MAC1PR121.csv" | Select -ExpandProperty $strCBPeopName | foreach {
         [void]$DGVCBColumn.Rows.Add($_)
 
     } 
