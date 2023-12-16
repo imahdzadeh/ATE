@@ -5,7 +5,7 @@
 # ---------------->>>>>IMPORTANT<<<<<<<<<<<<----------------
 # This line retrieves all the types and high level variables from main config file
 # and must be included in all sub config files
-<#/\/\/\/\/\/\/\/\#>. "$($env:comroot)\IT\Root\Config\Config.ps1" <#/\/\/\/\/\/\/\#>
+<#/\/\/\/\/\/\/\/\#>. "$($ComRoot)\IT\Root\Config\Config.ps1" <#/\/\/\/\/\/\/\#>
 #
 #
 # Define objects and variables customed to this script between the lines
