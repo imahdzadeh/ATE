@@ -1,6 +1,8 @@
 ﻿# Created by Isar Mahdzadeh
 # Decmeber 12 2023
 #
+# Below line temporary till we have AD and can sert env variable in login script
+$ComRoot = "D:\ATE"
 #
 # ---------------->>>>>IMPORTANT<<<<<<<<<<<<----------------
 # This line retrieves all the types and high level variables from main config file
