@@ -34,7 +34,7 @@ $Secoform = New-Object Windows.Forms.Form -Property @{
     Size          = New-Object Drawing.Size 800, 600
     Text          =            $shamsiYear.ToString() + "/" + 
                                ($shamsiMonth = $persianCalendar.GetMonth($gregorianDate)) + "/" + 
-                               ( $shamsiDay = $persianCalendar.GetDayOfMonth($gregorianDate)).ToString() + "`t`t`t`t`t`t`t`t`t`t" + "پارس طوبی تکیه" 
+                               ( $shamsiDay = $persianCalendar.GetDayOfMonth($gregorianDate)).ToString() + "`t`t`t`t`t`t`t`t`t`t" + "مهد پویان اطلس" 
     Topmost       = $true
 }
 #///////////////////////////////////////////////////////////////////////////////////

@@ -85,9 +85,10 @@ Function funSaveBtn {
         }     
     }
     $SaveBtn.Enabled = $false
-  #  $EmailGV.DefaultCellStyle.BackColor = 'lightgreen' 
+    $EmailGV.DefaultCellStyle.BackColor = 'lightgreen'
+    $EmailGV.Enabled = $false 
     $cancelBtn.Enabled = $false
-    
+    $NewBtn.Enabled = $true
  #   $FileWriter.Close()
 }
 
@@ -107,11 +108,11 @@ Function funNewRBClick{
 
 Function funOldRBClick{
     $ProdLB.Enabled = $true
- #   $DesktopBtn.Enabled = $false
+    $DesktopBtn.Enabled = $false
 #    $ProdLB.Items.Clear()
-#    $ProdLB.Text = $null
+ #   $ProdLB.Text = $null
     $EmailGV.Enabled = $false 
- #   $NewFileNameLbl.Text = ""
+    $NewFileNameLbl.Text = ""
     $NewNameLbl.Visible = $false 
     $PRFFiles = (Get-ChildItem -Path "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$FolderNameTests" -File | ForEach-Object{$_.Name}).TrimEnd($FileExt)
     If ($PRFFiles -ne $null)
@@ -121,16 +122,18 @@ Function funOldRBClick{
 } 
 
 Function funDisAllCB{
- #   $NewRB.Enabled = $faslse
- #   $OldRB.Enabled = $false
-  #  $EmailGV.Rows.Clear()
- #   $DesktopBtn.Enabled = $false
-#    $ProdLB.Enabled = $false
-#    $ProdLB.Items.Clear()
-#    $ProdLB.Text = $null
- #   $RBGroup.Enabled = $false
+    $NewRB.Enabled = $faslse
+    $OldRB.Enabled = $false
+    $NewRB.Checked = $false
+    $OldRB.Checked = $false
+    $DesktopBtn.Enabled = $false
+    $ProdLB.Enabled = $false
+    $ProdLB.Items.Clear()
+    $ProdLB.Text = $null
+    $RBGroup.Enabled = $false
     $TotPercentIB.Text = $null
     $TotMlIB.Text = $null
+    $TotMlIB.Enabled = $false
     $EmailGV.Enabled = $false
     $TotLbl.Visible = $false
     $TotPercentIB.Visible = $false
@@ -139,10 +142,11 @@ Function funDisAllCB{
     $NewFileNameLbl.Text = ""
     $Cancelbtn.Enabled = $flase
     $saveBtn.Enabled = $false
-#    $ProdCatLB.Text = $null
+    $ProdCatLB.Text = $null
     $NameLbl.Visible = $false
+    $PrjNameLB.Enabled = $true
     If ($EmailGV.Rows.Count -gt 0){
- #       $DGVDataTab.Clear()
+        $DGVDataTab.Clear()
     }
 }
 
@@ -163,13 +167,21 @@ Function funCBChUNch{
 #>
 
 Function funShowInfo{
- #   $DesktopBtn.Enabled = $false
+    $DesktopBtn.Enabled = $false
+    $NewRB.Enabled = $faslse
+    $ProdCatLB.Enabled = $false
+    $PrjNameLB.Enabled = $false
+    $OldRB.Enabled = $false
+    $ProdLB.Enabled = $false
     $EmailGV.Enabled = $true
     $TotLbl.Visible = $true
     $TotPercentIB.Visible = $true
     $TotMlIB.Visible = $true
+    $TotMlIB.Enabled = $true
     $Cancelbtn.Enabled = $true
     $saveBtn.Enabled = $true
+    $NewBtn.Enabled = $false
+ #   $newBtn.Enabled = $true
 <#
     $DGVCBColumn.Rows.Clear()
     $DGVCBColumn.Columns.Clear()
@@ -182,6 +194,8 @@ Function funShowInfo{
 #>
     If ($NewRB.Checked){
         $ConfFileVer = $null
+        $TotMlIB.Text = 0
+        $TotPercentIB.Text = 0
         $ConfFileVer = gci "$confRoot\$ConFol" -file | Foreach{
             $_ -match $RegExVerVar
             } | Select-Object *, @{ n = "IntVal"; e = {[int]($Matches[2])}} | Sort-Object IntVal | Select-Object -Last 1
@@ -213,6 +227,13 @@ Function funShowInfo{
     }
 }
 
+Function funNewBtn{
+$NewBtn.Enabled = $false
+$PrjNameLB.ResetText()
+funDisAllCB
+$EmailGV.DefaultCellStyle.BackColor = '' 
+}
+
 $ProdLB = New-Object System.Windows.Forms.ListBox
 $ProdLB.Location = New-Object System.Drawing.Point(50,100)
 $ProdLB.Size = New-Object System.Drawing.Size(700,400)
@@ -238,8 +259,11 @@ $DesktopBtn.width = 120
 $DesktopBtn.height = 35
 $DesktopBtn.Font = 'Microsoft Sans Serif,10'
 $DesktopBtn.ForeColor = "#000"
-#$DesktopBtn.Enabled = $false
-$DesktopBtn.Add_Click({funShowInfo})
+$DesktopBtn.Enabled = $false
+$DesktopBtn.Add_Click({
+    $DesktopBtn.Enabled = $false
+    funShowInfo
+})
 
 $PrjNameLB = $null
 $PrjNameLB = New-Object System.Windows.Forms.Combobox 
@@ -252,7 +276,7 @@ $PrjNameLB.AutoCompleteMode = 'Append'
 $PrjNameLB.Items.AddRange($ProjNames)
 $PrjNameLB.Add_SelectedIndexChanged({
     funPrjNameLB
- #   funDisAllCB 
+    funDisAllCB 
 })
 
 $EmailGV = $null
@@ -307,6 +331,7 @@ $EmailGV.ColumnHeadersHeightSizeMode = 1
 $EmailGV.Add_CellValueChanged{
     foreach ($TGVRow in $EmailGV.Rows)
     {
+    Write-host $_
    # write-host [int]($TotPercentIB.text) + 1
    If ($TGVRow.cells[$intColToSum].Value -ne $null -and $TGVRow.cells[$intColToSum].Value -gt 0) 
    {
@@ -333,11 +358,11 @@ $ProdCatLB.Size = New-Object System.Drawing.Size(100,20)
 $ProdCatLB.Height = 70
 $ProdCatLB.AutoCompleteSource = 'ListItems'
 $ProdCatLB.AutoCompleteMode = 'Append'
-#$ProdCatLB.Enabled = $false
+$ProdCatLB.Enabled = $false
 $ProdCatLB.Add_SelectedIndexChanged({
- #   $NewRB.Enabled = $true
- #   $OldRB.Enabled = $true
- #   $RBGroup.Enabled = $true
+    $NewRB.Enabled = $true
+    $OldRB.Enabled = $true
+    $RBGroup.Enabled = $true
  <#
     $DGVCBColumn.Rows.Clear()
     $DGVCBColumn.Columns.Clear()
@@ -393,7 +418,7 @@ $TotLbl.Size = New-Object System.Drawing.Size(80,15)
 $TotLbl.Text = "Total" 
 $TotLbl.TextAlign=[System.Drawing.ContentAlignment]::bottomright
 $TotLbl.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 9, [System.Drawing.FontStyle]::Bold)
-$TotLbl.Visible = $true
+$TotLbl.Visible = $false
 
 $TotPercentIB = New-Object System.Windows.Forms.Label
 $TotPercentIB.Location = New-Object System.Drawing.size(270,470)
@@ -401,9 +426,25 @@ $TotPercentIB.Size = New-Object System.Drawing.Size(50,20)
 #$TotPercentIB.Enabled = $false
 $TotPercentIB.TextAlign=[System.Drawing.ContentAlignment]::middlecenter
 #$TotPercentIB.Text = 100
-$TotPercentIB.BackColor = 'lightgreen'
+#$TotPercentIB.BackColor = 'lightgreen'
 $TotPercentIB.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 9, [System.Drawing.FontStyle]::Bold)
-$TotPercentIB.Visible = $true
+$TotPercentIB.Visible = $flase
+$TotPercentIB.add_TextChanged({
+    If ($TotPercentIB.text -eq 100)
+    {
+       $TotPercentIB.BackColor = 'lightgreen' 
+    }
+    Else
+    {
+         $TotPercentIB.BackColor = ''
+    }
+    
+})
+
+$tooltip = New-Object System.Windows.Forms.ToolTip
+$tooltip.InitialDelay = 100 
+$tooltip.ReshowDelay = 100 
+
 
 $TotMlIB = New-Object System.Windows.Forms.TextBox
 $TotMlIB.Location = New-Object System.Drawing.size(335,469)
@@ -413,6 +454,41 @@ $TotMlIB.TextAlign = 'Center'
 $TotMlIB.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 9, [System.Drawing.FontStyle]::Bold)
 $TotMlIB.Visible = $true
 $TotMlIB.TextAlign= 'Center'
+$TotMlIB.Enabled = $false
+$TotMlIB.Add_KeyDown({
+<#
+        if($TotMlIB.Text -match '\D'){
+        # If so, remove them
+        $TotMlIB.Text = $TotMlIB.Text -replace '\D'
+        # If Text still has a value, move the cursor to the end of the number
+        if($TotMlIB.Text.Length -gt 0){
+            $TotMlIB.Focus()
+            $TotMlIB.SelectionStart = $TotMlIB.Text.Length
+        }
+    }
+ #>        
+    if ($_.KeyCode -eq [System.Windows.Forms.Keys]::Enter) {     
+        $_.SuppressKeyPress = $True
+    }
+    Else
+    {
+        # Check if Text contains any non-Digits
+        if($TotMlIB.Text -notmatch '\D'){
+            $TotMlIB.BackColor = '' 
+        }      
+    }
+})
+$TotMlIB.Add_lostfocus({
+If ($TotMlIB.Text -match '\D'){
+        $TotMlIB.BackColor = 'red' 
+   }
+   Else
+   {
+        $TotMlIB.BackColor = '' 
+   }
+
+})
+
 
 $GBLbl = New-Object System.Windows.Forms.label
 $GBLbl.Location = New-Object System.Drawing.size(520,-5)
@@ -430,7 +506,8 @@ $OldRB = New-Object System.Windows.Forms.RadioButton
 $OldRB.Location = New-Object System.Drawing.size(140,12)
 $OldRB.Size = New-Object System.Drawing.Size(100,20)
 $oldRB.Checked = $false 
-$OldRB.Text = "تغییر آزمایش موجود" 
+$OldRB.Text = "تغییر آزمایش موجود"
+$OldRB.Enabled = $false 
 $OldRB.Add_Click({
 funOLDRBClick
 })
@@ -440,10 +517,11 @@ $OldRB.TextAlign=[System.Drawing.ContentAlignment]::bottomright
 $NewRB = New-Object System.Windows.Forms.RadioButton
 $NewRB.Location = New-Object System.Drawing.size(255,12)
 $NewRB.Size = New-Object System.Drawing.Size(90,20) 
-$NewRB.Checked = $true
+$NewRB.Checked = $false
+$NewRB.Enabled = $false
 $NewRB.Text = "ایجاد آزمایش جدید" 
 $NewRB.Add_Click({
-#funNEWRBClick
+funNEWRBClick
 })
 $NewRB.TextAlign=[System.Drawing.ContentAlignment]::bottomright
 
@@ -455,7 +533,7 @@ $ProdLB.Size = New-Object System.Drawing.Size(120,30)
 $ProdLB.AutoCompleteSource = 'ListItems'
 $ProdLB.AutoCompleteMode = 'Append'
 #$ProdLB.Text = 200
-#$ProdLB.Enabled = $false
+$ProdLB.Enabled = $false
 $ProdLB.Add_SelectedIndexChanged({
 
   $DesktopBtn.Enabled = $True  
@@ -483,7 +561,10 @@ $CancelBtn.height = 35
 $CancelBtn.Font = 'Microsoft Sans Serif,10'
 $CancelBtn.ForeColor = "#000"
 $CancelBtn.Enabled = $false
-$CancelBtn.Add_Click({funDisAllCB})
+$CancelBtn.Add_Click({
+    $PrjNameLB.ResetText()
+    funDisAllCB
+})
 
 $SaveBtn = New-Object system.Windows.Forms.Button
 $SaveBtn.Location = New-Object System.Drawing.Size(100,505) 
@@ -493,7 +574,7 @@ $SaveBtn.width = 120
 $SaveBtn.height = 35
 $SaveBtn.Font = 'Microsoft Sans Serif,10'
 $SaveBtn.ForeColor = "#000"
-#$SaveBtn.Enabled = $true
+$SaveBtn.Enabled = $false
 $SaveBtn.Add_Click({funSaveBtn})
 
 $NewBtn = New-Object system.Windows.Forms.Button
@@ -503,6 +584,7 @@ $NewBtn.text = "جدید"
 $NewBtn.width = 120
 $NewBtn.height = 35
 $NewBtn.Font = 'Microsoft Sans Serif,10'
+$NewBtn.Enabled = $false
 $NewBtn.ForeColor = "#000"
 #$SaveBtn.Enabled = $true
 $NewBtn.Add_Click({funNewBtn})
@@ -531,3 +613,13 @@ $SecoForm.Controls.Add($DesktopGB)
 
 #$SecoForm.Add_Shown({funDisAllCB})
 [void] $SecoForm.ShowDialog()
+<#
+$SecoForm.Add_KeyDown({
+    $_.SuppressKeyPress = $True
+ #   if     ($_.KeyCode -eq "Enter"){& $button_click}
+    if     ($_.KeyCode -eq "Enter"){}
+    elseif (($_.Control) -and ($_.KeyCode -eq 'A')){$objTextbox.SelectAll()}
+    elseif ($_.KeyCode -eq "Escape"){$Form1.Close()}
+    else {$_.SuppressKeyPress = $False}
+    })
+#>

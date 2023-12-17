@@ -34,7 +34,7 @@ $Chatlabel.Text = $env:USERNAME
 #$MyRawString = Get-Content -Raw 'D:\HST\IT\Root\sample.xml'
 #$Utf8NoBomEncoding = New-Object System.Text.UTF8Encoding $false
 #[System.IO.File]::WriteAllLines('D:\HST\IT\Root\sample.xml', $MyRawString, $Utf8NoBomEncoding)
-$EmailGV = Import-Clixml -Path 'D:\HST\IT\Root\sample.xml'
+$EmailGV = Import-Clixml -Path 'D:\ATe\IT\Root\sample.xml'
 #$EmailGV = [System.Management.Automation.PSSerializer]::Deserialize($test)
 $EmailGV.Columns[1].HeaderText
 $EmailGVNew = New-Object $EmailGV

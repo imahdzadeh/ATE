@@ -1,5 +1,6 @@
-$MainPath = "$env:comroot\AccFinance\ACCG\GL"
-$ACCLPath = "$env:comroot\AccFinance\ACCG"
+$ComRoot = "D:\ATE"
+$MainPath = "$ComRoot\AccFinance\ACCG\GL"
+$ACCLPath = "$ComRoot\AccFinance\ACCG"
 $CurYear = (Get-Date).year
 $CurMonth = ((Get-Culture).DateTimeFormat.GetMonthName((Get-Date).Month)).Substring(0,3)
 $GLYPAth = "$mainPath\$CurYear"
