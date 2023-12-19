@@ -7,23 +7,25 @@ $ComRoot = "D:\ATE"
 # ---------------->>>>>IMPORTANT<<<<<<<<<<<<----------------
 # This line retrieves all the types and high level variables from main config file
 # and must be included in all sub config files
-<#/\/\/\/\/\/\/\/\#>. "$($ComRoot)\IT\Root\Config\Config.ps1" <#/\/\/\/\/\/\/\#>
+<#-----------------#>. "$($ComRoot)\IT\Root\Config\Config.ps1" <#-----------------#>
 #
 #
 # Define objects and variables customed to this script between the lines
 #///////////////////////////////////////////////////////////////////////////////////
-$ConFol = "PRF"
+$ConFolPRF = "PRF"
+$ConFolMAC = "MAC"
 $FileExt = ".csv"
 $depCode = "PR12"
 $FolderNameTests = 'Tests' 
-$MatInfoPath = "Material Info"
 $strCBPeopName = 'Material Code'
+$MatCodeFol = $strCBPeopName
 $intColToCal = 2
 $intColToSum = 1
 $strCreated = 'Created'
 $strChanged = 'Changed'
 $RegExVerVar = "($($conFol))(\d*)"
 $RegExNoVar = "($($conFol))(\d*)($($AllDepCode))(\d*)(.csv)"
+$RegExMAC = "($($ConFolMAC))(\d*)($($AllDepCode))(\d*)(.csv)"
 #$RegExNoneCo= "^[a-zA-Z0-9.,$;]*$"
 $RegExNoneCo= "'^.*(?:\r?\n)?'"
 $RegExComment= "#$_"

@@ -2,14 +2,14 @@
 . "$(Split-Path $PSScriptRoot -Parent)\config\$(($PSCommandPath.Split('\') | select -last 1) -replace ('.ps1$','var.ps1'))"
 
 $ProjNames = Get-ChildItem -Path $ProdRoot -Directory | ForEach-Object{$_.Name}
-
+$DGVCellValueChanging = $flase
 $DGVCBInfo = New-Object system.Data.DataTable
-$DGVCBInfoVer = gci "$confRoot\$ConFol" -file | Foreach{
+$DGVCBInfoVer = gci "$confRoot\$ConFolPRF" -file | Foreach{
   $_ -replace '^PRF', ''
   } | Select-Object *, @{ n = "IntVal"; e = {[int]($_)}} | Sort-Object IntVal | Select-Object -Last 1
 
 $DGVCBInfoCol = @()
-(Get-Content "$confRoot\$ConFol\$ConFol$($DGVCBInfoVer.IntVal)" | select -First 1) -split "," | foreach {
+(Get-Content "$confRoot\$ConFolPRF\$ConFolPRF$($DGVCBInfoVer.IntVal)" | select -First 1) -split "," | foreach {
 $DGVCBInfoCol += $_
 $col2 = New-Object System.Data.DataColumn
 $col2.DataType = [string]
@@ -17,7 +17,10 @@ $col2.ColumnName = $_
 $DGVCBInfo.Columns.Add($col2)
 }
 
+$DGVCBColumn = New-Object system.Data.DataTable
+[void]$DGVCBColumn.Columns.Add($strCBPeopName)
 
+<#
 #$DGVCBColumn.Rows.Clear()
 #$DGVCBColumn.Columns.Clear()
 $DGVCBColumn = New-Object system.Data.DataTable
@@ -26,7 +29,7 @@ $DGVCBColumn = New-Object system.Data.DataTable
     Import-Csv "D:\ATE\Production\Projects\Ellie\Gel Nail Polish\Material Info\MAC1PR121.csv" | Select -ExpandProperty $strCBPeopName | foreach {
     [void]$DGVCBColumn.Rows.Add($_)
 } 
- 
+#> 
 
 
 #[void]$DGVCBColumn.Columns.Add($strCBPeopName)
@@ -36,7 +39,7 @@ $DGVCBColumn = New-Object system.Data.DataTable
  #   [void]$DGVCBColumn.Rows.Add($_)
 #}
 
-Import-Csv "$confRoot\$ConFol\$ConFol$($DGVCBInfoVer.IntVal)" |  foreach {
+Import-Csv "$confRoot\$ConFolPRF\$ConFolPRF$($DGVCBInfoVer.IntVal)" |  foreach {
     $row2 = $DGVCBInfo.NewRow() 
     foreach($column in $DGVCBInfoCol){
         $row2.$column=$_.$column
@@ -61,35 +64,143 @@ Function funPrjNameLB {
 
 Function funSaveBtn {
     $strFileName = "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$FolderNameTests\$($NewFileNameLbl.Text)$($FileExt)"
-    If ($NewRB.Checked){
- #       $FileWriter = new-object System.IO.StreamWriter($strFileName,[System.Text.Encoding]::UTF8)
- #       $FileWriter.Encoding.
- #       $FileWriter.WriteLine( "$( ($EmailGV.Columns | % {$_.headertext}) -join ','),$(($ExtrInfoArr) -join ",")" )
-        "$(($EmailGV.Columns | % {$_.headertext}) -join ','),$(($ExtrInfoArr) -join ",")".Trim() | Out-file $strFileName
-        $EmailGV.Rows | Select-Object -SkipLast 1  | % {          
-            "$( ($_.Cells | % {$_.Value}) -join ','),$strCreated,$((Get-Date).ToString('MM/dd/yyyy hh:mm tt')),$([Environment]::UserName)".Trim() | Out-file $strFileName -Append
-        }      
-    } 
+    If(funSaveDupRowChk)
+    {
+        If(funSaveEmpRowChk)
+        {
+            If(funSaveDupFileChk)
+            {
+                If(funSaveEmpEntries)
+                {
+                    If ($NewRB.Checked){
+                    #       $FileWriter = new-object System.IO.StreamWriter($strFileName,[System.Text.Encoding]::UTF8)
+                    #       $FileWriter.Encoding.
+                    #       $FileWriter.WriteLine( "$( ($EmailGV.Columns | % {$_.headertext}) -join ','),$(($ExtrInfoArr) -join ",")" )
+                        "$(($EmailGV.Columns | % {$_.headertext}) -join ','),$(($ExtrInfoArr) -join ",")".Trim() | Out-file $strFileName
+                        $EmailGV.Rows | Select-Object -SkipLast 1  | % {          
+                            "$( ($_.Cells | % {$_.Value}) -join ','),$strCreated,$((Get-Date).ToString('MM/dd/yyyy hh:mm tt')),$([Environment]::UserName)".Trim() | Out-file $strFileName -Append
+                        }     
+                    } 
+                    Else
+                    {
+                        (Get-Content $strFileName) | foreach {$_ -replace '^.*(?:\r?\n)?' , '#$_' } |  Out-File $strFileName
+                    #       $strComLine | Out-File $strFileName -Append
+                    #      $FileWriter = new-object System.IO.StreamWriter($strFileName)
+                    #       $FileWriter.WriteLine( "$( ($EmailGV.Columns | % {$_.headertext}) -join ','),$(($ExtrInfoArr) -join ",")" )
+                        "$(($EmailGV.Columns | % {$_.headertext}) -join ','),$(($ExtrInfoArr) -join ",")".Trim() | Out-file $strFileName -Append
+                    #      $EmailGV.Rows | Select-Object -SkipLast 1  | % {          
+                    #          $FileWriter.WriteLine( "$( ($_.Cells | % {$_.Value}) -join ','),$strChanged,$((Get-Date).ToString('MM/dd/yyyy hh:mm tt')),$([Environment]::UserName)" )
+                    #        }
+                        $EmailGV.Rows | Select-Object -SkipLast 1  | % {          
+                            "$( ($_.Cells | % {$_.Value}) -join ','),$strChanged,$((Get-Date).ToString('MM/dd/yyyy hh:mm tt')),$([Environment]::UserName)".Trim() | Out-file $strFileName -Append
+                        }     
+                    }
+                    $SaveBtn.Enabled = $false
+                    $EmailGV.DefaultCellStyle.BackColor = 'lightgreen'
+                    $EmailGV.ClearSelection()
+                    $EmailGV.Enabled = $false 
+                    $cancelBtn.Enabled = $false
+                    $NewBtn.Enabled = $true
+                    $TotMlIB.Enabled = $false
+                    #   $FileWriter.Close()
+                }
+                Else
+                {
+                    [System.Windows.MessageBox]::Show("لطفا مقادیر مواد اولیه را وارد کنید ، ذخیره انجام نشد")   
+                }
+            }
+            Else
+            {
+            
+            }
+        }
+        Else
+        {
+            [System.Windows.MessageBox]::Show("سطر خالی وجود دارد، ذخیره انجام نشد $($strCBPeopName) در ستون")   
+        }
+    }
     Else
     {
-        (Get-Content $strFileName) | foreach {$_ -replace '^.*(?:\r?\n)?' , '#$_' } |  Out-File $strFileName
- #       $strComLine | Out-File $strFileName -Append
-  #      $FileWriter = new-object System.IO.StreamWriter($strFileName)
- #       $FileWriter.WriteLine( "$( ($EmailGV.Columns | % {$_.headertext}) -join ','),$(($ExtrInfoArr) -join ",")" )
-        "$(($EmailGV.Columns | % {$_.headertext}) -join ','),$(($ExtrInfoArr) -join ",")".Trim() | Out-file $strFileName -Append
-  #      $EmailGV.Rows | Select-Object -SkipLast 1  | % {          
-  #          $FileWriter.WriteLine( "$( ($_.Cells | % {$_.Value}) -join ','),$strChanged,$((Get-Date).ToString('MM/dd/yyyy hh:mm tt')),$([Environment]::UserName)" )
-#        }
-        $EmailGV.Rows | Select-Object -SkipLast 1  | % {          
-            "$( ($_.Cells | % {$_.Value}) -join ','),$strChanged,$((Get-Date).ToString('MM/dd/yyyy hh:mm tt')),$([Environment]::UserName)".Trim() | Out-file $strFileName -Append
-        }     
+        [System.Windows.MessageBox]::Show("تکرار وجود دارد، ذخیره انجام نشد $($strCBPeopName) در ستون")
     }
-    $SaveBtn.Enabled = $false
-    $EmailGV.DefaultCellStyle.BackColor = 'lightgreen'
-    $EmailGV.Enabled = $false 
-    $cancelBtn.Enabled = $false
-    $NewBtn.Enabled = $true
- #   $FileWriter.Close()
+}
+
+Function funSaveEmpEntries{
+    $bolReturn = $true
+    $EmailGV.Rows | Select-Object -SkipLast 1 | % {
+        If(($_.Cells[$intColToCal].value -eq [System.DBNull]::Value) -and ($_.Cells[$intColToSum].value -eq [System.DBNull]::Value))
+        {
+            $bolReturn = $false
+        }      
+    }    
+    $bolReturn 
+}
+
+Function funSaveEmpRowChk{
+    $bolReturn = $true
+
+    $EmailGV.Rows | Select-Object -SkipLast 1 | % {
+        If($_.Cells[$EmailGV.Columns.Item($strCBPeopName).index].value -eq [System.DBNull]::Value)
+        {
+            $bolReturn = $false
+        }      
+    }
+    $bolReturn 
+}
+
+Function funSaveDupFileChk{
+    $bolReturn = $true
+# If($_.Cells[$EmailGV.Columns.Item($strCBPeopName).index].value -eq [System.DBNull]::Value)
+$object1 = New-Object -TypeName PSObject
+<#
+$headers = $EmailGV.Columns | % {$_.headertext} | %{
+   
+            Add-Member -InputObject $object1 -MemberType NoteProperty -Name $_  -Value @()
+      
+    
+}
+ $EmailGV.Rows | Select-Object -SkipLast 1 | %{
+
+    Foreach($header in $headers)
+    {
+        $object1.$header+= $_.Cells[$EmailGV.Columns.Item($header).index].value
+    }
+    
+ }
+  
+  $object2 =  (Get-Content "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$FolderNameTests\$($ProdLB.SelectedItem)$fileExt" | 
+    Where-Object { !$_.StartsWith("#") }) | ConvertFrom-Csv 
+        
+ write-host  (Compare-Object $object1 $object2 -Property 'Material Code','Ratio %','Weight ml' )
+ #>     
+ 
+
+#  ($test | Get-Member) 
+
+ # $test = New-Object -typename psobject -Property  ( $EmailGV.Columns | % {$_.headertext})
+
+
+#    (Get-Content "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$FolderNameTests\$($ProdLB.SelectedItem)$fileExt" | 
+#    Where-Object { !$_.StartsWith("#") }) | Compare-Object $_ $EmailGV.Rows -Property 'Material Code','Ratio %','Weight ml'
+
+    
+    $bolReturn    
+}
+
+Function funSaveDupRowChk{
+    $bolReturn = $true
+    $seen = @()
+    $EmailGV.Rows | Select-Object -SkipLast 1 | % {
+        If($seen -contains $_.Cells[$EmailGV.Columns.Item($strCBPeopName).index].value)
+        {
+            $bolReturn = $false
+        }
+        Else
+        {
+            $seen += $_.Cells[$EmailGV.Columns.Item($strCBPeopName).index].value    
+        }        
+    }
+    $bolReturn    
 }
 
 Function funNewRBClick{
@@ -114,7 +225,7 @@ Function funOldRBClick{
     $EmailGV.Enabled = $false 
     $NewFileNameLbl.Text = ""
     $NewNameLbl.Visible = $false 
-    $PRFFiles = (Get-ChildItem -Path "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$FolderNameTests" -File | ForEach-Object{$_.Name}).TrimEnd($FileExt)
+    $PRFFiles = Get-ChildItem -Path "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$FolderNameTests" -File | ForEach-Object{$_.Name.TrimEnd($FileExt)}
     If ($PRFFiles -ne $null)
     {
         $ProdLB.Items.AddRange($PRFFiles)
@@ -181,6 +292,8 @@ Function funShowInfo{
     $Cancelbtn.Enabled = $true
     $saveBtn.Enabled = $true
     $NewBtn.Enabled = $false
+    $intSum = 0
+    $intCal = 0
  #   $newBtn.Enabled = $true
 <#
     $DGVCBColumn.Rows.Clear()
@@ -196,7 +309,7 @@ Function funShowInfo{
         $ConfFileVer = $null
         $TotMlIB.Text = 0
         $TotPercentIB.Text = 0
-        $ConfFileVer = gci "$confRoot\$ConFol" -file | Foreach{
+        $ConfFileVer = gci "$confRoot\$ConFolPRF" -file | Foreach{
             $_ -match $RegExVerVar
             } | Select-Object *, @{ n = "IntVal"; e = {[int]($Matches[2])}} | Sort-Object IntVal | Select-Object -Last 1
 
@@ -204,7 +317,7 @@ Function funShowInfo{
         $ConfFileNo = gci "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)" -file -Recurse| Foreach{
             $_ -match $RegExNoVar
             } | Select-Object *, @{ n = "IntVal"; e = {[int]($Matches[4])}} | Sort-Object IntVal | Select-Object -Last 1
-        $NewFileNameLbl.Text = "$($ConFol)$($ConfFileVer.IntVal)$($DepCode)$($ConfFileNo.IntVal+1)" 
+        $NewFileNameLbl.Text = "$($ConFolPRF)$($ConfFileVer.IntVal)$($DepCode)$($ConfFileNo.IntVal+1)" 
         $NewNameLbl.Visible = $true
     }
     Else
@@ -224,6 +337,19 @@ Function funShowInfo{
         }
         $NewFileNameLbl.Text = $ProdLB.SelectedItem
         $NameLbl.Visible = $true
+        foreach ($TGVRow in $EmailGV.Rows)
+        {
+            If ($TGVRow.cells[$intColToSum].Value -ne $null -and $TGVRow.cells[$intColToSum].Value -gt 0) 
+            {
+                $intSum  = $intSum + [int]($TGVRow.cells[$intColToSum].Value) 
+            }
+            If ($TGVRow.cells[$intColToCal].Value -ne $null -and $TGVRow.cells[$intColToCal].Value -gt 0) 
+            {
+                $intCal  = $intCal + [int]($TGVRow.cells[$intColToCal].Value) 
+            }
+        }
+        $TotPercentIB.Text = $intSum
+        $TotMlIB.Text = $intCal
     }
 }
 
@@ -231,7 +357,7 @@ Function funNewBtn{
 $NewBtn.Enabled = $false
 $PrjNameLB.ResetText()
 funDisAllCB
-$EmailGV.DefaultCellStyle.BackColor = '' 
+$EmailGV.DefaultCellStyle.BackColor = 'window'
 }
 
 $ProdLB = New-Object System.Windows.Forms.ListBox
@@ -297,6 +423,7 @@ foreach($row3 in $DGVCBInfo){
     $DGVDataTab.Columns.Add($colDT)
     $col = New-Object $row3.Type
     $col.HeaderText = $row3.Name
+    $col.Name = $row3.Name
     $col.DataPropertyName = $row3.Name
     $HeaderWidth = $HeaderWidth + $row3.SizeX
     $col.Width = $row3.SizeX
@@ -314,6 +441,7 @@ foreach($row3 in $DGVCBInfo){
 
 $HeaderWidth = $HeaderWidth + 3 
 $EmailGV.Size=New-Object System.Drawing.Size($HeaderWidth,350)
+$EmailGV.AllowUserToDeleteRows = $false
 $EmailGV.AllowUserToAddRows = $true
 $EmailGV.ReadOnly = $false
 $EmailGV.ColumnHeadersDefaultCellStyle.Alignment = [System.Drawing.ContentAlignment]::MiddleCenter
@@ -329,20 +457,81 @@ $EmailGV.ColumnHeadersDefaultCellStyle.SelectionBackColor='window'
 #$EmailGV.AutoSizeRowsMode = $false
 $EmailGV.ColumnHeadersHeightSizeMode = 1
 $EmailGV.Add_CellValueChanged{
-    foreach ($TGVRow in $EmailGV.Rows)
-    {
-    Write-host $_
-   # write-host [int]($TotPercentIB.text) + 1
-   If ($TGVRow.cells[$intColToSum].Value -ne $null -and $TGVRow.cells[$intColToSum].Value -gt 0) 
-   {
-      $intSum  = $intSum + [int]($TGVRow.cells[$intColToSum].Value) 
-    }
-      If ($TotMlIB.Text -gt 0 )
+    $intSum = 0
+    $intCal = 0
+    If (!$DGVCellValueChanging){
+        $DGVCellValueChanging = $true  
+        If ($_.columnindex -eq $intColToSum)
         {
-         $TGVRow.cells[$intColToCal].Value = ( ([int]($TotMlIB.Text)*[int]($TGVRow.cells[$intColToSum].Value))/100).ToString()
+                foreach ($TGVRow in $EmailGV.Rows)
+                {
+ #                   If ($TGVRow.cells[$intColToSum].Value -ne $null -and $TGVRow.cells[$intColToSum].Value -gt 0) 
+                    If ($TGVRow.cells[$intColToSum].Value -match '^\d*\.?\d+$') 
+                    {
+                        $intSum  = $intSum + [int]($TGVRow.cells[$intColToSum].Value) 
+                    }
+ #                   If ($TotMlIB.Text -gt 0 )
+                    If ($TotMlIB.Text -match '^\d*\.?\d+$' )
+                    {
+                        If(($TGVRow.cells[$intColToCal].Value -eq [System.DBNull]::Value -or $TGVRow.cells[$intColToCal].Value -eq 0) -And $TGVRow.cells[$intColToSum].Value -ne [System.DBNull]::Value)
+                        {
+                            $TGVRow.cells[$intColToCal].Value = [math]::round(( ([int]($TotMlIB.Text)*[int]($TGVRow.cells[$intColToSum].Value))/100).ToString(),2)
+                        }
+                    }
+                }
+                $TotPercentIB.text = $intSum
+        }
+        Else
+        {
+            If ($_.columnindex -eq $intColToCal)
+            {
+                foreach ($TGVRow in $EmailGV.Rows)
+                {
+                    If ($TGVRow.cells[$intColToCal].Value -match '^\d*\.?\d+$') 
+#                    If ($TGVRow.cells[$intColToCal].Value -ne $null -and $TGVRow.cells[$intColToCal].Value -gt 0) 
+                    {
+                        If($TGVRow.cells[$intColToCal].Value -ne [System.DBNull]::Value)
+                        {
+                            $intCal  = $intCal + [int]($TGVRow.cells[$intColToCal].Value) 
+                        }
+                    }
+                }
+                 $TotMlIB.text = $intCal
+                foreach ($TGVRow in $EmailGV.Rows)
+                {
+                    If ($TGVRow.cells[$intColToCal].Value -match '^\d*\.?\d+$' -or $TGVRow.cells[$intColToCal].Value -eq [System.DBNull]::Value) 
+#                    If ($TGVRow.cells[$intColToCal].Value -match '^\d*\.?\d+$') 
+#                    If ($TGVRow.cells[$intColToCal].Value -ne $null -and $TGVRow.cells[$intColToCal].Value -gt 0) 
+                    {
+                        If($TGVRow.cells[$intColToCal].Value -ne [System.DBNull]::Value -and $TGVRow.cells[$intColToCal].Value -ne 0)
+                        {
+                            $TGVRow.cells[$intColToSum].Value = [math]::round(( ([int]($TGVRow.cells[$intColToCal].Value)/([int]($TotMlIB.Text)))*100).ToString(),2)
+                        }
+                        Else
+                        {
+                            $TGVRow.cells[$intColToSum].Value = [System.DBNull]::Value
+                        }
+                    }
+                }
+                $intSum = 0
+                foreach ($TGVRow in $EmailGV.Rows)
+                {
+                    If ($TGVRow.cells[$intColToSum].Value -match '^\d*\.?\d+$') 
+ #                   If ($TGVRow.cells[$intColToSum].Value -ne $null -and $TGVRow.cells[$intColToSum].Value -gt 0) 
+                    {
+                        $intSum  = $intSum + [int]($TGVRow.cells[$intColToSum].Value) 
+                    }
+                }
+                $TotPercentIB.text = $intSum
+                $DGVCellValueChanging = $false                            
+            }
         }
     }
-    $TotPercentIB.text = $intSum
+   # write-host [int]($TotPercentIB.text) + 1
+
+
+    
+   
 }
 foreach ($datagridviewcolumn in $EmailGV.columns) {
     $datagridviewcolumn.sortmode = 0
@@ -363,14 +552,17 @@ $ProdCatLB.Add_SelectedIndexChanged({
     $NewRB.Enabled = $true
     $OldRB.Enabled = $true
     $RBGroup.Enabled = $true
- <#
+
     $DGVCBColumn.Rows.Clear()
-    $DGVCBColumn.Columns.Clear()
-    [void]$DGVCBColumn.Columns.Add($strCBPeopName)
-    Import-Csv "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\Material Info\MAC1PR121.csv" | Select -ExpandProperty $strCBPeopName | foreach {
-        [void]$DGVCBColumn.Rows.Add($_)
-    }        
-#>
+    gci "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$($MatCodeFol)" -file | Foreach{
+               If( $_ -match $RegExMAC)
+               {
+                    Get-Content $_.FullName | ConvertFrom-Csv  |Select -ExpandProperty $strCBPeopName | foreach {
+                        [void]$DGVCBColumn.Rows.Add($_)
+                    }
+               }
+    } 
+
 })
 
 $ProjLbl = New-Object System.Windows.Forms.label
