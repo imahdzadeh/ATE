@@ -546,11 +546,14 @@
                                         (   
                                             ($TGVRow.cells[$intColToCal].Value -eq [System.DBNull]::Value -or 
                                             $TGVRow.cells[$intColToCal].Value -eq 0) -And 
-                                            $TGVRow.cells[$intColToSum].Value -ne [System.DBNull]::Value          
+                                            $TGVRow.cells[$intColToSum].Value -ne [System.DBNull]::Value  -and
+                                            $TGVRow.cells[$intColToSum].Value -ne $null          
                                         )                                                                            -or
                                         (
+                                            ($TGVRow.cells[$intColToSum].Value -ne [System.DBNull]::Value) -and
                                             ($TGVRow.cells[$intColToCal].Value -ne [System.DBNull]::Value) -and
-                                            ($TGVRow.cells[$intColToCal].Value -ne 0)                      -and                                    
+                                            ($TGVRow.cells[$intColToCal].Value -ne 0)                      -and
+                                            ($TGVRow.cells[$intColToSum].Value -ne $null)                  -and                                    
                                             ($TGVRow.cells[$intColToCal].Value -ne [math]::round(( ([int]($TotMlIB.Text)*[int]($TGVRow.cells[$intColToSum].Value))/100).ToString(),2))
                                         )                                   
                                     )
