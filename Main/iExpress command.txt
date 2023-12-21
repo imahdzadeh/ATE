@@ -1,0 +1,3 @@
+cscript.exe D:\ATE\IT\Root\Main.vbs
+
+cscript.exe \\lappi\Users\Isar\main1.vbs

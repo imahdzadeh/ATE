@@ -65,7 +65,8 @@
                     {
                         If(funSaveEmpEntries)
                         {
-                            If ($NewRB.Checked){
+                            If ($NewRB.Checked)
+                            {
                             #       $FileWriter = new-object System.IO.StreamWriter($strFileName,[System.Text.Encoding]::UTF8)
                             #       $FileWriter.Encoding.
                             #       $FileWriter.WriteLine( "$( ($EmailGV.Columns | % {$_.headertext}) -join ','),$(($ExtrInfoArr) -join ",")" )
@@ -122,7 +123,10 @@
                                         "$( ($_.Cells | % {$_.Value}) -join ','),$strChanged,$((Get-Date).ToString('MM/dd/yyyy hh:mm tt')),$([Environment]::UserName)".Trim() | 
                                         Out-file $strFileName -Append
                                     }                                  
-                                }     
+                                }
+                                "$((Get-Date).ToString('MM/dd/yyyy hh:mm:ss tt'))`t $($PSCommandPath.Split('\') | 
+                                select -last 1)-SaveBtn`t Edit`t $($NewFileNameLbl.Text) `t$([Environment]::UserName)" | 
+                                Out-File $UserLogPath -Append      
                             }
                             $SaveBtn.Enabled = $false
                             $EmailGV.DefaultCellStyle.BackColor = 'lightgreen'
@@ -131,9 +135,6 @@
                             $cancelBtn.Enabled = $false
                             $NewBtn.Enabled = $true
                             $TotMlIB.Enabled = $false
-                            "$((Get-Date).ToString('MM/dd/yyyy hh:mm:ss tt'))`t $($PSCommandPath.Split('\') | 
-                            select -last 1)-SaveBtn`t Edit`t $($NewFileNameLbl.Text) `t$([Environment]::UserName)" | 
-                            Out-File $UserLogPath -Append 
                             #   $FileWriter.Close()
                         }
                         Else
@@ -146,7 +147,7 @@
                     }
                     Else
                     {
-                        [System.Windows.MessageBox]::Show("وجود دارد، ذخیره انجام نشد $($strDupFileName) فرمول مشابه در شماره")
+                        [System.Windows.MessageBox]::Show("وجود دارد، ذخیره انجام نشد $($Global:strDupFileName) فرمول مشابه در شماره")
                         "$((Get-Date).ToString('MM/dd/yyyy hh:mm:ss tt'))`t $($PSCommandPath.Split('\') | 
                         select -last 1)-SaveBtn`t وجود دارد، ذخیره انجام نشد $($strDupFileName) فرمول مشابه در شماره `t$($NewFileNameLbl.Text) `t$([Environment]::UserName)" | 
                         Out-File $UserLogPath -Append                            
@@ -229,7 +230,7 @@
                     $intIterate = $intIterate + 1
                     If ($intIterate -gt 1)
                     {
-                        "$( ($_.Cells | % {$_.Value}) -join ',')".Trim() | Out-file $strFileName -Append   
+                        "$( ($_.Cells | % {$_.Value}) -join ',')".Trim() | Out-file $strRanFileName -Append   
                     }
                     Else
                     {
@@ -255,6 +256,7 @@
             
             }
             $bolReturn
+            Remove-Item $strRanFileName -Force | Out-Null
         }
         Catch
         {
@@ -328,6 +330,7 @@
         $OldRB.Enabled = $false
         $NewRB.Checked = $false
         $OldRB.Checked = $false
+        $ShowMACbtn.Enabled = $false
         $DesktopBtn.Enabled = $false
         $ProdLB.Enabled = $false
         $ProdLB.Items.Clear()
@@ -418,6 +421,63 @@
         {
             "$((Get-Date).ToString('MM/dd/yyyy hh:mm tt'))`t $($PSCommandPath.Split('\') | 
             select -last 1)-funShowInfo`t $_ `t$([Environment]::UserName)" | 
+            Out-File $ErrLogPath -Append 
+        }
+    }
+
+    Function funShowMAC{
+        Try
+        {
+            $ShowMACfrm = New-Object System.Windows.Forms.Form
+            $ShowMACfrm.Size = New-Object System.Drawing.Size(400,600)
+            $ShowMACfrm.Text = "لیست مواد اولیه"
+            $ShowMACfrm.AutoSize = $true
+
+            $ShowMACDGV = $null
+            $ShowMACDGV = New-Object System.Windows.Forms.DataGridView
+            $ShowMACDGV.Size=New-Object System.Drawing.Size(400,600)
+            $ShowMACDGV.Dock = 'fill'
+            $ShowMACDGV.RowHeadersVisible = $false
+            $ShowMACDGV.SelectionMode = 'FullRowSelect'
+    #        $ShowMACDGV.AllowUserToResizeColumns = $false
+            $ShowMACDGV.AllowUserToResizeRows = $false
+            $ShowMACDGV.Size=New-Object System.Drawing.Size($HeaderWidth,350)
+            $ShowMACDGV.AllowUserToDeleteRows = $false
+            $ShowMACDGV.AllowUserToAddRows = $true
+            $ShowMACDGV.ReadOnly = $false
+            $ShowMACDGV.ColumnHeadersDefaultCellStyle.Alignment = [System.Drawing.ContentAlignment]::MiddleCenter
+            #$ShowMACDGV.DefaultCellStyle.Alignment = [System.Drawing.ContentAlignment]::bottomLeft
+            $ShowMACDGV.AllowUserToOrderColumns = $false
+            $ShowMACDGV.RowHeadersWidthSizeMode = 1
+            #$ShowMACDGV.AutoSizeRowsMode = $false
+            $ShowMACDGV.ColumnHeadersHeightSizeMode = 1
+            $ShowMACDGV.EnableHeadersVisualStyles = $false
+            #$ShowMACDGV.DefaultCellStyle.SelectionBackColor= $ShowMACDGV.DefaultCellStyle.BackColor
+            #$ShowMACDGV.DefaultCellStyle.SelectionForeColor= $ShowMACDGV.DefaultCellStyle.ForeColor
+            $ShowMACDGV.ColumnHeadersDefaultCellStyle.SelectionBackColor='window'
+            #$ShowMACDGV.AutoSizeRowsMode = $false
+            $ShowMACDGV.ColumnHeadersHeightSizeMode = 1
+            $objDTV = $null
+            gci "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$($MatCodeFol)" -file | Foreach{
+                If( $_.Name -match $RegExMAC)
+                {
+                    $objDTV += Import-Csv $_.FullName
+                }
+            }
+            $result= new-object System.Collections.ArrayList 
+            If ($objDTV -ne $null)
+            {
+                $result.AddRange($objDTV)     
+                $ShowMACDGV.DataSource = $result
+            }
+
+            $ShowMACfrm.Controls.Add($ShowMACDGV)
+            $ShowMACfrm.Show()
+        }
+        Catch
+        {
+            "$((Get-Date).ToString('MM/dd/yyyy hh:mm tt'))`t $($PSCommandPath.Split('\') | 
+            select -last 1)-funShowMAC`t $_ `t$([Environment]::UserName)" | 
             Out-File $ErrLogPath -Append 
         }
     }
@@ -635,10 +695,10 @@
             $NewRB.Enabled = $true
             $OldRB.Enabled = $true
             $RBGroup.Enabled = $true
-
+            $ShowMACbtn.Enabled = $true
             $DGVCBColumn.Rows.Clear()
             gci "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$($MatCodeFol)" -file | Foreach{
-                       If( $_ -match $RegExMAC)
+                       If( $_.Name -match $RegExMAC)
                        {
                             Get-Content $_.FullName | ConvertFrom-Csv  |Select -ExpandProperty $strCBPeopName | foreach {
                                 [void]$DGVCBColumn.Rows.Add($_)
@@ -651,8 +711,7 @@
             "$((Get-Date).ToString('MM/dd/yyyy hh:mm tt'))`t $($PSCommandPath.Split('\') | 
             select -last 1)-ProdCatLB.Add_SelectedIndexChanged`t $_ `t$([Environment]::UserName)" | 
             Out-File $ErrLogPath -Append  
-        }      
-
+        }
     })
 
     $ProjLbl = New-Object System.Windows.Forms.label
@@ -855,6 +914,18 @@
     #$SaveBtn.Enabled = $true
     $NewBtn.Add_Click({funNewBtn})
 
+    $ShowMACbtn = New-Object system.Windows.Forms.Button
+    $ShowMACbtn.Location = New-Object System.Drawing.Size(130,40) 
+    $ShowMACbtn.BackColor = "#d2d4d6"
+    $ShowMACbtn.text = "لیست مواد اولیه"
+    $ShowMACbtn.width = 120
+    $ShowMACbtn.height = 25
+    $ShowMACbtn.Font = 'Microsoft Sans Serif,10'
+    $ShowMACbtn.Enabled = $false
+    $ShowMACbtn.ForeColor = "#000"
+    $ShowMACbtn.Add_Click({funShowMAC})
+
+    $DesktopGB.Controls.Add($ShowMACbtn)
     $DesktopGB.Controls.Add($NewBtn)
     $DesktopGB.Controls.Add($NameLbl)
     $DesktopGB.Controls.Add($CancelBtn)
@@ -873,12 +944,12 @@
     $DesktopGB.Controls.Add($ProdCatLB)
     $DesktopGB.Controls.Add($PrjNameLB)
     $DesktopGB.Controls.Add($DesktopBtn)
-
+    
     $SecoForm.Controls.Add($SaveBtn)
     $SecoForm.Controls.Add($DesktopGB)
 
     #$SecoForm.Add_Shown({funDisAllCB})
-    [void] $SecoForm.ShowDialog()
+    [void]$SecoForm.ShowDialog()
     <#
     $SecoForm.Add_KeyDown({
         $_.SuppressKeyPress = $True

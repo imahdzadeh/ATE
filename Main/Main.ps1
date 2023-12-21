@@ -1,7 +1,19 @@
-﻿Add-Type -AssemblyName System.Windows.Forms
-Add-Type -AssemblyName System.Drawing
+﻿
+. "$(Split-Path $PSScriptRoot -Parent)\config\$(($PSCommandPath.Split('\') | select -last 1) -replace ('.ps1$','Conf.ps1'))"
 
-$linktest = 'D:\HST\IT\Root\Desktop.ps1'
+Add-Type -Name Window -Namespace Console -MemberDefinition '
+[DllImport("Kernel32.dll")]
+public static extern IntPtr GetConsoleWindow();
+[DllImport("user32.dll")]
+public static extern bool ShowWindow(IntPtr hWnd, Int32 nCmdShow);
+'
+function Hide-Console
+{
+    $consolePtr = [Console.Window]::GetConsoleWindow()
+    #0 hide
+    [Console.Window]::ShowWindow($consolePtr, 0)
+}
+ Hide-Console
 
 [void] [System.Windows.Forms.Application]::EnableVisualStyles()
 $persianCalendar = New-Object System.Globalization.PersianCalendar
@@ -22,13 +34,13 @@ $calendar = New-Object Windows.Forms.MonthCalendar -Property @{
 }
 
 #$MainWindow.AutoSize = $true
-
+<#
 $Mainform = New-Object Windows.Forms.Form -Property @{
     StartPosition = [Windows.Forms.FormStartPosition]::CenterScreen
     Size          = New-Object Drawing.Size 800, 600
     Text          =            $shamsiYear.ToString() + "/" + 
                                ($shamsiMonth = $persianCalendar.GetMonth($gregorianDate)) + "/" + 
-                               ( $shamsiDay = $persianCalendar.GetDayOfMonth($gregorianDate)).ToString() + "`t`t`t`t`t`t`t`t`t`t" + "پارس طوبی تکیه" 
+                               ( $shamsiDay = $persianCalendar.GetDayOfMonth($gregorianDate)).ToString() + "`t`t`t`t`t`t`t`t`t`t" + "مهد پویان اطلس" 
     Topmost       = $true
 }
 $Secoform = New-Object Windows.Forms.Form -Property @{
@@ -36,9 +48,10 @@ $Secoform = New-Object Windows.Forms.Form -Property @{
     Size          = New-Object Drawing.Size 800, 600
     Text          =            $shamsiYear.ToString() + "/" + 
                                ($shamsiMonth = $persianCalendar.GetMonth($gregorianDate)) + "/" + 
-                               ( $shamsiDay = $persianCalendar.GetDayOfMonth($gregorianDate)).ToString() + "`t`t`t`t`t`t`t`t`t`t" + "پارس طوبی تکیه" 
+                               ( $shamsiDay = $persianCalendar.GetDayOfMonth($gregorianDate)).ToString() + "`t`t`t`t`t`t`t`t`t`t" + "مهد پویان اطلس" 
     Topmost       = $true
 }
+#>
 $Secoform.AutoScale = $false
 $Mainform.AutoScale = $false
 # Define the size, title and background color             = 
@@ -70,8 +83,8 @@ Catch
 
 
 $img3 = [System.Drawing.Image]::Fromfile('C:\Users\Isar\Desktop\powershell\img3.png')
-$avatar = [System.Drawing.Image]::Fromfile('D:\HST\IT\Root\images\avatar.png')
-$GH = [System.Drawing.Image]::Fromfile('D:\HST\IT\Root\images\pop.png')
+$avatar = [System.Drawing.Image]::Fromfile('D:\ate\IT\Root\images\avatar.png')
+$GH = [System.Drawing.Image]::Fromfile('D:\ate\IT\Root\images\pop.png')
 
 
 $pictureBox2 = new-object Windows.Forms.PictureBox
@@ -306,6 +319,13 @@ $DesktopBtn.height            = 35
 $DesktopBtn.Font              = 'Microsoft Sans Serif,10'
 $DesktopBtn.ForeColor         = "#000"
 $DesktopBtn.Add_Click({
+
+    # Call Sub menu 1
+    $Mainform.Close()
+    $Mainform.Dispose()
+ #   $Secoform.Topmost = $True
+ #   $Secoform.Add_Shown({$ADBox.Activate()})
+ #   [void] $Secoform.ShowDialog()
     # Call Sub menu 1
  #   $MenuBox.Close()
  #   $MenuBox.Dispose()
@@ -323,9 +343,9 @@ $Secoform = New-Object Windows.Forms.Form -Property @{
 $Secoform.AutoScale = $false
     [void] $SecoForm.Show()
 #>
-& $linktest
 
-#D:\HST\IT\Root\Desktop.ps1
+
+& D:\ATE\IT\Root\Main\Desktop.ps1
 })
 
 $MainPanel = New-Object System.Windows.Forms.TableLayoutPanel
@@ -425,4 +445,4 @@ $Secoform.MaximizeBox = $false
 #$Mainform.controls.add($Panel)
 
 [void]$Mainform.ShowDialog()
-$Mainform.Dispose()
+#$Mainform.Dispose()
