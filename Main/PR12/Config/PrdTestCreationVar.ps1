@@ -31,6 +31,7 @@ $ArrColToCompare = @('Material code','ratio %','Weight ml' )
 $RegExNoneCo = "'^.*(?:\r?\n)?'"
 $RegExComment= "#$_"
 $ExtrInfoArr = @('Latest Change','Date','Analyst')
+$ShowFrmArr = @('شماره','توضیحات','وضعیت','تاریخ')
 $strComLine = $("#" * 20)
 $CommentCar = "#"
 $UserLogPath ="$MainRoot\$depCode\Log\User\$((Get-Date).ToString('MMMyy')).log" 

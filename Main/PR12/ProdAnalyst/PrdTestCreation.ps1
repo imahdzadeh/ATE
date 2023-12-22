@@ -331,6 +331,7 @@
         $NewRB.Checked = $false
         $OldRB.Checked = $false
         $ShowMACbtn.Enabled = $false
+        $ShowPRFbtn.Enabled = $false
         $DesktopBtn.Enabled = $false
         $ProdLB.Enabled = $false
         $ProdLB.Items.Clear()
@@ -439,12 +440,13 @@
             $ShowMACDGV.Dock = 'fill'
             $ShowMACDGV.RowHeadersVisible = $false
             $ShowMACDGV.SelectionMode = 'FullRowSelect'
+            $ShowMACDGV.AutoSizeColumnsMode = 10
     #        $ShowMACDGV.AllowUserToResizeColumns = $false
             $ShowMACDGV.AllowUserToResizeRows = $false
             $ShowMACDGV.Size=New-Object System.Drawing.Size($HeaderWidth,350)
             $ShowMACDGV.AllowUserToDeleteRows = $false
             $ShowMACDGV.AllowUserToAddRows = $true
-            $ShowMACDGV.ReadOnly = $false
+            $ShowMACDGV.ReadOnly = $true
             $ShowMACDGV.ColumnHeadersDefaultCellStyle.Alignment = [System.Drawing.ContentAlignment]::MiddleCenter
             #$ShowMACDGV.DefaultCellStyle.Alignment = [System.Drawing.ContentAlignment]::bottomLeft
             $ShowMACDGV.AllowUserToOrderColumns = $false
@@ -478,6 +480,74 @@
         {
             "$((Get-Date).ToString('MM/dd/yyyy hh:mm tt'))`t $($PSCommandPath.Split('\') | 
             select -last 1)-funShowMAC`t $_ `t$([Environment]::UserName)" | 
+            Out-File $ErrLogPath -Append 
+        }
+    }
+
+    Function funShowPRF{
+        Try
+        {
+            $ShowPRFfrm = New-Object System.Windows.Forms.Form
+            $ShowPRFfrm.Size = New-Object System.Drawing.Size(400,600)
+            $ShowPRFfrm.Text = "لیست فرمولها"
+            $ShowPRFfrm.AutoSize = $true
+
+            $ShowPRFDGV = $null
+            $ShowPRFDGV = New-Object System.Windows.Forms.DataGridView
+            $ShowPRFDGV.Size=New-Object System.Drawing.Size(400,600)
+            $ShowPRFDGV.Dock = 'fill'
+            $ShowPRFDGV.RowHeadersVisible = $false
+            $ShowPRFDGV.SelectionMode = 'FullRowSelect'
+            $ShowPRFDGV.AutoSizeColumnsMode = 10
+            
+    #        $ShowPRFDGV.AllowUserToResizeColumns = $false
+            $ShowPRFDGV.AllowUserToResizeRows = $false
+            $ShowPRFDGV.Size=New-Object System.Drawing.Size($HeaderWidth,350)
+            $ShowPRFDGV.AllowUserToDeleteRows = $false
+            $ShowPRFDGV.AllowUserToAddRows = $true
+            $ShowPRFDGV.ReadOnly = $true
+            $ShowPRFDGV.ColumnHeadersDefaultCellStyle.Alignment = [System.Drawing.ContentAlignment]::MiddleCenter
+            #$ShowPRFDGV.DefaultCellStyle.Alignment = [System.Drawing.ContentAlignment]::bottomLeft
+            $ShowPRFDGV.AllowUserToOrderColumns = $false
+            $ShowPRFDGV.RowHeadersWidthSizeMode = 1
+            #$ShowPRFDGV.AutoSizeRowsMode = $false
+            $ShowPRFDGV.ColumnHeadersHeightSizeMode = 1
+            $ShowPRFDGV.EnableHeadersVisualStyles = $false
+            #$ShowPRFDGV.DefaultCellStyle.SelectionBackColor= $ShowPRFDGV.DefaultCellStyle.BackColor
+            #$ShowPRFDGV.DefaultCellStyle.SelectionForeColor= $ShowPRFDGV.DefaultCellStyle.ForeColor
+            $ShowPRFDGV.ColumnHeadersDefaultCellStyle.SelectionBackColor='window'
+            #$ShowPRFDGV.AutoSizeRowsMode = $false
+            $ShowPRFDGV.ColumnHeadersHeightSizeMode = 1
+
+            foreach($objShowFrmArr in $ShowFrmArr)
+            {
+                $ShowPRFDGV.Columns.Add([System.Windows.Forms.DataGridViewColumn],$objShowFrmArr)                   
+            }
+            $intIterateRow = -1
+            $objPRFDTV = $null
+            gci "D:\ATE\Production\Projects\Ellie\Gel Nail Polish\Tests" -file | Foreach{
+                If( $_.Name -match $RegExNoVar)
+                {
+                    $intIterate = 0
+                    $intIterateRow = $intIterateRow + 1
+                    $FileName = $_.Name
+                    Get-Content $_.FullName | select -Skip 1 | % {
+                        $intIterate = $intIterate + 1
+                        If($intIterate -eq 1)
+                        {
+                            $ShowPRFDGV.rows.Add((,$FileName + ($_ -split ',')[3..5]))
+                            
+                        }
+                    }
+                }
+            }
+            $ShowPRFfrm.Controls.Add($ShowPRFDGV)
+            $ShowPRFfrm.Show()
+        }
+        Catch
+        {
+            "$((Get-Date).ToString('MM/dd/yyyy hh:mm tt'))`t $($PSCommandPath.Split('\') | 
+            select -last 1)-funShowPRF`t $_ `t$([Environment]::UserName)" | 
             Out-File $ErrLogPath -Append 
         }
     }
@@ -696,6 +766,7 @@
             $OldRB.Enabled = $true
             $RBGroup.Enabled = $true
             $ShowMACbtn.Enabled = $true
+            $ShowPRFbtn.Enabled = $true
             $DGVCBColumn.Rows.Clear()
             gci "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$($MatCodeFol)" -file | Foreach{
                        If( $_.Name -match $RegExMAC)
@@ -925,6 +996,18 @@
     $ShowMACbtn.ForeColor = "#000"
     $ShowMACbtn.Add_Click({funShowMAC})
 
+    $ShowPRFbtn = New-Object system.Windows.Forms.Button
+    $ShowPRFbtn.Location = New-Object System.Drawing.Size(260,40) 
+    $ShowPRFbtn.BackColor = "#d2d4d6"
+    $ShowPRFbtn.text = "لیست فرمولهای آزمایش"
+    $ShowPRFbtn.width = 120
+    $ShowPRFbtn.height = 25
+    $ShowPRFbtn.Font = 'Microsoft Sans Serif,10'
+    $ShowPRFbtn.Enabled = $false
+    $ShowPRFbtn.ForeColor = "#000"
+    $ShowPRFbtn.Add_Click({funShowPRF})
+
+    $DesktopGB.Controls.Add($ShowPRFbtn)
     $DesktopGB.Controls.Add($ShowMACbtn)
     $DesktopGB.Controls.Add($NewBtn)
     $DesktopGB.Controls.Add($NameLbl)
