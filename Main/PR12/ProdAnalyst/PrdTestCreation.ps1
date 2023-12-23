@@ -19,6 +19,14 @@
     $DGVCBInfo.Columns.Add($col2)
     }
 
+    $folderselection = New-Object System.Windows.Forms.OpenFileDialog -Property @{  
+        InitialDirectory = [Environment]::GetFolderPath('Desktop')  
+        CheckFileExists = 0  
+        ValidateNames = 0  
+        FileName = "Choose Folder"  
+    }  
+        
+
     $DGVCBColumn = New-Object system.Data.DataTable
     [void]$DGVCBColumn.Columns.Add($strCBPeopName)
 
@@ -31,6 +39,7 @@
     }
 
     $SecoForm.Add_Closing({param($sender,$e)
+        $ImageBx.Dispose()
     
     })
 
@@ -88,9 +97,15 @@
                                     }
                                     End{}                           
                                 }
+                                $strTemp = "No img"
+                                If($ImageBx.tag -ne $null)
+                                {
+                                    $ImageBx.Image.Save("$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$imgFolder\$($NewFileNameLbl.Text)$($ImageExt)")
+                                    $strTemp = "$($NewFileNameLbl.Text)$($ImageExt)"
+                                } 
                                 "$((Get-Date).ToString('MM/dd/yyyy hh:mm:ss tt'))`t $($PSCommandPath.Split('\') | 
-                                select -last 1)-SaveBtn`t New`t $($NewFileNameLbl.Text) `t$([Environment]::UserName)" | 
-                                Out-File $UserLogPath -Append      
+                                select -last 1)-SaveBtn`t New`t $($NewFileNameLbl.Text) `t $strTemp `t $([Environment]::UserName)" | 
+                                Out-File $UserLogPath -Append     
                             } 
                             Else
                             {
@@ -124,8 +139,21 @@
                                         Out-file $strFileName -Append
                                     }                                  
                                 }
+                                $strTemp = "No img change"
+                                If($ImageBx.tag -ne $null)
+                                {
+                                    $imageFolTemp = "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$imgFolder\"
+                                    If(Test-Path "$imageFolTemp$($NewFileNameLbl.Text)$($ImageExt)")
+                                    {
+                                        Move-Item  "$imageFolTemp$($NewFileNameLbl.Text)$($ImageExt)" "$imageFolTemp$ArchFolder\$($NewFileNameLbl.Text)$($ImageExt)"
+                                        Rename-Item "$imageFolTemp$ArchFolder\$($NewFileNameLbl.Text)$($ImageExt)" `
+                                        "$imageFolTemp$ArchFolder\$($NewFileNameLbl.Text)_$((Get-Date).ToString('MM-dd-yyyy_hh-mm-ss tt'))$($ImageExt)"
+                                        $strTemp = "$($NewFileNameLbl.Text)_$((Get-Date).ToString('MM-dd-yyyy_hh-mm-ss tt'))$($ImageExt)"
+                                    }
+                                    $ImageBx.Image.Save("$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$imgFolder\$($NewFileNameLbl.Text)$($ImageExt)")
+                                }  
                                 "$((Get-Date).ToString('MM/dd/yyyy hh:mm:ss tt'))`t $($PSCommandPath.Split('\') | 
-                                select -last 1)-SaveBtn`t Edit`t $($NewFileNameLbl.Text) `t$([Environment]::UserName)" | 
+                                select -last 1)-SaveBtn`t Edit`t $($NewFileNameLbl.Text) `t $strTemp `t $([Environment]::UserName)" | 
                                 Out-File $UserLogPath -Append      
                             }
                             $SaveBtn.Enabled = $false
@@ -135,6 +163,9 @@
                             $cancelBtn.Enabled = $false
                             $NewBtn.Enabled = $true
                             $TotMlIB.Enabled = $false
+                            $ImgFilebtn.Enabled = $false
+                            $ShowMACbtn.Enabled = $false
+                            $ShowPRFbtn.Enabled = $false
                             #   $FileWriter.Close()
                         }
                         Else
@@ -248,7 +279,7 @@
                     $bolCHK = $false
                     $object2 = (Get-Content $_.FullName  | Where-Object { !$_.StartsWith("#") }) | ConvertFrom-Csv
                     Compare-Object $object1 $object2 -Property $ArrColToCompare | % {$bolCHK = $True} 
-                    If ($bolCHK -eq $false){
+                    If (($bolCHK -eq $false) -and ($_.Name -ne "$($NewFileNameLbl.Text)$($FileExt)")){
                         $Global:strDupFileName = ($_.Name).TrimEnd($FileExt)
                         $bolReturn = $false
                     }      
@@ -330,6 +361,7 @@
         $OldRB.Enabled = $false
         $NewRB.Checked = $false
         $OldRB.Checked = $false
+        $ImgFilebtn.Enabled = $false
         $ShowMACbtn.Enabled = $false
         $ShowPRFbtn.Enabled = $false
         $DesktopBtn.Enabled = $false
@@ -351,6 +383,7 @@
         $ProdCatLB.Text = $null
         $NameLbl.Visible = $false
         $PrjNameLB.Enabled = $true
+        $ImageBx.Image = $null
         If ($EmailGV.Rows.Count -gt 0){
             $DGVDataTab.Clear()
         }
@@ -373,6 +406,7 @@
             $Cancelbtn.Enabled = $true
             $saveBtn.Enabled = $true
             $NewBtn.Enabled = $false
+            $ImgFilebtn.Enabled = $true
             $intSum = 0
             $intCal = 0
             If ($NewRB.Checked){
@@ -416,6 +450,14 @@
                 }
                 $TotPercentIB.Text = $intSum
                 $TotMlIB.Text = $intCal
+                If(Test-Path "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$imgFolder\$($NewFileNameLbl.Text)$($ImageExt)")
+                    {
+ #                       $imgFile = (Get-Item $dialog.FileName)
+                        $img = [System.Drawing.Image]::Fromfile("$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$imgFolder\$($NewFileNameLbl.Text)$($ImageExt)");
+                        $ImageBx.Image = $img
+                        $ImageBx.Tag = $imgFile.Name
+#                        $ImageBx.Image.Save("$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$imgFolder\$($NewFileNameLbl.Text)$($ImageExt)")
+                    } 
             }
         }
         Catch
@@ -525,7 +567,7 @@
             }
             $intIterateRow = -1
             $objPRFDTV = $null
-            gci "D:\ATE\Production\Projects\Ellie\Gel Nail Polish\Tests" -file | Foreach{
+            gci "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$FolderNameTests" -file | Foreach{
                 If( $_.Name -match $RegExNoVar)
                 {
                     $intIterate = 0
@@ -553,10 +595,29 @@
     }
 
     Function funNewBtn{
-    $NewBtn.Enabled = $false
-    $PrjNameLB.ResetText()
-    funDisAllCB
-    $EmailGV.DefaultCellStyle.BackColor = 'window'
+        $NewBtn.Enabled = $false
+        $PrjNameLB.ResetText()
+        funDisAllCB
+        $EmailGV.DefaultCellStyle.BackColor = 'window'
+    }
+
+    Function funImgFile{
+       #$img = [System.Drawing.Image]::Fromfile($file); 
+  #     $folderselection.ShowDialog() 
+ #      $img = [System.Drawing.Image]::$folderselection.ShowDialog();
+       
+      $dialog = [System.Windows.Forms.OpenFileDialog]::new()
+
+ #     $dialog.InitialDirectory = (Resolve-Path $Directory).Path
+      $dialog.RestoreDirectory = $true
+
+      $result = $dialog.ShowDialog()
+      if($result -eq [System.Windows.Forms.DialogResult]::OK){
+        $imgFile = (Get-Item $dialog.FileName)
+        $img = [System.Drawing.Image]::Fromfile($imgFile);
+        $ImageBx.Image = $img
+        $ImageBx.Tag = $imgFile.Name
+       }
     }
 
     $ProdLB = New-Object System.Windows.Forms.ListBox
@@ -986,7 +1047,7 @@
     $NewBtn.Add_Click({funNewBtn})
 
     $ShowMACbtn = New-Object system.Windows.Forms.Button
-    $ShowMACbtn.Location = New-Object System.Drawing.Size(130,40) 
+    $ShowMACbtn.Location = New-Object System.Drawing.Size(260,40) 
     $ShowMACbtn.BackColor = "#d2d4d6"
     $ShowMACbtn.text = "لیست مواد اولیه"
     $ShowMACbtn.width = 120
@@ -997,7 +1058,7 @@
     $ShowMACbtn.Add_Click({funShowMAC})
 
     $ShowPRFbtn = New-Object system.Windows.Forms.Button
-    $ShowPRFbtn.Location = New-Object System.Drawing.Size(260,40) 
+    $ShowPRFbtn.Location = New-Object System.Drawing.Size(390,40) 
     $ShowPRFbtn.BackColor = "#d2d4d6"
     $ShowPRFbtn.text = "لیست فرمولهای آزمایش"
     $ShowPRFbtn.width = 120
@@ -1007,6 +1068,27 @@
     $ShowPRFbtn.ForeColor = "#000"
     $ShowPRFbtn.Add_Click({funShowPRF})
 
+    $ImgFilebtn = New-Object system.Windows.Forms.Button
+    $ImgFilebtn.Location = New-Object System.Drawing.Size(130,25) 
+    $ImgFilebtn.BackColor = "#d2d4d6"
+    $ImgFilebtn.text = "اضافه کردن عکس"
+    $ImgFilebtn.width = 120
+    $ImgFilebtn.height = 25
+    $ImgFilebtn.Font = 'Microsoft Sans Serif,10'
+    $ImgFilebtn.Enabled = $true
+    $ImgFilebtn.ForeColor = "#000"
+    $ImgFilebtn.Add_Click({funImgFile})
+
+    $ImageBx = new-object Windows.Forms.PictureBox
+    $ImageBx.Location = New-Object System.Drawing.Size(150,55)
+    $ImageBx.Size = New-Object System.Drawing.Size(75,25)
+    $ImageBx.add_paint({
+        $whitePen = new-object System.Drawing.Pen([system.drawing.color]::gray, 3)
+        $_.graphics.drawrectangle($whitePen,$this.clientrectangle)
+    })
+
+    $DesktopGB.Controls.Add($ImageBx)
+    $DesktopGB.Controls.Add($ImgFilebtn)
     $DesktopGB.Controls.Add($ShowPRFbtn)
     $DesktopGB.Controls.Add($ShowMACbtn)
     $DesktopGB.Controls.Add($NewBtn)

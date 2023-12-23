@@ -2,6 +2,7 @@ Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 Add-Type -AssemblyName PresentationCore,PresentationFramework
 $ComRoot= "D:\ATE"
+$ArchFolder = "Archive"
 $MainRoot= "$($ComRoot)\IT\Root\Main"
 $ProdRoot = "$($ComRoot)\Production\Projects"
 $confRoot = "$($ComRoot)\IT\Root\Config"
