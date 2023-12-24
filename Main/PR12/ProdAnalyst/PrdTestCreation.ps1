@@ -76,6 +76,7 @@
                         {
                             If ($NewRB.Checked)
                             {
+                               
                             #       $FileWriter = new-object System.IO.StreamWriter($strFileName,[System.Text.Encoding]::UTF8)
                             #       $FileWriter.Encoding.
                             #       $FileWriter.WriteLine( "$( ($EmailGV.Columns | % {$_.headertext}) -join ','),$(($ExtrInfoArr) -join ",")" )
@@ -97,14 +98,13 @@
                                     }
                                     End{}                           
                                 }
-                                $strTemp = "No img"
                                 If($ImageBx.tag -ne $null)
                                 {
                                     $ImageBx.Image.Save("$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$imgFolder\$($NewFileNameLbl.Text)$($ImageExt)")
-                                    $strTemp = "$($NewFileNameLbl.Text)$($ImageExt)"
+#                                    $strTemp = "$($NewFileNameLbl.Text)$($ImageExt)"
                                 } 
                                 "$((Get-Date).ToString('MM/dd/yyyy hh:mm:ss tt'))`t $($PSCommandPath.Split('\') | 
-                                select -last 1)-SaveBtn`t New`t $($NewFileNameLbl.Text) `t $strTemp `t $([Environment]::UserName)" | 
+                                select -last 1)-SaveBtn`t $($NewRB.Text) `t $($NewFileNameLbl.Text) `t $StrImageLast `t $([Environment]::UserName)" | 
                                 Out-File $UserLogPath -Append     
                             } 
                             Else
@@ -139,21 +139,29 @@
                                         Out-file $strFileName -Append
                                     }                                  
                                 }
-                                $strTemp = "No img change"
+                                $imageFolTemp = "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$imgFolder\"
                                 If($ImageBx.tag -ne $null)
-                                {
-                                    $imageFolTemp = "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$imgFolder\"
+                                {                                    
                                     If(Test-Path "$imageFolTemp$($NewFileNameLbl.Text)$($ImageExt)")
                                     {
                                         Move-Item  "$imageFolTemp$($NewFileNameLbl.Text)$($ImageExt)" "$imageFolTemp$ArchFolder\$($NewFileNameLbl.Text)$($ImageExt)"
                                         Rename-Item "$imageFolTemp$ArchFolder\$($NewFileNameLbl.Text)$($ImageExt)" `
                                         "$imageFolTemp$ArchFolder\$($NewFileNameLbl.Text)_$((Get-Date).ToString('MM-dd-yyyy_hh-mm-ss tt'))$($ImageExt)"
-                                        $strTemp = "$($NewFileNameLbl.Text)_$((Get-Date).ToString('MM-dd-yyyy_hh-mm-ss tt'))$($ImageExt)"
+#                                        $strTemp = "$($NewFileNameLbl.Text)_$((Get-Date).ToString('MM-dd-yyyy_hh-mm-ss tt'))$($ImageExt)"
                                     }
                                     $ImageBx.Image.Save("$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$imgFolder\$($NewFileNameLbl.Text)$($ImageExt)")
-                                }  
+                                }
+                                Else
+                                {
+                                     If(Test-Path "$imageFolTemp$($NewFileNameLbl.Text)$($ImageExt)")
+                                     {
+                                        Move-Item  "$imageFolTemp$($NewFileNameLbl.Text)$($ImageExt)" "$imageFolTemp$ArchFolder\$($NewFileNameLbl.Text)$($ImageExt)"
+                                        Rename-Item "$imageFolTemp$ArchFolder\$($NewFileNameLbl.Text)$($ImageExt)" `
+                                        "$imageFolTemp$ArchFolder\$($NewFileNameLbl.Text)_$((Get-Date).ToString('MM-dd-yyyy_hh-mm-ss tt'))$($ImageExt)"                                       
+                                     }
+                                } 
                                 "$((Get-Date).ToString('MM/dd/yyyy hh:mm:ss tt'))`t $($PSCommandPath.Split('\') | 
-                                select -last 1)-SaveBtn`t Edit`t $($NewFileNameLbl.Text) `t $strTemp `t $([Environment]::UserName)" | 
+                                select -last 1)-SaveBtn`t $($OldRB.Text)`t $($NewFileNameLbl.Text) `t $StrImageLast `t $([Environment]::UserName)" | 
                                 Out-File $UserLogPath -Append      
                             }
                             $SaveBtn.Enabled = $false
@@ -163,9 +171,10 @@
                             $cancelBtn.Enabled = $false
                             $NewBtn.Enabled = $true
                             $TotMlIB.Enabled = $false
-                            $ImgFilebtn.Enabled = $false
+                            $ImgFileAddbtn.Enabled = $false
                             $ShowMACbtn.Enabled = $false
                             $ShowPRFbtn.Enabled = $false
+                            $ImgFileRembtn.Enabled = $false
                             #   $FileWriter.Close()
                         }
                         Else
@@ -361,7 +370,8 @@
         $OldRB.Enabled = $false
         $NewRB.Checked = $false
         $OldRB.Checked = $false
-        $ImgFilebtn.Enabled = $false
+        $ImgFileAddbtn.Enabled = $false
+        $ImgFileRembtn.Enabled = $false
         $ShowMACbtn.Enabled = $false
         $ShowPRFbtn.Enabled = $false
         $DesktopBtn.Enabled = $false
@@ -406,7 +416,7 @@
             $Cancelbtn.Enabled = $true
             $saveBtn.Enabled = $true
             $NewBtn.Enabled = $false
-            $ImgFilebtn.Enabled = $true
+            $ImgFileAddbtn.Enabled = $true
             $intSum = 0
             $intCal = 0
             If ($NewRB.Checked){
@@ -439,6 +449,7 @@
                 $NameLbl.Visible = $true
                 foreach ($TGVRow in $EmailGV.Rows)
                 {
+                    $TGVRow.HeaderCell.Value = ($TGVRow.Index +1).ToString()
                     If ($TGVRow.cells[$intColToSum].Value -ne $null -and $TGVRow.cells[$intColToSum].Value -gt 0) 
                     {
                         $intSum  = $intSum + [int]($TGVRow.cells[$intColToSum].Value) 
@@ -459,6 +470,7 @@
 #                        $ImageBx.Image.Save("$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$imgFolder\$($NewFileNameLbl.Text)$($ImageExt)")
                     } 
             }
+            If($ImageBx.Image -ne $null){$ImgFileRembtn.Enabled = $true}
         }
         Catch
         {
@@ -601,7 +613,8 @@
         $EmailGV.DefaultCellStyle.BackColor = 'window'
     }
 
-    Function funImgFile{
+    Function funImgAddFile{
+
        #$img = [System.Drawing.Image]::Fromfile($file); 
   #     $folderselection.ShowDialog() 
  #      $img = [System.Drawing.Image]::$folderselection.ShowDialog();
@@ -617,7 +630,26 @@
         $img = [System.Drawing.Image]::Fromfile($imgFile);
         $ImageBx.Image = $img
         $ImageBx.Tag = $imgFile.Name
+        $global:StrImageLast = $ImgFileAddbtn.Text
+        $ImgFileRembtn.Enabled = $false
+        $ImgFileAddbtn.Enabled = $false        
        }
+    }
+
+    Function funImgRemFile{
+        If($ImageBx.Image -ne $null)
+        {
+            $ImgFileRembtn.Enabled = $false
+            $ImgFileAddbtn.Enabled = $false
+            $ImageBx.Image = $null
+            $global:StrImageLast = $ImgFileRembtn.Text   
+        }
+        Else
+        {
+            $ImgFileRembtn.Enabled = $false
+            [System.Windows.MessageBox]::Show("عکسی به این آزمایش اضافه نشده است")
+        }
+ 
     }
 
     $ProdLB = New-Object System.Windows.Forms.ListBox
@@ -667,8 +699,8 @@
 
     $EmailGV = $null
     $EmailGV = New-Object System.Windows.Forms.DataGridView
-    $EmailGV.Location = New-Object System.Drawing.size(120,115)
-    $EmailGV.RowHeadersVisible = $false
+    $EmailGV.Location = New-Object System.Drawing.size(80,115)
+    $EmailGV.RowHeadersVisible = $True
     $EmailGV.SelectionMode = 'FullRowSelect'
     $EmailGV.AllowUserToResizeColumns = $false
     $EmailGV.AllowUserToResizeRows = $false
@@ -699,7 +731,7 @@
         [void]$EmailGV.columns.Add($col)
     }
 
-    $HeaderWidth = $HeaderWidth + 3 
+    $HeaderWidth = $HeaderWidth + 52
     $EmailGV.Size=New-Object System.Drawing.Size($HeaderWidth,350)
     $EmailGV.AllowUserToDeleteRows = $false
     $EmailGV.AllowUserToAddRows = $true
@@ -716,6 +748,8 @@
     $EmailGV.ColumnHeadersDefaultCellStyle.SelectionBackColor='window'
     #$EmailGV.AutoSizeRowsMode = $false
     $EmailGV.ColumnHeadersHeightSizeMode = 1
+    $EmailGV.RowHeadersDefaultCellStyle.Alignment = [System.Drawing.ContentAlignment]::MiddleLeft
+    $EmailGV.RowHeadersWidth = 50
     $EmailGV.Add_CellValueChanged{
         Try
         {
@@ -727,6 +761,7 @@
                 {
                         foreach ($TGVRow in $EmailGV.Rows)
                         {
+                        $TGVRow.HeaderCell.Value = ($TGVRow.Index +1).ToString()
                             If ($TGVRow.cells[$intColToSum].Value -match '^\d*\.?\d+$') 
                             {
                                 $intSum  = $intSum + [int]($TGVRow.cells[$intColToSum].Value) 
@@ -787,6 +822,7 @@
                         $intSum = 0
                         foreach ($TGVRow in $EmailGV.Rows)
                         {
+                            $TGVRow.HeaderCell.Value = ($TGVRow.Index +1).ToString()                            
                             If ($TGVRow.cells[$intColToSum].Value -match '^\d*\.?\d+$') 
                             {
                                 $intSum  = $intSum + [int]($TGVRow.cells[$intColToSum].Value) 
@@ -796,6 +832,7 @@
                         $DGVCellValueChanging = $false                            
                     }
                 }
+
             }
         }
         Catch
@@ -920,7 +957,7 @@
 
 
     $TotMlIB = New-Object System.Windows.Forms.TextBox
-    $TotMlIB.Location = New-Object System.Drawing.size(335,469)
+    $TotMlIB.Location = New-Object System.Drawing.size(345,469)
     $TotMlIB.Size = New-Object System.Drawing.Size(50,12)
     #$TotMlIB.Text = 200
     $TotMlIB.TextAlign = 'Center'
@@ -1047,7 +1084,7 @@
     $NewBtn.Add_Click({funNewBtn})
 
     $ShowMACbtn = New-Object system.Windows.Forms.Button
-    $ShowMACbtn.Location = New-Object System.Drawing.Size(260,40) 
+    $ShowMACbtn.Location = New-Object System.Drawing.Size(300,38) 
     $ShowMACbtn.BackColor = "#d2d4d6"
     $ShowMACbtn.text = "لیست مواد اولیه"
     $ShowMACbtn.width = 120
@@ -1058,7 +1095,7 @@
     $ShowMACbtn.Add_Click({funShowMAC})
 
     $ShowPRFbtn = New-Object system.Windows.Forms.Button
-    $ShowPRFbtn.Location = New-Object System.Drawing.Size(390,40) 
+    $ShowPRFbtn.Location = New-Object System.Drawing.Size(420,38) 
     $ShowPRFbtn.BackColor = "#d2d4d6"
     $ShowPRFbtn.text = "لیست فرمولهای آزمایش"
     $ShowPRFbtn.width = 120
@@ -1068,27 +1105,39 @@
     $ShowPRFbtn.ForeColor = "#000"
     $ShowPRFbtn.Add_Click({funShowPRF})
 
-    $ImgFilebtn = New-Object system.Windows.Forms.Button
-    $ImgFilebtn.Location = New-Object System.Drawing.Size(130,25) 
-    $ImgFilebtn.BackColor = "#d2d4d6"
-    $ImgFilebtn.text = "اضافه کردن عکس"
-    $ImgFilebtn.width = 120
-    $ImgFilebtn.height = 25
-    $ImgFilebtn.Font = 'Microsoft Sans Serif,10'
-    $ImgFilebtn.Enabled = $true
-    $ImgFilebtn.ForeColor = "#000"
-    $ImgFilebtn.Add_Click({funImgFile})
+    $ImgFileAddbtn = New-Object system.Windows.Forms.Button
+    $ImgFileAddbtn.Location = New-Object System.Drawing.Size(180,55) 
+    $ImgFileAddbtn.BackColor = "#d2d4d6"
+    $ImgFileAddbtn.text = "اضافه کردن عکس"
+    $ImgFileAddbtn.width = 100
+    $ImgFileAddbtn.height = 25
+    $ImgFileAddbtn.Font = 'Microsoft Sans Serif,10'
+    $ImgFileAddbtn.Enabled = $False
+    $ImgFileAddbtn.ForeColor = "#000"
+    $ImgFileAddbtn.Add_Click({funImgAddFile})
+
+    $ImgFileRembtn = New-Object system.Windows.Forms.Button
+    $ImgFileRembtn.Location = New-Object System.Drawing.Size(180,25) 
+    $ImgFileRembtn.BackColor = "#d2d4d6"
+    $ImgFileRembtn.text = "حذف عکس"
+    $ImgFileRembtn.width = 100
+    $ImgFileRembtn.height = 25
+    $ImgFileRembtn.Font = 'Microsoft Sans Serif,10'
+    $ImgFileRembtn.Enabled = $False
+    $ImgFileRembtn.ForeColor = "#000"
+    $ImgFileRembtn.Add_Click({funImgRemFile})
 
     $ImageBx = new-object Windows.Forms.PictureBox
-    $ImageBx.Location = New-Object System.Drawing.Size(150,55)
-    $ImageBx.Size = New-Object System.Drawing.Size(75,25)
+    $ImageBx.Location = New-Object System.Drawing.Size(95,25)
+    $ImageBx.Size = New-Object System.Drawing.Size(80,55)
     $ImageBx.add_paint({
         $whitePen = new-object System.Drawing.Pen([system.drawing.color]::gray, 3)
         $_.graphics.drawrectangle($whitePen,$this.clientrectangle)
     })
 
+    $DesktopGB.Controls.Add($ImgFileRembtn)
     $DesktopGB.Controls.Add($ImageBx)
-    $DesktopGB.Controls.Add($ImgFilebtn)
+    $DesktopGB.Controls.Add($ImgFileAddbtn)
     $DesktopGB.Controls.Add($ShowPRFbtn)
     $DesktopGB.Controls.Add($ShowMACbtn)
     $DesktopGB.Controls.Add($NewBtn)

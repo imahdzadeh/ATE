@@ -20,6 +20,7 @@ $depCode = "PR12"
 $FolderNameTests = 'Tests' 
 $strCBPeopName = 'Material Code'
 $imgFolder = "img"
+$StrImageLast = ""
 $MatCodeFol = $strCBPeopName
 $intColToCal = 2
 $intColToSum = 1
