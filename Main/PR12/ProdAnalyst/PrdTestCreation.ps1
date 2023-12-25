@@ -104,7 +104,7 @@
 #                                    $strTemp = "$($NewFileNameLbl.Text)$($ImageExt)"
                                 } 
                                 "$((Get-Date).ToString('MM/dd/yyyy hh:mm:ss tt'))`t $($PSCommandPath.Split('\') | 
-                                select -last 1)-SaveBtn`t $($NewRB.Text) `t $($NewFileNameLbl.Text) `t $StrImageLast `t $([Environment]::UserName)" | 
+                                select -last 1)-SaveBtn`t $($NewRB.Text) `t $($NewFileNameLbl.Text) `t $Global:StrImageLast `t $([Environment]::UserName)" | 
                                 Out-File $UserLogPath -Append     
                             } 
                             Else
@@ -140,8 +140,8 @@
                                     }                                  
                                 }
                                 $imageFolTemp = "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$imgFolder\"
-                                If($ImageBx.tag -ne $null)
-                                {                                    
+                                If($ImageBx.tag -eq $ImgFileAddbtn.Text)
+                                {                                 
                                     If(Test-Path "$imageFolTemp$($NewFileNameLbl.Text)$($ImageExt)")
                                     {
                                         Move-Item  "$imageFolTemp$($NewFileNameLbl.Text)$($ImageExt)" "$imageFolTemp$ArchFolder\$($NewFileNameLbl.Text)$($ImageExt)"
@@ -153,7 +153,7 @@
                                 }
                                 Else
                                 {
-                                     If(Test-Path "$imageFolTemp$($NewFileNameLbl.Text)$($ImageExt)")
+                                     If((Test-Path "$imageFolTemp$($NewFileNameLbl.Text)$($ImageExt)") -and ($ImageBx.tag -eq $ImgFileRembtn.Text))
                                      {
                                         Move-Item  "$imageFolTemp$($NewFileNameLbl.Text)$($ImageExt)" "$imageFolTemp$ArchFolder\$($NewFileNameLbl.Text)$($ImageExt)"
                                         Rename-Item "$imageFolTemp$ArchFolder\$($NewFileNameLbl.Text)$($ImageExt)" `
@@ -161,7 +161,7 @@
                                      }
                                 } 
                                 "$((Get-Date).ToString('MM/dd/yyyy hh:mm:ss tt'))`t $($PSCommandPath.Split('\') | 
-                                select -last 1)-SaveBtn`t $($OldRB.Text)`t $($NewFileNameLbl.Text) `t $StrImageLast `t $([Environment]::UserName)" | 
+                                select -last 1)-SaveBtn`t $($OldRB.Text)`t $($NewFileNameLbl.Text) `t $Global:StrImageLast `t $([Environment]::UserName)" | 
                                 Out-File $UserLogPath -Append      
                             }
                             $SaveBtn.Enabled = $false
@@ -464,10 +464,11 @@
                 If(Test-Path "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$imgFolder\$($NewFileNameLbl.Text)$($ImageExt)")
                     {
  #                       $imgFile = (Get-Item $dialog.FileName)
-                        $img = [System.Drawing.Image]::Fromfile("$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$imgFolder\$($NewFileNameLbl.Text)$($ImageExt)");
-                        $ImageBx.Image = $img
+                        $Global:img = [System.Drawing.Image]::Fromfile("$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$imgFolder\$($NewFileNameLbl.Text)$($ImageExt)");
+                        $ImageBx.Image = $Global:img
                         $ImageBx.Tag = $imgFile.Name
 #                        $ImageBx.Image.Save("$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$imgFolder\$($NewFileNameLbl.Text)$($ImageExt)")
+#                        $Global:img.Dispose()
                     } 
             }
             If($ImageBx.Image -ne $null){$ImgFileRembtn.Enabled = $true}
@@ -542,10 +543,10 @@
         Try
         {
             $ShowPRFfrm = New-Object System.Windows.Forms.Form
-#            $ShowPRFfrm.Size = New-Object System.Drawing.Size(600,600)
+            $ShowPRFfrm.Size = New-Object System.Drawing.Size(300,600)
             $ShowPRFfrm.Text = "لیست فرمولها"
-            $ShowPRFfrm.AutoSize = $true
-            $ShowPRFfrm.AutoSizeMode = 1
+ #           $ShowPRFfrm.AutoSize = $true
+#            $ShowPRFfrm.AutoSizeMode = 1
             
 
             $ShowPRFDGV = $null
@@ -555,6 +556,7 @@
             $ShowPRFDGV.RowHeadersVisible = $false
             $ShowPRFDGV.SelectionMode = 'FullRowSelect'
             $ShowPRFDGV.AutoSizeColumnsMode = 10
+            $ShowPRFDGV.RowTemplate.Height = 20
             
             $ShowPRFDGV.AllowUserToResizeColumns = $true
             $ShowPRFDGV.AllowUserToResizeRows = $false
@@ -579,13 +581,16 @@
             {
                 If($objShowFrmArr -ne 'عکس')
                 {
-                    $Column = New-Object System.Windows.Forms.DataGridViewTextBoxColumn                  
+                    $Column = New-Object System.Windows.Forms.DataGridViewTextBoxColumn 
+                                     
                     $ShowPRFDGV.Columns.insert($ShowPRFDGV.Columns.Count,$Column)  
                     $ShowPRFDGV.Columns[$ShowPRFDGV.Columns.Count - 1].HeaderText = $objShowFrmArr 
                 }
                 Else
                 {
                     $ImageColumn = New-Object System.Windows.Forms.DataGridViewImageColumn
+                    $ImageColumn.Width = 100
+                    $ImageColumn.AutoSizeMode = 1
                     $ShowPRFDGV.Columns.Insert($ShowPRFDGV.Columns.Count,$ImageColumn)
                     $ShowPRFDGV.Columns[$ShowPRFDGV.Columns.Count - 1].HeaderText = $objShowFrmArr 
                         
@@ -630,49 +635,73 @@
     }
 
     Function funNewBtn{
-        $NewBtn.Enabled = $false
-        $PrjNameLB.ResetText()
-        funDisAllCB
-        $EmailGV.DefaultCellStyle.BackColor = 'window'
+        Try
+        {
+            $NewBtn.Enabled = $false
+            $PrjNameLB.ResetText()
+            funDisAllCB
+            $EmailGV.DefaultCellStyle.BackColor = 'window'
+        }
+        Catch
+        {
+            "$((Get-Date).ToString('MM/dd/yyyy hh:mm tt'))`t $($PSCommandPath.Split('\') | 
+            select -last 1)-funNewBtn`t $_ `t$([Environment]::UserName)" | 
+            Out-File $ErrLogPath -Append 
+        }
     }
 
     Function funImgAddFile{
-
-       #$img = [System.Drawing.Image]::Fromfile($file); 
-  #     $folderselection.ShowDialog() 
- #      $img = [System.Drawing.Image]::$folderselection.ShowDialog();
-       
-      $dialog = [System.Windows.Forms.OpenFileDialog]::new()
-
- #     $dialog.InitialDirectory = (Resolve-Path $Directory).Path
-      $dialog.RestoreDirectory = $true
-
-      $result = $dialog.ShowDialog()
-      if($result -eq [System.Windows.Forms.DialogResult]::OK){
-        $imgFile = (Get-Item $dialog.FileName)
-        $img = [System.Drawing.Image]::Fromfile($imgFile);
-        $ImageBx.Image = $img
-        $ImageBx.Tag = $imgFile.Name
-        $global:StrImageLast = $ImgFileAddbtn.Text
-        $ImgFileRembtn.Enabled = $false
-        $ImgFileAddbtn.Enabled = $false        
-       }
+        Try
+        {
+            $dialog = [System.Windows.Forms.OpenFileDialog]::new()
+            $dialog.RestoreDirectory = $true
+            $result = $dialog.ShowDialog()
+            if($result -eq [System.Windows.Forms.DialogResult]::OK){
+                If ($Global:img -ne $null)
+                {
+                    $ImageBx.Image = $null
+                    $Global:img.Dispose()           
+                }
+            $Global:img = [System.Drawing.Image]::Fromfile($dialog.FileName);
+            $ImageBx.Image = $Global:img
+            $ImageBx.Tag = $ImgFileAddbtn.Text
+            $ImgFileRembtn.Enabled = $false
+            $ImgFileAddbtn.Enabled = $false
+            $Global:StrImageLast = $ImgFileAddbtn.Text       
+            }
+        }
+        Catch
+        {
+            "$((Get-Date).ToString('MM/dd/yyyy hh:mm tt'))`t $($PSCommandPath.Split('\') | 
+            select -last 1)-funImgAddFile`t $_ `t$([Environment]::UserName)" | 
+            Out-File $ErrLogPath -Append 
+        }
     }
 
     Function funImgRemFile{
-        If($ImageBx.Image -ne $null)
+        Try
         {
-            $ImgFileRembtn.Enabled = $false
-            $ImgFileAddbtn.Enabled = $false
-            $ImageBx.Image = $null
-            $global:StrImageLast = $ImgFileRembtn.Text   
+            If($ImageBx.Image -ne $null)
+            {
+                $ImgFileRembtn.Enabled = $false
+                $ImgFileAddbtn.Enabled = $false
+                $ImageBx.Image = $null
+                $ImageBx.Tag = $ImgFileRembtn.Text
+                $Global:img.Dispose()
+                $Global:StrImageLast = $ImgFileRembtn.Text   
+            }
+            Else
+            {
+                $ImgFileRembtn.Enabled = $false
+                [System.Windows.MessageBox]::Show("عکسی به این آزمایش اضافه نشده است")
+            }
         }
-        Else
+        Catch
         {
-            $ImgFileRembtn.Enabled = $false
-            [System.Windows.MessageBox]::Show("عکسی به این آزمایش اضافه نشده است")
-        }
- 
+            "$((Get-Date).ToString('MM/dd/yyyy hh:mm tt'))`t $($PSCommandPath.Split('\') | 
+            select -last 1)-funImgRemFile`t $_ `t$([Environment]::UserName)" | 
+            Out-File $ErrLogPath -Append 
+        }        
     }
 
     $ProdLB = New-Object System.Windows.Forms.ListBox
@@ -919,7 +948,7 @@
     $ProdLbl.TextAlign=[System.Drawing.ContentAlignment]::bottomright
 
     $NewNameLbl = New-Object System.Windows.Forms.label
-    $NewNameLbl.Location = New-Object System.Drawing.size(235,85)
+    $NewNameLbl.Location = New-Object System.Drawing.size(200,85)
     $NewNameLbl.Size = New-Object System.Drawing.Size(80,20) 
     $NewNameLbl.Text = ":شماره آزمایش جدید" 
     $NewNameLbl.TextAlign=[System.Drawing.ContentAlignment]::bottomleft
@@ -927,7 +956,7 @@
     $NewNameLbl.BackColor = ''
 
     $NameLbl = New-Object System.Windows.Forms.label
-    $NameLbl.Location = New-Object System.Drawing.size(235,85)
+    $NameLbl.Location = New-Object System.Drawing.size(195,85)
     $NameLbl.Size = New-Object System.Drawing.Size(70,20) 
     $NameLbl.Text = ":شماره آزمایش" 
     $NameLbl.TextAlign=[System.Drawing.ContentAlignment]::bottomleft
@@ -935,7 +964,7 @@
     $NameLbl.BackColor = ''
 
     $NewFileNameLbl = New-Object System.Windows.Forms.label
-    $NewFileNameLbl.Location = New-Object System.Drawing.size(130,85)
+    $NewFileNameLbl.Location = New-Object System.Drawing.size(90,85)
     #$NewFileNameLbl.Size = New-Object System.Drawing.Size(80,20)
     $NewFileNameLbl.AutoSize = $ture 
     $NewFileNameLbl.Text = ""
@@ -1152,7 +1181,8 @@
 
     $ImageBx = new-object Windows.Forms.PictureBox
     $ImageBx.Location = New-Object System.Drawing.Size(95,25)
-    $ImageBx.Size = New-Object System.Drawing.Size(80,55)
+    $ImageBx.Size = New-Object System.Drawing.Size(80,60)
+    $ImageBx.SizeMode = 1
     $ImageBx.add_paint({
         $whitePen = new-object System.Drawing.Pen([system.drawing.color]::gray, 3)
         $_.graphics.drawrectangle($whitePen,$this.clientrectangle)
