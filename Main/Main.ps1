@@ -1,4 +1,6 @@
-﻿
+﻿# Created by Isar Mahdzadeh
+# Decmeber 12 2023
+#
 . "$(Split-Path $PSScriptRoot -Parent)\config\$(($PSCommandPath.Split('\') | select -last 1) -replace ('.ps1$','Conf.ps1'))"
 
 Add-Type -Name Window -Namespace Console -MemberDefinition '

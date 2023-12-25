@@ -1,4 +1,8 @@
-﻿Try
+﻿# Created by Isar Mahdzadeh
+# Decmeber 12 2023
+#
+
+Try
 {
     . "$(Split-Path $PSScriptRoot -Parent)\config\$(($PSCommandPath.Split('\') | select -last 1) -replace ('.ps1$','var.ps1'))"
 #    throw [System.IO.FileNotFoundException] "$file not found."
@@ -563,10 +567,10 @@
             $ShowPRFDGV.Size=New-Object System.Drawing.Size($HeaderWidth,350)
             $ShowPRFDGV.AllowUserToDeleteRows = $false
             $ShowPRFDGV.AllowUserToAddRows = $true
-            $ShowPRFDGV.ReadOnly = $true
+            $ShowPRFDGV.ReadOnly = $false
             $ShowPRFDGV.ColumnHeadersDefaultCellStyle.Alignment = [System.Drawing.ContentAlignment]::MiddleCenter
             #$ShowPRFDGV.DefaultCellStyle.Alignment = [System.Drawing.ContentAlignment]::bottomLeft
-            $ShowPRFDGV.AllowUserToOrderColumns = $false
+            $ShowPRFDGV.AllowUserToOrderColumns = $true
             $ShowPRFDGV.RowHeadersWidthSizeMode = 1
             #$ShowPRFDGV.AutoSizeRowsMode = $false
             $ShowPRFDGV.ColumnHeadersHeightSizeMode = 1
@@ -703,19 +707,18 @@
             Out-File $ErrLogPath -Append 
         }        
     }
-
+<#
     $ProdLB = New-Object System.Windows.Forms.ListBox
     $ProdLB.Location = New-Object System.Drawing.Point(50,100)
     $ProdLB.Size = New-Object System.Drawing.Size(700,400)
     $ProdLB.Height = 400
     $ProdLB.FormattingEnabled = $True
     $ProdLB.BackColor = 'red'
-
     $ProdLB.TabIndex = 4
     $ProdLB.DrawMode = [System.Windows.Forms.DrawMode]::OwnerDrawFixed
     $ProdLB.DataBindings.DefaultDataSourceUpdateMode = 0
     $ProdLB.ItemHeight = 20
-
+#>
     $ListBoxCB = New-Object System.Windows.Forms.CheckBox
     $ListBoxCB.Text = 'sdfsdf'
     $ListBoxtB = New-Object System.Windows.Forms.TextBox
@@ -1083,10 +1086,43 @@
     $ProdLB.AutoCompleteMode = 'Append'
     #$ProdLB.Text = 200
     $ProdLB.Enabled = $false
+    $ProdLB.DrawMode = [System.Windows.Forms.DrawMode]::OwnerDrawFixed
+    $ProdLB.add_DrawItem({
+    
+        param([System.Object]$s, [System.Windows.Forms.DrawItemEventArgs]$e)
+        if ($s.Items.Count -eq 0) {return}
+
+        If(Test-Path "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$imgFolder\$($s.Items[$e.Index])$($ImageExt)")
+            {
+#                       $imgFile = (Get-Item $dialog.FileName)
+                $Global:img = [System.Drawing.Image]::Fromfile("$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$imgFolder\$($s.Items[$e.Index])$($ImageExt)");
+                $e.Graphics.DrawImage($Global:img,0,$e.Bounds.Y+2.5,10,10)
+                $Global:img.Dispose()
+            } 
+             
+        #Suppose item de type String
+#        $Graphics = $e.Graphics
+#        $Rectangle = $e.Bounds
+ #       $e.DrawBackground()
+#       if ($e.Index -ge 0) {
+#            $Name = ([System.Windows.Forms.ComboBox]$s).Items[$e.Index].ToString()
+#            $Font = [System.Drawing.Font]::new("Arial", 10, [System.Drawing.FontStyle]::Regular)
+#            $Color = [System.Drawing.Color]::FromName($Name)
+#            $Brush = [System.Drawing.SolidBrush]::new($Color)
+            # Can uncomment this if you do not want the background highlighted when hovering over item.
+            # $Graphics.TextRenderingHint = [System.Drawing.Text.TextRenderingHint]::AntiAliasGridFit
+#            $Graphics.DrawString($Name, $Font, [System.Drawing.Brushes]::Black, $Rectangle.X, $Rectangle.Top)
+#            $Graphics.FillRectangle($Brush, $Rectangle.X + 110, $Rectangle.Y + 5, $Rectangle.Width -10, $Rectangle.Height -10)
+        
+            # Dispose of disposable objects
+ #           $Brush.Dispose()
+  #      }
+        $e.Graphics.DrawString($s.Items[$e.Index], $e.Font, [System.Drawing.SystemBrushes]::ControlText, $e.Bounds.Left+10, $e.Bounds.Top, [System.Drawing.StringFormat]::GenericDefault)
+        
+    })
     $ProdLB.Add_SelectedIndexChanged({
-
-      $DesktopBtn.Enabled = $True  
-
+      
+        $DesktopBtn.Enabled = $True  
     })
 
     $RBGroup = New-Object System.Windows.Forms.GroupBox
