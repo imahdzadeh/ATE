@@ -542,9 +542,11 @@
         Try
         {
             $ShowPRFfrm = New-Object System.Windows.Forms.Form
-            $ShowPRFfrm.Size = New-Object System.Drawing.Size(400,600)
+#            $ShowPRFfrm.Size = New-Object System.Drawing.Size(600,600)
             $ShowPRFfrm.Text = "لیست فرمولها"
             $ShowPRFfrm.AutoSize = $true
+            $ShowPRFfrm.AutoSizeMode = 1
+            
 
             $ShowPRFDGV = $null
             $ShowPRFDGV = New-Object System.Windows.Forms.DataGridView
@@ -554,7 +556,7 @@
             $ShowPRFDGV.SelectionMode = 'FullRowSelect'
             $ShowPRFDGV.AutoSizeColumnsMode = 10
             
-    #        $ShowPRFDGV.AllowUserToResizeColumns = $false
+            $ShowPRFDGV.AllowUserToResizeColumns = $true
             $ShowPRFDGV.AllowUserToResizeRows = $false
             $ShowPRFDGV.Size=New-Object System.Drawing.Size($HeaderWidth,350)
             $ShowPRFDGV.AllowUserToDeleteRows = $false
@@ -572,16 +574,38 @@
             $ShowPRFDGV.ColumnHeadersDefaultCellStyle.SelectionBackColor='window'
             #$ShowPRFDGV.AutoSizeRowsMode = $false
             $ShowPRFDGV.ColumnHeadersHeightSizeMode = 1
-
+            $intiterate
             foreach($objShowFrmArr in $ShowFrmArr)
             {
-                $ShowPRFDGV.Columns.Add([System.Windows.Forms.DataGridViewColumn],$objShowFrmArr)                   
+                If($objShowFrmArr -ne 'عکس')
+                {
+                    $Column = New-Object System.Windows.Forms.DataGridViewTextBoxColumn                  
+                    $ShowPRFDGV.Columns.insert($ShowPRFDGV.Columns.Count,$Column)  
+                    $ShowPRFDGV.Columns[$ShowPRFDGV.Columns.Count - 1].HeaderText = $objShowFrmArr 
+                }
+                Else
+                {
+                    $ImageColumn = New-Object System.Windows.Forms.DataGridViewImageColumn
+                    $ShowPRFDGV.Columns.Insert($ShowPRFDGV.Columns.Count,$ImageColumn)
+                    $ShowPRFDGV.Columns[$ShowPRFDGV.Columns.Count - 1].HeaderText = $objShowFrmArr 
+                        
+                }                              
             }
             $intIterateRow = -1
             $objPRFDTV = $null
             gci "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$FolderNameTests" -file | Foreach{
                 If( $_.Name -match $RegExNoVar)
                 {
+                    $Strtest = "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$imgFolder\$(($_.Name).TrimEnd($FileExt))$($ImageExt)"
+                    If (Test-Path "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$imgFolder\$(($_.Name).TrimEnd($FileExt))$($ImageExt)")
+                    {
+                        $DGVImage = [System.Drawing.Image]::FromFile(`
+                        "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$imgFolder\$(($_.Name).TrimEnd($FileExt))$($ImageExt)")
+                    }
+                    Else
+                    {
+                        $DGVImage = $null
+                    }
                     $intIterate = 0
                     $intIterateRow = $intIterateRow + 1
                     $FileName = $_.Name
@@ -589,8 +613,7 @@
                         $intIterate = $intIterate + 1
                         If($intIterate -eq 1)
                         {
-                            $ShowPRFDGV.rows.Add((,$FileName + ($_ -split ',')[3..5]))
-                            
+                            $ShowPRFDGV.rows.Add((, $DGVImage +(,$FileName +($_ -split ',')[3..5])))                           
                         }
                     }
                 }
