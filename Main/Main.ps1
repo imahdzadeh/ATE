@@ -9,13 +9,19 @@ public static extern IntPtr GetConsoleWindow();
 [DllImport("user32.dll")]
 public static extern bool ShowWindow(IntPtr hWnd, Int32 nCmdShow);
 '
+function Show-Console
+{
+    $consolePtr = [Console.Window]::GetConsoleWindow()
+    #0 hide
+    [Console.Window]::ShowWindow($consolePtr, 4)
+}
 function Hide-Console
 {
     $consolePtr = [Console.Window]::GetConsoleWindow()
     #0 hide
     [Console.Window]::ShowWindow($consolePtr, 0)
 }
- Hide-Console
+ 
 
 [void] [System.Windows.Forms.Application]::EnableVisualStyles()
 $persianCalendar = New-Object System.Globalization.PersianCalendar
@@ -24,12 +30,13 @@ $gregorianDate = [System.TimeZoneInfo]::ConvertTimeBySystemTimeZoneId([DateTime]
 $shamsiYear = $persianCalendar.GetYear($gregorianDate)
 $shamsiMonth = $persianCalendar.GetMonth($gregorianDate)
 $shamsiDay = $persianCalendar.GetDayOfMonth($gregorianDate)
-
+<#
 $dataPanel = New-Object Windows.Forms.TableLayoutPanel
 $dataPanel.BorderStyle = "None"
 $dataPanel.add_paint({$whitePen = new-object System.Drawing.Pen([system.drawing.color]::white, 3)
 $_.graphics.drawrectangle($whitePen,$this.clientrectangle)
 })
+#>
 $calendar = New-Object Windows.Forms.MonthCalendar -Property @{
     ShowTodayCircle   = $false
     MaxSelectionCount = 1
@@ -445,6 +452,7 @@ $Mainform.MaximizeBox = $false
 $Secoform.FormBorderStyle = 'FixedDialog'
 $Secoform.MaximizeBox = $false
 #$Mainform.controls.add($Panel)
-
+Hide-Console
 [void]$Mainform.ShowDialog()
+
 #$Mainform.Dispose()

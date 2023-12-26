@@ -756,6 +756,8 @@ Try
     $EmailGV = New-Object System.Windows.Forms.DataGridView
     $EmailGV.Location = New-Object System.Drawing.size(80,115)
     $EmailGV.RowHeadersVisible = $True
+#    $EmailGV.rowh
+#    $EmailGV.DefaultCellStyle.flatstyle = 0
     $EmailGV.SelectionMode = 'FullRowSelect'
     $EmailGV.AllowUserToResizeColumns = $false
     $EmailGV.AllowUserToResizeRows = $false
@@ -775,12 +777,14 @@ Try
         $HeaderWidth = $HeaderWidth + $row3.SizeX
         $col.Width = $row3.SizeX
         $col.DefaultCellStyle.Alignment = $row3.Alignment
-    
+        
     
         If ($row3.Type -eq 'System.Windows.Forms.DataGridViewComboBoxColumn'){
             $col.DataSource = $DGVCBColumn
             $col.ValueMember = $row3.Name
             $col.DisplayMember = $row3.Name
+            $col.flatstyle = 0
+         
         }
     
         [void]$EmailGV.columns.Add($col)
