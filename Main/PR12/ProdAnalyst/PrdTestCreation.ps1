@@ -456,15 +456,15 @@ Try
                     $TGVRow.HeaderCell.Value = ($TGVRow.Index +1).ToString()
                     If ($TGVRow.cells[$intColToSum].Value -ne $null -and $TGVRow.cells[$intColToSum].Value -gt 0) 
                     {
-                        $intSum  = $intSum + [int]($TGVRow.cells[$intColToSum].Value) 
+                        $intSum  = $intSum + [single]($TGVRow.cells[$intColToSum].Value) 
                     }
                     If ($TGVRow.cells[$intColToCal].Value -ne $null -and $TGVRow.cells[$intColToCal].Value -gt 0) 
                     {
-                        $intCal  = $intCal + [int]($TGVRow.cells[$intColToCal].Value) 
+                        $intCal  = $intCal + [single]($TGVRow.cells[$intColToCal].Value) 
                     }
                 }
                 $TotPercentIB.Text = $intSum
-                $TotMlIB.Text = $intCal
+                $TotMlIB.Text = [math]::round($intCal,2)
                 If(Test-Path "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$imgFolder\$($NewFileNameLbl.Text)$($ImageExt)")
                     {
  #                       $imgFile = (Get-Item $dialog.FileName)
