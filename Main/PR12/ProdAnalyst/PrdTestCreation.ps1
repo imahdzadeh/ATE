@@ -1200,7 +1200,7 @@ Try
     $ImgFileAddbtn = New-Object system.Windows.Forms.Button
     $ImgFileAddbtn.Location = New-Object System.Drawing.Size(180,55) 
     $ImgFileAddbtn.BackColor = "#d2d4d6"
-    $ImgFileAddbtn.text = "اضافه کردن عکس"
+    $ImgFileAddbtn.text = "بارگذاری عکس"
     $ImgFileAddbtn.width = 100
     $ImgFileAddbtn.height = 25
     $ImgFileAddbtn.Font = 'Microsoft Sans Serif,10'
