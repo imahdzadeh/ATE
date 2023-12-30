@@ -1,4 +1,4 @@
-﻿Get-ChildItem D:\ATE\IT\Root\.git -file -Recurse -Force| foreach{
+﻿Get-ChildItem D:\ATE\IT\Root -file -Recurse -Force| foreach{
     If ($_.Name -eq "desktop.ini")
 
     {
