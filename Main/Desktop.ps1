@@ -46,6 +46,7 @@ $panel.AutoSize = $true
 
 
 $ReturnBtn                   = New-Object system.Windows.Forms.Button
+$ReturnBtn.Name = "Main"
 #$ReturnBtn.Anchor            = 'center'
 $ReturnBtn.BackColor         = "#d2d4d6"
 $ReturnBtn.text              = "بازگشت به صفحه اصلی"
@@ -57,7 +58,8 @@ $ReturnBtn.ForeColor         = "#000"
 $ReturnBtn.Add_Click({
     $Mainform.Close()
     $Mainform.Dispose()
-    & D:\ATE\IT\Root\Main\Main.ps1
+#    & D:\ATE\IT\Root\Main\Main.ps1
+& "$MainRoot\$($this.Name).ps1"
 }.GetNewClosure())
 
 
@@ -85,15 +87,36 @@ foreach ($item in $Array) {
 }
 #>
     $panel.Controls.Add($ReturnBtn)
-    New-Variable -Force -Name "button$test" -Value (New-Object System.Windows.Forms.Button)
-    $thisButton = Get-Variable -ValueOnly -Include "button$test"
-    $thisButton.Anchor = 'right'
-    $thisButton.Location = New-Object System.Drawing.Size(175,(35+26*$test))
-    $thisButton.Size = New-Object System.Drawing.Size(250,30)
-    $thisButton.Text = "ایجاد یا تغییر آزمایش برای محصولات جدید"
-    $thisButton.Add_Click({& $scriptpath}.GetNewClosure())
-    $panel.Controls.Add($thisButton)
-    
+    Get-ChildItem $MainRoot -Directory | foreach{
+        If (Test-Path "$($_.FullName)\$CongFolName\$($_.Name)$CSVFileExt" )
+        {
+            $ScriptCSV = Import-Csv "$($_.FullName)\$CongFolName\$($_.Name)$CSVFileExt"
+            Get-ChildItem $_.FullName -Directory | foreach{
+                $DepCodeFol = $_.Name
+                If ($_.Name -ne $ConfigFolName -and $_.name -ne $LogFolName)
+                {
+                    Get-ChildItem $_.FullName -File | foreach {
+                        $ScriptName = $_.Name
+                        $ScriptCSV | Where-Object {$_.ScriptName -match $ScriptName} | Foreach{
+                            New-Variable -Force -Name $ScriptName -Value (New-Object System.Windows.Forms.Button)
+                            $thisButton = Get-Variable -ValueOnly -Include $ScriptName
+                            $thisButton.Anchor = 'right'
+                            $thisButton.Name = $ScriptName
+                            $thisButton.Location = New-Object System.Drawing.Size(175,(35+26*$test))
+                            $thisButton.Size = New-Object System.Drawing.Size(250,30)
+                            $thisButton.Text = $_.PersianAlias
+                            $thisButton.Add_Click({
+                                $Mainform.Close()
+                                $Mainform.Dispose()          
+                                & "$MainRoot\$depCode\$DepCodeFol\$ScriptName"   
+                            }.GetNewClosure())
+                            $panel.Controls.Add($thisButton)    
+                        }
+                    }
+                }     
+            }
+        }
+    }
 #$Mainform.Controls.Add($Chatlabel)
 #$Mainform.Controls.Add($MainGB)
 #$panel.Controls.Add($MainGB)

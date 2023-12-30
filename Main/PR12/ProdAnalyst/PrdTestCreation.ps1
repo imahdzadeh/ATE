@@ -69,7 +69,7 @@ Try
     Function funSaveBtn {
         Try
         {
-            $strFileName = "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$FolderNameTests\$($NewFileNameLbl.Text)$($FileExt)"
+            $strFileName = "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$FolderNameTests\$($NewFileNameLbl.Text)$($CSVFileExt)"
             If(funSaveDupRowChk)
             {
                 If(funSaveEmpRowChk)
@@ -292,8 +292,8 @@ Try
                     $bolCHK = $false
                     $object2 = (Get-Content $_.FullName  | Where-Object { !$_.StartsWith("#") }) | ConvertFrom-Csv
                     Compare-Object $object1 $object2 -Property $ArrColToCompare | % {$bolCHK = $True} 
-                    If (($bolCHK -eq $false) -and ($_.Name -ne "$($NewFileNameLbl.Text)$($FileExt)")){
-                        $Global:strDupFileName = ($_.Name).TrimEnd($FileExt)
+                    If (($bolCHK -eq $false) -and ($_.Name -ne "$($NewFileNameLbl.Text)$($CSVFileExt)")){
+                        $Global:strDupFileName = ($_.Name).TrimEnd($CSVFileExt)
                         $bolReturn = $false
                     }      
                 }
@@ -355,7 +355,7 @@ Try
             $NewFileNameLbl.Text = ""
             $NewNameLbl.Visible = $false 
             $PRFFiles = Get-ChildItem -Path "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$FolderNameTests" -File | 
-            ForEach-Object{$_.Name.TrimEnd($FileExt)}
+            ForEach-Object{$_.Name.TrimEnd($CSVFileExt)}
             If ($PRFFiles -ne $null)
             {
                 $ProdLB.Items.AddRange($PRFFiles)
@@ -440,7 +440,7 @@ Try
             }
             Else
             {
-                Get-Content "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$FolderNameTests\$($ProdLB.SelectedItem)$fileExt" | 
+                Get-Content "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$FolderNameTests\$($ProdLB.SelectedItem)$CSVFileExt" | 
                 Where-Object { !$_.StartsWith("#") } | ConvertFrom-Csv | Foreach {
                     $row = $DGVDataTab.NewRow() 
                     foreach($column in $DGVDataTab.Columns)
@@ -605,11 +605,11 @@ Try
             gci "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$FolderNameTests" -file | Foreach{
                 If( $_.Name -match $RegExNoVar)
                 {
-                    $Strtest = "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$imgFolder\$(($_.Name).TrimEnd($FileExt))$($ImageExt)"
-                    If (Test-Path "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$imgFolder\$(($_.Name).TrimEnd($FileExt))$($ImageExt)")
+                    $Strtest = "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$imgFolder\$(($_.Name).TrimEnd($CSVFileExt))$($ImageExt)"
+                    If (Test-Path "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$imgFolder\$(($_.Name).TrimEnd($CSVFileExt))$($ImageExt)")
                     {
                         $DGVImage = [System.Drawing.Image]::FromFile(`
-                        "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$imgFolder\$(($_.Name).TrimEnd($FileExt))$($ImageExt)")
+                        "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$imgFolder\$(($_.Name).TrimEnd($CSVFileExt))$($ImageExt)")
                     }
                     Else
                     {
@@ -1228,6 +1228,23 @@ Try
         $_.graphics.drawrectangle($whitePen,$this.clientrectangle)
     })
 
+    $ReturnBtn                   = New-Object system.Windows.Forms.Button
+    $ReturnBtn.Location = New-Object System.Drawing.Size(5,10)
+    $ReturnBtn.Name = "Desktop"
+    #$ReturnBtn.Anchor            = 'center'
+    $ReturnBtn.BackColor         = "#d2d4d6"
+    $ReturnBtn.text              = "بازگشت به   > صفحه قبل"
+    $ReturnBtn.width             = 49
+    $ReturnBtn.height            = 70
+    $ReturnBtn.Font              = 'Microsoft Sans Serif,10'
+    $ReturnBtn.ForeColor         = "#000"
+    $ReturnBtn.Add_Click({
+        $SecoForm.Close()
+        $SecoForm.Dispose()
+    #    & D:\ATE\IT\Root\Main\Main.ps1
+    & "$MainRoot\$($this.Name).ps1"
+    }.GetNewClosure())
+
     $DesktopGB.Controls.Add($ImgFileRembtn)
     $DesktopGB.Controls.Add($ImageBx)
     $DesktopGB.Controls.Add($ImgFileAddbtn)
@@ -1252,6 +1269,7 @@ Try
     $DesktopGB.Controls.Add($PrjNameLB)
     $DesktopGB.Controls.Add($DesktopBtn)
     
+    $SecoForm.Controls.Add($ReturnBtn)
     $SecoForm.Controls.Add($SaveBtn)
     $SecoForm.Controls.Add($DesktopGB)
 

@@ -91,7 +91,7 @@ Catch
 }
 
 
-$img3 = [System.Drawing.Image]::Fromfile('C:\Users\Isar\Desktop\powershell\img3.png')
+#$img3 = [System.Drawing.Image]::Fromfile('C:\Users\Isar\Desktop\powershell\img3.png')
 $avatar = [System.Drawing.Image]::Fromfile('D:\ate\IT\Root\images\avatar.png')
 $GH = [System.Drawing.Image]::Fromfile('D:\ate\IT\Root\images\pop.png')
 
@@ -319,6 +319,7 @@ $ComposeBtn.Font              = 'Microsoft Sans Serif,10'
 $ComposeBtn.ForeColor         = "#000"
 
 $DesktopBtn                      = New-Object system.Windows.Forms.Button
+$DesktopBtn.Name = "Desktop"
 $DesktopBtn.Anchor            = 'right'
 $DesktopBtn.BackColor         = "#d2d4d6"
 $DesktopBtn.text              = "میز کار"
@@ -354,7 +355,8 @@ $Secoform.AutoScale = $false
 #>
 
 
-& D:\ATE\IT\Root\Main\Desktop.ps1
+#& D:\ATE\IT\Root\Main\Desktop.ps1
+& "$MainRoot\$($this.Name).ps1"
 })
 
 $MainPanel = New-Object System.Windows.Forms.TableLayoutPanel
