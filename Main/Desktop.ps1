@@ -88,9 +88,9 @@ foreach ($item in $Array) {
 #>
     $panel.Controls.Add($ReturnBtn)
     Get-ChildItem $MainRoot -Directory | foreach{
-        If (Test-Path "$($_.FullName)\$CongFolName\$($_.Name)$CSVFileExt" )
+        If (Test-Path "$($_.FullName)\$ConfigFolName\$($_.Name)$CSVFileExt" )
         {
-            $ScriptCSV = Import-Csv "$($_.FullName)\$CongFolName\$($_.Name)$CSVFileExt"
+            $ScriptCSV = Import-Csv "$($_.FullName)\$ConfigFolName\$($_.Name)$CSVFileExt"
             Get-ChildItem $_.FullName -Directory | foreach{
                 $DepCodeFol = $_.Name
                 If ($_.Name -ne $ConfigFolName -and $_.name -ne $LogFolName)
@@ -117,6 +117,8 @@ foreach ($item in $Array) {
             }
         }
     }
+
+
 #$Mainform.Controls.Add($Chatlabel)
 #$Mainform.Controls.Add($MainGB)
 #$panel.Controls.Add($MainGB)
