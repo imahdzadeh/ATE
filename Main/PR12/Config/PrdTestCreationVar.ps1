@@ -14,7 +14,6 @@ $ComRoot = "D:\ATE"
 #///////////////////////////////////////////////////////////////////////////////////
 $ConFolPRF = "PRF"
 $ConFolMAC = "MAC"
-$FileExt = ".csv"
 $ImageExt = ".png"
 $depCode = "PR12"
 $FolderNameTests = 'Tests' 

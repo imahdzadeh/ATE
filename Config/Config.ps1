@@ -3,6 +3,10 @@ Add-Type -AssemblyName System.Drawing
 Add-Type -AssemblyName PresentationCore,PresentationFramework
 $ComRoot= "D:\ATE"
 $ArchFolder = "Archive"
+$PSFileExten = ".ps1"
+$CSVFileExt = ".csv"
+$ConfigFolName = "Config"
+$LogFolName = "Log"
 $MainRoot= "$($ComRoot)\IT\Root\Main"
 $ProdRoot = "$($ComRoot)\Production\Projects"
 $confRoot = "$($ComRoot)\IT\Root\Config"
