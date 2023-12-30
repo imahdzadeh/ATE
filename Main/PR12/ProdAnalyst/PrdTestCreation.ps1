@@ -166,7 +166,7 @@ Try
                                 } 
                                 "$((Get-Date).ToString('MM/dd/yyyy hh:mm:ss tt'))`t $($PSCommandPath.Split('\') | 
                                 select -last 1)-SaveBtn`t $($OldRB.Text)`t $($NewFileNameLbl.Text) `t $Global:StrImageLast `t $([Environment]::UserName)" | 
-                                Out-File $UserLogPath -Append      
+                                Out-File $UserLogPath -Append -Force     
                             }
                             $SaveBtn.Enabled = $false
                             $EmailGV.DefaultCellStyle.BackColor = 'lightgreen'
