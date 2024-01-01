@@ -1,5 +1,5 @@
 ﻿# Created by Isar Mahdzadeh
-# Decmeber 12 2023
+# Decmeber 30 2023
 #
 # Below line temporary till we have AD and can sert env variable in login script
 $ComRoot = "D:\ATE"
@@ -44,8 +44,6 @@ $Secoform = New-Object Windows.Forms.Form -Property @{
     Text          =            $shamsiYear.ToString() + "/" + 
                                ($shamsiMonth = $persianCalendar.GetMonth($gregorianDate)) + "/" + 
                                ( $shamsiDay = $persianCalendar.GetDayOfMonth($gregorianDate)).ToString() + "`t`t`t`t`t`t`t`t`t`t" + "مهد پویان اطلس" 
-    Topmost       = $False
-    FormBorderStyle = 'FixedDialog'
-    MaximizeBox = $false
+    Topmost       = $true
 }
 #///////////////////////////////////////////////////////////////////////////////////

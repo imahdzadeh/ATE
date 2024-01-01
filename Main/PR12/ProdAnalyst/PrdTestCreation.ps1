@@ -2,9 +2,11 @@
 # Decmeber 12 2023
 #
 
-Try
-{
-    . "$(Split-Path $PSScriptRoot -Parent)\config\$(($PSCommandPath.Split('\') | select -last 1) -replace ('.ps1$','var.ps1'))"
+$Logging = $false
+
+#Try
+#{
+ . "$(Split-Path $PSScriptRoot -Parent)\$ConfigFolName\$(($PSCommandPath.Split('\') | select -last 1) -replace ("$PSFileExten$","$VarFileCont$PSFileExten"))"
 #    throw [System.IO.FileNotFoundException] "$file not found."
     $strDupFileName = $null
     $ProjNames = Get-ChildItem -Path $ProdRoot -Directory | ForEach-Object{$_.Name}
@@ -30,7 +32,6 @@ Try
         FileName = "Choose Folder"  
     }  
         
-
     $DGVCBColumn = New-Object system.Data.DataTable
     [void]$DGVCBColumn.Columns.Add($strCBPeopName)
 
@@ -479,9 +480,16 @@ Try
         }
         Catch
         {
-            "$((Get-Date).ToString('MM/dd/yyyy hh:mm tt'))`t $($PSCommandPath.Split('\') | 
-            select -last 1)-funShowInfo`t $_ `t$([Environment]::UserName)" | 
-            Out-File $ErrLogPath -Append 
+            If ($Logging)
+            {
+                "$((Get-Date).ToString('MM/dd/yyyy hh:mm tt'))`t $($PSCommandPath.Split('\') | 
+                select -last 1)-funShowInfo`t $_ `t$([Environment]::UserName)" | 
+                Out-File $ErrLogPath -Append
+            }
+            Else
+            {
+                throw $_
+            } 
         }
     }
 
@@ -725,7 +733,7 @@ Try
     $ListBoxtB.Text = 'sdfsdf'
 
     $DesktopBtn = New-Object system.Windows.Forms.Button
-    $DesktopBtn.Location = New-Object System.Drawing.Size(600,505) 
+    $DesktopBtn.Location = New-Object System.Drawing.Size(620,505) 
     $DesktopBtn.BackColor = "#d2d4d6"
     $DesktopBtn.text = "اجرای انتخابهای بالا"
     $DesktopBtn.width = 120
@@ -933,12 +941,20 @@ Try
                             }
                        }
             }
+            write-host "ssf"
         }
         Catch
         {
-            "$((Get-Date).ToString('MM/dd/yyyy hh:mm tt'))`t $($PSCommandPath.Split('\') | 
-            select -last 1)-ProdCatLB.Add_SelectedIndexChanged`t $_ `t$([Environment]::UserName)" | 
-            Out-File $ErrLogPath -Append  
+            If ($Logging)
+            {
+                "$((Get-Date).ToString('MM/dd/yyyy hh:mm tt'))`t $($PSCommandPath.Split('\') | 
+                select -last 1)-ProdCatLB.Add_SelectedIndexChanged`t $_ `t$([Environment]::UserName)" | 
+                Out-File $ErrLogPath -Append
+            }
+            Else
+            {
+                throw $_
+            }      
         }
     })
 
@@ -1139,7 +1155,7 @@ Try
     $RBGroup.Controls.Add($ProdLB)
 
     $CancelBtn = New-Object system.Windows.Forms.Button
-    $CancelBtn.Location = New-Object System.Drawing.Size(225,505) 
+    $CancelBtn.Location = New-Object System.Drawing.Size(175,505) 
     $CancelBtn.BackColor = "#d2d4d6"
     $CancelBtn.text = "انصراف"
     $CancelBtn.width = 120
@@ -1153,7 +1169,7 @@ Try
     })
 
     $SaveBtn = New-Object system.Windows.Forms.Button
-    $SaveBtn.Location = New-Object System.Drawing.Size(100,505) 
+    $SaveBtn.Location = New-Object System.Drawing.Size(50,505) 
     $SaveBtn.BackColor = "#d2d4d6"
     $SaveBtn.text = "ذخیره"
     $SaveBtn.width = 120
@@ -1164,7 +1180,7 @@ Try
     $SaveBtn.Add_Click({funSaveBtn})
 
     $NewBtn = New-Object system.Windows.Forms.Button
-    $NewBtn.Location = New-Object System.Drawing.Size(470,505) 
+    $NewBtn.Location = New-Object System.Drawing.Size(495,505) 
     $NewBtn.BackColor = "#d2d4d6"
     $NewBtn.text = "جدید"
     $NewBtn.width = 120
@@ -1285,10 +1301,10 @@ Try
         else {$_.SuppressKeyPress = $False}
         })
     #>
-}
-Catch
-{ 
-    "$((Get-Date).ToString('MM/dd/yyyy hh:mm tt'))`t $($PSCommandPath.Split('\') | 
-    select -last 1)-Main`t $_ `t$([Environment]::UserName)" | 
-    Out-File $ErrLogPath -Append 
-}
+#}
+#Catch
+#{ 
+#    "$((Get-Date).ToString('MM/dd/yyyy hh:mm tt'))`t $($PSCommandPath.Split('\') | 
+#    select -last 1)-Main`t $_ `t$([Environment]::UserName)" | 
+ #   Out-File $ErrLogPath -Append 
+#}

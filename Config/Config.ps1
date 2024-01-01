@@ -4,6 +4,7 @@ Add-Type -AssemblyName PresentationCore,PresentationFramework
 $ComRoot= "D:\ATE"
 $ArchFolder = "Archive"
 $PSFileExten = ".ps1"
+$VarFileCont = "Var"
 $CSVFileExt = ".csv"
 $LogFileExt = ".log"
 $ConfigFolName = "Config"
@@ -21,3 +22,4 @@ $gregorianDate = [System.TimeZoneInfo]::ConvertTimeBySystemTimeZoneId([DateTime]
 $shamsiYear = $persianCalendar.GetYear($gregorianDate)
 $shamsiMonth = $persianCalendar.GetMonth($gregorianDate)
 $shamsiDay = $persianCalendar.GetDayOfMonth($gregorianDate)
+$Icon = New-Object system.drawing.icon ("D:\ATE\IT\Root\Main\favicon.ico")

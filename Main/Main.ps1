@@ -451,9 +451,11 @@ $Mainform.controls.Add($tableLayoutPanel2)
 #$Mainform.controls.add($tableLayoutPanel2)
 $Mainform.FormBorderStyle = 'FixedDialog'
 $Mainform.MaximizeBox = $false
+$Mainform.Icon = $Icon
 $Secoform.FormBorderStyle = 'FixedDialog'
 $Secoform.MaximizeBox = $false
 #$Mainform.controls.add($Panel)
+Start-Sleep -m 500
 Hide-Console
 [void]$Mainform.ShowDialog()
 
