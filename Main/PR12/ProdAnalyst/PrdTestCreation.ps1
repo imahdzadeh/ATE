@@ -860,10 +860,6 @@ Try
         $e.Graphics.DrawString($s.Items[$e.Index], $e.Font, [System.Drawing.SystemBrushes]::ControlText, $e.Bounds.Left+10, $e.Bounds.Top, [System.Drawing.StringFormat]::GenericDefault)          
     }
 
-    Function funEmailGVFill {
-
-    }
-
     $ListBoxCB = New-Object System.Windows.Forms.CheckBox
     $ListBoxCB.Text = 'sdfsdf'
     $ListBoxtB = New-Object System.Windows.Forms.TextBox
