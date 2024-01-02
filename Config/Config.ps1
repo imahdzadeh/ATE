@@ -1,4 +1,4 @@
-Add-Type -AssemblyName System.Windows.Forms
+﻿Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 Add-Type -AssemblyName PresentationCore,PresentationFramework
 $ComRoot= "D:\ATE"
@@ -11,6 +11,10 @@ $ConfigFolName = "Config"
 $LogFolName = "Log"
 $UserFolName = "User"
 $ErrFolName = "Err"
+$CommentCar = "#"
+$CSVDelimiter = ','
+$strCreated = 'جدید'
+$strChanged = 'ویرایش'
 $MainRoot= "$($ComRoot)\IT\Root\Main"
 $ProdRoot = "$($ComRoot)\Production\Projects"
 $confRoot = "$($ComRoot)\IT\Root\Config"

@@ -20,6 +20,7 @@ $FolderNameTests = 'Tests'
 $strCBPeopName = 'Material Code'
 $imgFolder = "img"
 $StrImageLast = ""
+
 $MatCodeFol = $strCBPeopName
 $intColToCal = 2
 $intColToSum = 1
@@ -32,8 +33,9 @@ $ArrColToCompare = @('Material code','ratio %','Weight ml' )
 #$RegExNoneCo= "^[a-zA-Z0-9.,$;]*$"
 $RegExNoneCo = "'^.*(?:\r?\n)?'"
 $RegExComment= "#$_"
-$ExtrInfoArr = @('Latest Change','Date','Analyst')
+
 $ShowFrmArr = @('عکس','شماره','توضیحات','وضعیت','تاریخ')
+
 $strComLine = $("#" * 20)
 $CommentCar = "#"
 $UserLogPath ="$MainRoot\$depCode\$LogFolName\$UserFolName\$((Get-Date).ToString('MMMyy'))$LogFileExt" 

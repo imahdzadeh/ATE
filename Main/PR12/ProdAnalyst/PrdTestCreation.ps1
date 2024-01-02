@@ -2,11 +2,9 @@
 # Decmeber 12 2023
 #
 
-$Logging = $false
-
-#Try
-#{
- . "$(Split-Path $PSScriptRoot -Parent)\$ConfigFolName\$(($PSCommandPath.Split('\') | select -last 1) -replace ("$PSFileExten$","$VarFileCont$PSFileExten"))"
+Try
+{
+ . "$(Split-Path $PSScriptRoot -Parent)\Config\$(($PSCommandPath.Split('\') | select -last 1) -replace (".ps1$","var.ps1"))"
 #    throw [System.IO.FileNotFoundException] "$file not found."
     $strDupFileName = $null
     $ProjNames = Get-ChildItem -Path $ProdRoot -Directory | ForEach-Object{$_.Name}
@@ -17,7 +15,7 @@ $Logging = $false
       } | Select-Object *, @{ n = "IntVal"; e = {[int]($_)}} | Sort-Object IntVal | Select-Object -Last 1
 
     $DGVCBInfoCol = @()
-    (Get-Content "$confRoot\$ConFolPRF\$ConFolPRF$($DGVCBInfoVer.IntVal)" | select -First 1) -split "," | foreach {
+    (Get-Content "$confRoot\$ConFolPRF\$ConFolPRF$($DGVCBInfoVer.IntVal)" | select -First 1) -split $CSVDelimiter | foreach {
     $DGVCBInfoCol += $_
     $col2 = New-Object System.Data.DataColumn
     $col2.DataType = [string]
@@ -25,12 +23,14 @@ $Logging = $false
     $DGVCBInfo.Columns.Add($col2)
     }
 
+    <#
     $folderselection = New-Object System.Windows.Forms.OpenFileDialog -Property @{  
         InitialDirectory = [Environment]::GetFolderPath('Desktop')  
         CheckFileExists = 0  
         ValidateNames = 0  
         FileName = "Choose Folder"  
-    }  
+    } 
+    #> 
         
     $DGVCBColumn = New-Object system.Data.DataTable
     [void]$DGVCBColumn.Columns.Add($strCBPeopName)
@@ -96,7 +96,7 @@ $Logging = $false
                                         }
                                         Else
                                         {
-                                            "$( ($_.Cells | % {$_.Value}) -join ','),$strCreated,$((Get-Date).ToString('MM/dd/yyyy hh:mm tt')),$([Environment]::UserName)".Trim() | 
+                                            "$( ($_.Cells | % {$_.Value}) -join ','),$strCreated,$((Get-Date).ToString('MM/dd/yyyy hh:mm tt')),$([Environment]::UserName),NA,NA".Trim() | 
                                             Out-file $strFileName -Append   
                                         }
                                 
@@ -140,7 +140,7 @@ $Logging = $false
                                     }
                                     Else
                                     {
-                                        "$( ($_.Cells | % {$_.Value}) -join ','),$strChanged,$((Get-Date).ToString('MM/dd/yyyy hh:mm tt')),$([Environment]::UserName)".Trim() | 
+                                        "$( ($_.Cells | % {$_.Value}) -join ','),$strChanged,$((Get-Date).ToString('MM/dd/yyyy hh:mm tt')),$([Environment]::UserName),NA,NA".Trim() | 
                                         Out-file $strFileName -Append
                                     }                                  
                                 }
@@ -494,8 +494,8 @@ $Logging = $false
     }
 
     Function funShowMAC{
-        Try
-        {
+ #       Try
+ #       {
             $ShowMACfrm = New-Object System.Windows.Forms.Form
             $ShowMACfrm.Size = New-Object System.Drawing.Size(400,600)
             $ShowMACfrm.Text = "لیست مواد اولیه"
@@ -530,25 +530,39 @@ $Logging = $false
             gci "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$($MatCodeFol)" -file | Foreach{
                 If( $_.Name -match $RegExMAC)
                 {
-                    $objDTV += Import-Csv $_.FullName
+                    
+ #                   $objDTV += Import-Csv $_.FullName | Select-Object -ExcludeProperty ($_ -split ',')[$ShowPRFfrmStartCol..$ShowPRFfrmEndCol]
+ #                    $objDTV += Import-Csv $_.FullName | Select -ExpandProperty "name"
+                     $objDTV += Import-Csv $_.FullName | Select * -ExcludeProperty ($ExtrInfoArr -split $CSVDelimiter)
+                    
                 }
             }
             $result= new-object System.Collections.ArrayList 
             If ($objDTV -ne $null)
             {
                 $result.AddRange($objDTV)     
-                $ShowMACDGV.DataSource = $result
+               $ShowMACDGV.DataSource = $result
             }
 
             $ShowMACfrm.Controls.Add($ShowMACDGV)
             $ShowMACfrm.Show()
+<#
         }
+
         Catch
         {
-            "$((Get-Date).ToString('MM/dd/yyyy hh:mm tt'))`t $($PSCommandPath.Split('\') | 
-            select -last 1)-funShowMAC`t $_ `t$([Environment]::UserName)" | 
-            Out-File $ErrLogPath -Append 
+            If($Logging)
+            {
+                "$((Get-Date).ToString('MM/dd/yyyy hh:mm tt'))`t $($PSCommandPath.Split('\') | 
+                select -last 1)-funShowMAC`t $_ `t$([Environment]::UserName)" | 
+                Out-File $ErrLogPath -Append
+            }
+            Else
+            {
+                throw $_
+            } 
         }
+#>
     }
 
     Function funShowPRF{
@@ -591,7 +605,7 @@ $Logging = $false
             $intiterate
             foreach($objShowFrmArr in $ShowFrmArr)
             {
-                If($objShowFrmArr -ne 'عکس')
+                If($objShowFrmArr -ne $ImgColName)
                 {
                     $Column = New-Object System.Windows.Forms.DataGridViewTextBoxColumn 
                                      
@@ -627,10 +641,13 @@ $Logging = $false
                     $intIterateRow = $intIterateRow + 1
                     $FileName = $_.Name
                     Get-Content $_.FullName | select -Skip 1 | % {
-                        $intIterate = $intIterate + 1
-                        If($intIterate -eq 1)
+                        If(!$_.StartsWith("#"))
                         {
-                            $ShowPRFDGV.rows.Add((, $DGVImage +(,$FileName +($_ -split ',')[3..5])))                           
+                            $intIterate = $intIterate + 1
+                            If($intIterate -eq 1)
+                            {
+                                $ShowPRFDGV.rows.Add((, $DGVImage +(,$FileName +($_ -split $CSVDelimiter)[$ShowPRFfrmStartCol..$ShowPRFfrmEndCol])))                           
+                            }
                         }
                     }
                 }
@@ -941,7 +958,6 @@ $Logging = $false
                             }
                        }
             }
-            write-host "ssf"
         }
         Catch
         {
@@ -1301,10 +1317,10 @@ $Logging = $false
         else {$_.SuppressKeyPress = $False}
         })
     #>
-#}
-#Catch
-#{ 
-#    "$((Get-Date).ToString('MM/dd/yyyy hh:mm tt'))`t $($PSCommandPath.Split('\') | 
-#    select -last 1)-Main`t $_ `t$([Environment]::UserName)" | 
- #   Out-File $ErrLogPath -Append 
-#}
+}
+Catch
+{ 
+    "$((Get-Date).ToString('MM/dd/yyyy hh:mm tt'))`t $($PSCommandPath.Split('\') | 
+    select -last 1)-Main`t $_ `t$([Environment]::UserName)" | 
+    Out-File $ErrLogPath -Append 
+}
