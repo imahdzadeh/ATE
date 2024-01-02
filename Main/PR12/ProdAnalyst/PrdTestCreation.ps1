@@ -22,16 +22,7 @@ Try
     $col2.ColumnName = $_
     $DGVCBInfo.Columns.Add($col2)
     }
-
-    <#
-    $folderselection = New-Object System.Windows.Forms.OpenFileDialog -Property @{  
-        InitialDirectory = [Environment]::GetFolderPath('Desktop')  
-        CheckFileExists = 0  
-        ValidateNames = 0  
-        FileName = "Choose Folder"  
-    } 
-    #> 
-        
+   
     $DGVCBColumn = New-Object system.Data.DataTable
     [void]$DGVCBColumn.Columns.Add($strCBPeopName)
 
@@ -44,8 +35,7 @@ Try
     }
 
     $SecoForm.Add_Closing({param($sender,$e)
-        $ImageBx.Dispose()
-    
+        $ImageBx.Dispose()   
     })
 
     Function funPrjNameLB {
@@ -732,109 +722,41 @@ Try
             Out-File $ErrLogPath -Append 
         }        
     }
-<#
-    $ProdLB = New-Object System.Windows.Forms.ListBox
-    $ProdLB.Location = New-Object System.Drawing.Point(50,100)
-    $ProdLB.Size = New-Object System.Drawing.Size(700,400)
-    $ProdLB.Height = 400
-    $ProdLB.FormattingEnabled = $True
-    $ProdLB.BackColor = 'red'
-    $ProdLB.TabIndex = 4
-    $ProdLB.DrawMode = [System.Windows.Forms.DrawMode]::OwnerDrawFixed
-    $ProdLB.DataBindings.DefaultDataSourceUpdateMode = 0
-    $ProdLB.ItemHeight = 20
-#>
-    $ListBoxCB = New-Object System.Windows.Forms.CheckBox
-    $ListBoxCB.Text = 'sdfsdf'
-    $ListBoxtB = New-Object System.Windows.Forms.TextBox
-    $ListBoxtB.Text = 'sdfsdf'
 
-    $DesktopBtn = New-Object system.Windows.Forms.Button
-    $DesktopBtn.Location = New-Object System.Drawing.Size(620,505) 
-    $DesktopBtn.BackColor = "#d2d4d6"
-    $DesktopBtn.text = "اجرای انتخابهای بالا"
-    $DesktopBtn.width = 120
-    $DesktopBtn.height = 35
-    $DesktopBtn.Font = 'Microsoft Sans Serif,10'
-    $DesktopBtn.ForeColor = "#000"
-    $DesktopBtn.Enabled = $false
-    $DesktopBtn.Add_Click({
-        $DesktopBtn.Enabled = $false
-        funShowInfo
-    })
-
-    $PrjNameLB = $null
-    $PrjNameLB = New-Object System.Windows.Forms.Combobox 
-    $PrjNameLB.Location = New-Object System.Drawing.Size(650,40) 
-    $PrjNameLB.Size = New-Object System.Drawing.Size(100,20) 
-    $PrjNameLB.Height = 70
-    $PrjNameLB.AutoCompleteSource = 'ListItems'
-    $PrjNameLB.AutoCompleteMode = 'Append'
-
-    $PrjNameLB.Items.AddRange($ProjNames)
-    $PrjNameLB.Add_SelectedIndexChanged({
-        funPrjNameLB
-        funDisAllCB 
-    })
-
-    $EmailGV = $null
-    $EmailGV = New-Object System.Windows.Forms.DataGridView
-    $EmailGV.Location = New-Object System.Drawing.size(80,115)
-    $EmailGV.RowHeadersVisible = $True
-#    $EmailGV.rowh
-#    $EmailGV.DefaultCellStyle.flatstyle = 0
-    $EmailGV.SelectionMode = 'FullRowSelect'
-    $EmailGV.AllowUserToResizeColumns = $false
-    $EmailGV.AllowUserToResizeRows = $false
-
-    $HeaderWidth = 0
-    $DGVDataTab = New-Object system.Data.DataTable
-
-    foreach($row3 in $DGVCBInfo){
-        $colDT = New-Object System.Data.DataColumn
-        $colDT.DataType = [string]
-        $colDT.ColumnName = $row3.Name
-        $DGVDataTab.Columns.Add($colDT)
-        $col = New-Object $row3.Type
-        $col.HeaderText = $row3.Name
-        $col.Name = $row3.Name
-        $col.DataPropertyName = $row3.Name
-        $HeaderWidth = $HeaderWidth + $row3.SizeX
-        $col.Width = $row3.SizeX
-        $col.DefaultCellStyle.Alignment = $row3.Alignment
-        
-    
-        If ($row3.Type -eq 'System.Windows.Forms.DataGridViewComboBoxColumn'){
-            $col.DataSource = $DGVCBColumn
-            $col.ValueMember = $row3.Name
-            $col.DisplayMember = $row3.Name
-            $col.flatstyle = 0
-         
+    Function ProdCatLBSelectedIndexChanged{   
+            Try
+        {
+            $NewRB.Enabled = $true
+            $OldRB.Enabled = $true
+            $RBGroup.Enabled = $true
+            $ShowMACbtn.Enabled = $true
+            $ShowPRFbtn.Enabled = $true
+            $DGVCBColumn.Rows.Clear()
+            gci "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$($MatCodeFol)" -file | Foreach{
+                       If( $_.Name -match $RegExMAC)
+                       {
+                            Get-Content $_.FullName | ConvertFrom-Csv  |Select -ExpandProperty $strCBPeopName | foreach {
+                                [void]$DGVCBColumn.Rows.Add($_)
+                            }
+                       }
+            }
         }
-    
-        [void]$EmailGV.columns.Add($col)
+        Catch
+        {
+            If ($Logging)
+            {
+                "$((Get-Date).ToString('MM/dd/yyyy hh:mm tt'))`t $($PSCommandPath.Split('\') | 
+                select -last 1)-ProdCatLB.Add_SelectedIndexChanged`t $_ `t$([Environment]::UserName)" | 
+                Out-File $ErrLogPath -Append
+            }
+            Else
+            {
+                throw $_
+            }      
+        }            
     }
 
-    $HeaderWidth = $HeaderWidth + 52
-    $EmailGV.Size=New-Object System.Drawing.Size($HeaderWidth,350)
-    $EmailGV.AllowUserToDeleteRows = $false
-    $EmailGV.AllowUserToAddRows = $true
-    $EmailGV.ReadOnly = $false
-    $EmailGV.ColumnHeadersDefaultCellStyle.Alignment = [System.Drawing.ContentAlignment]::MiddleCenter
-    #$EmailGV.DefaultCellStyle.Alignment = [System.Drawing.ContentAlignment]::bottomLeft
-    $EmailGV.AllowUserToOrderColumns = $false
-    $EmailGV.RowHeadersWidthSizeMode = 1
-    #$EmailGV.AutoSizeRowsMode = $false
-    $EmailGV.ColumnHeadersHeightSizeMode = 1
-    $EmailGV.EnableHeadersVisualStyles = $false
-    #$EmailGV.DefaultCellStyle.SelectionBackColor= $EmailGV.DefaultCellStyle.BackColor
-    #$EmailGV.DefaultCellStyle.SelectionForeColor= $EmailGV.DefaultCellStyle.ForeColor
-    $EmailGV.ColumnHeadersDefaultCellStyle.SelectionBackColor='window'
-    #$EmailGV.AutoSizeRowsMode = $false
-    $EmailGV.ColumnHeadersHeightSizeMode = 1
-    $EmailGV.RowHeadersDefaultCellStyle.Alignment = [System.Drawing.ContentAlignment]::MiddleLeft
-    $EmailGV.RowHeadersWidth = 50
-    $EmailGV.Add_CellValueChanged{
+    Function EmailGVCellValueChanged{
         Try
         {
             $intSum = 0
@@ -924,7 +846,109 @@ Try
             "$((Get-Date).ToString('MM/dd/yyyy hh:mm tt'))`t $($PSCommandPath.Split('\') | 
             select -last 1)-EmailGV.Add_CellValueChanged`t $_ `t$([Environment]::UserName)" | 
             Out-File $ErrLogPath -Append  
-        }    
+        }          
+    }
+
+    Function ProdLBDrawItem($s,$e){       
+        If ($s.Items.Count -eq 0) {return}
+        If(Test-Path "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$imgFolder\$($s.Items[$e.Index])$($ImageExt)")
+            {
+                $Global:img = [System.Drawing.Image]::Fromfile("$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$imgFolder\$($s.Items[$e.Index])$($ImageExt)");
+                $e.Graphics.DrawImage($Global:img,0,$e.Bounds.Y+2.5,10,10)
+                $Global:img.Dispose()
+            }             
+        $e.Graphics.DrawString($s.Items[$e.Index], $e.Font, [System.Drawing.SystemBrushes]::ControlText, $e.Bounds.Left+10, $e.Bounds.Top, [System.Drawing.StringFormat]::GenericDefault)          
+    }
+
+    Function funEmailGVFill {
+
+    }
+
+    $ListBoxCB = New-Object System.Windows.Forms.CheckBox
+    $ListBoxCB.Text = 'sdfsdf'
+    $ListBoxtB = New-Object System.Windows.Forms.TextBox
+    $ListBoxtB.Text = 'sdfsdf'
+
+    $DesktopBtn = New-Object system.Windows.Forms.Button
+    $DesktopBtn.Location = New-Object System.Drawing.Size(620,505) 
+    $DesktopBtn.BackColor = "#d2d4d6"
+    $DesktopBtn.text = "اجرای انتخابهای بالا"
+    $DesktopBtn.width = 120
+    $DesktopBtn.height = 35
+    $DesktopBtn.Font = 'Microsoft Sans Serif,10'
+    $DesktopBtn.ForeColor = "#000"
+    $DesktopBtn.Enabled = $false
+    $DesktopBtn.Add_Click({
+        $DesktopBtn.Enabled = $false
+        funShowInfo
+    })
+
+    $PrjNameLB = $null
+    $PrjNameLB = New-Object System.Windows.Forms.Combobox 
+    $PrjNameLB.Location = New-Object System.Drawing.Size(650,40) 
+    $PrjNameLB.Size = New-Object System.Drawing.Size(100,20) 
+    $PrjNameLB.Height = 70
+    $PrjNameLB.AutoCompleteSource = 'ListItems'
+    $PrjNameLB.AutoCompleteMode = 'Append'
+
+    $PrjNameLB.Items.AddRange($ProjNames)
+    $PrjNameLB.Add_SelectedIndexChanged({
+        funPrjNameLB
+        funDisAllCB 
+    })
+
+    $EmailGV = $null
+    $EmailGV = New-Object System.Windows.Forms.DataGridView
+    $EmailGV.Location = New-Object System.Drawing.size(80,115)
+    $EmailGV.RowHeadersVisible = $True
+#    $EmailGV.rowh
+#    $EmailGV.DefaultCellStyle.flatstyle = 0
+    $EmailGV.SelectionMode = 'FullRowSelect'
+    $EmailGV.AllowUserToResizeColumns = $false
+    $EmailGV.AllowUserToResizeRows = $false
+    $HeaderWidth = 0
+    $DGVDataTab = New-Object system.Data.DataTable
+    foreach($row3 in $DGVCBInfo){
+        $colDT = New-Object System.Data.DataColumn
+        $colDT.DataType = [string]
+        $colDT.ColumnName = $row3.Name
+        $DGVDataTab.Columns.Add($colDT)
+        $col = New-Object $row3.Type
+        $col.HeaderText = $row3.Name
+        $col.Name = $row3.Name
+        $col.DataPropertyName = $row3.Name
+        $HeaderWidth = $HeaderWidth + $row3.SizeX
+        $col.Width = $row3.SizeX
+        $col.DefaultCellStyle.Alignment = $row3.Alignment      
+        If ($row3.Type -eq 'System.Windows.Forms.DataGridViewComboBoxColumn'){
+            $col.DataSource = $DGVCBColumn
+            $col.ValueMember = $row3.Name
+            $col.DisplayMember = $row3.Name
+            $col.flatstyle = 0        
+        }   
+        [void]$EmailGV.columns.Add($col)
+    }
+    $HeaderWidth = $HeaderWidth + 52
+    $EmailGV.Size=New-Object System.Drawing.Size($HeaderWidth,350)
+    $EmailGV.AllowUserToDeleteRows = $false
+    $EmailGV.AllowUserToAddRows = $true
+    $EmailGV.ReadOnly = $false
+    $EmailGV.ColumnHeadersDefaultCellStyle.Alignment = [System.Drawing.ContentAlignment]::MiddleCenter
+    #$EmailGV.DefaultCellStyle.Alignment = [System.Drawing.ContentAlignment]::bottomLeft
+    $EmailGV.AllowUserToOrderColumns = $false
+    $EmailGV.RowHeadersWidthSizeMode = 1
+    #$EmailGV.AutoSizeRowsMode = $false
+    $EmailGV.ColumnHeadersHeightSizeMode = 1
+    $EmailGV.EnableHeadersVisualStyles = $false
+    #$EmailGV.DefaultCellStyle.SelectionBackColor= $EmailGV.DefaultCellStyle.BackColor
+    #$EmailGV.DefaultCellStyle.SelectionForeColor= $EmailGV.DefaultCellStyle.ForeColor
+    $EmailGV.ColumnHeadersDefaultCellStyle.SelectionBackColor='window'
+    #$EmailGV.AutoSizeRowsMode = $false
+    $EmailGV.ColumnHeadersHeightSizeMode = 1
+    $EmailGV.RowHeadersDefaultCellStyle.Alignment = [System.Drawing.ContentAlignment]::MiddleLeft
+    $EmailGV.RowHeadersWidth = 50
+    $EmailGV.Add_CellValueChanged{
+        EmailGVCellValueChanged
     }
     foreach ($datagridviewcolumn in $EmailGV.columns) {
         $datagridviewcolumn.sortmode = 0
@@ -942,36 +966,7 @@ Try
     $ProdCatLB.AutoCompleteMode = 'Append'
     $ProdCatLB.Enabled = $false
     $ProdCatLB.Add_SelectedIndexChanged({
-        Try
-        {
-            $NewRB.Enabled = $true
-            $OldRB.Enabled = $true
-            $RBGroup.Enabled = $true
-            $ShowMACbtn.Enabled = $true
-            $ShowPRFbtn.Enabled = $true
-            $DGVCBColumn.Rows.Clear()
-            gci "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$($MatCodeFol)" -file | Foreach{
-                       If( $_.Name -match $RegExMAC)
-                       {
-                            Get-Content $_.FullName | ConvertFrom-Csv  |Select -ExpandProperty $strCBPeopName | foreach {
-                                [void]$DGVCBColumn.Rows.Add($_)
-                            }
-                       }
-            }
-        }
-        Catch
-        {
-            If ($Logging)
-            {
-                "$((Get-Date).ToString('MM/dd/yyyy hh:mm tt'))`t $($PSCommandPath.Split('\') | 
-                select -last 1)-ProdCatLB.Add_SelectedIndexChanged`t $_ `t$([Environment]::UserName)" | 
-                Out-File $ErrLogPath -Append
-            }
-            Else
-            {
-                throw $_
-            }      
-        }
+        ProdCatLBSelectedIndexChanged
     })
 
     $ProjLbl = New-Object System.Windows.Forms.label
@@ -1031,21 +1026,12 @@ Try
     $TotPercentIB.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 9, [System.Drawing.FontStyle]::Bold)
     $TotPercentIB.Visible = $flase
     $TotPercentIB.add_TextChanged({
-        If ($TotPercentIB.text -eq 100)
-        {
-           $TotPercentIB.BackColor = 'lightgreen' 
-        }
-        Else
-        {
-             $TotPercentIB.BackColor = ''
-        }
-    
+        If ($TotPercentIB.text -eq 100){$TotPercentIB.BackColor = 'lightgreen'}Else{$TotPercentIB.BackColor = ''}
     })
 
     $tooltip = New-Object System.Windows.Forms.ToolTip
     $tooltip.InitialDelay = 100 
     $tooltip.ReshowDelay = 100 
-
 
     $TotMlIB = New-Object System.Windows.Forms.TextBox
     $TotMlIB.Location = New-Object System.Drawing.size(345,469)
@@ -1056,8 +1042,7 @@ Try
     $TotMlIB.Visible = $true
     $TotMlIB.TextAlign= 'Center'
     $TotMlIB.Enabled = $false
-    $TotMlIB.Add_KeyDown({
-       
+    $TotMlIB.Add_KeyDown({      
         if ($_.KeyCode -eq [System.Windows.Forms.Keys]::Enter) {     
             $_.SuppressKeyPress = $True
         }
@@ -1070,14 +1055,7 @@ Try
         }
     })
     $TotMlIB.Add_lostfocus({
-    If ($TotMlIB.Text -match '\D'){
-            $TotMlIB.BackColor = 'red' 
-        }
-        Else
-        {
-            $TotMlIB.BackColor = '' 
-        }
-
+        If ($TotMlIB.Text -match '\D'){$TotMlIB.BackColor = 'red'}Else{$TotMlIB.BackColor = ''}
     })
 
     $GBLbl = New-Object System.Windows.Forms.label
@@ -1099,7 +1077,7 @@ Try
     $OldRB.Text = "تغییر آزمایش موجود"
     $OldRB.Enabled = $false 
     $OldRB.Add_Click({
-    funOLDRBClick
+        funOLDRBClick
     })
     $OldRB.TextAlign=[System.Drawing.ContentAlignment]::bottomright
     #$NeworOldRB.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 9, [System.Drawing.FontStyle]::Bold)
@@ -1111,7 +1089,7 @@ Try
     $NewRB.Enabled = $false
     $NewRB.Text = "ایجاد آزمایش جدید" 
     $NewRB.Add_Click({
-    funNEWRBClick
+        funNEWRBClick
     })
     $NewRB.TextAlign=[System.Drawing.ContentAlignment]::bottomright
 
@@ -1123,41 +1101,12 @@ Try
     #$ProdLB.Text = 200
     $ProdLB.Enabled = $false
     $ProdLB.DrawMode = [System.Windows.Forms.DrawMode]::OwnerDrawFixed
-    $ProdLB.add_DrawItem({
-    
+    $ProdLB.add_DrawItem({ 
         param([System.Object]$s, [System.Windows.Forms.DrawItemEventArgs]$e)
-        if ($s.Items.Count -eq 0) {return}
-
-        If(Test-Path "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$imgFolder\$($s.Items[$e.Index])$($ImageExt)")
-            {
-#                       $imgFile = (Get-Item $dialog.FileName)
-                $Global:img = [System.Drawing.Image]::Fromfile("$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$imgFolder\$($s.Items[$e.Index])$($ImageExt)");
-                $e.Graphics.DrawImage($Global:img,0,$e.Bounds.Y+2.5,10,10)
-                $Global:img.Dispose()
-            } 
-             
-        #Suppose item de type String
-#        $Graphics = $e.Graphics
-#        $Rectangle = $e.Bounds
- #       $e.DrawBackground()
-#       if ($e.Index -ge 0) {
-#            $Name = ([System.Windows.Forms.ComboBox]$s).Items[$e.Index].ToString()
-#            $Font = [System.Drawing.Font]::new("Arial", 10, [System.Drawing.FontStyle]::Regular)
-#            $Color = [System.Drawing.Color]::FromName($Name)
-#            $Brush = [System.Drawing.SolidBrush]::new($Color)
-            # Can uncomment this if you do not want the background highlighted when hovering over item.
-            # $Graphics.TextRenderingHint = [System.Drawing.Text.TextRenderingHint]::AntiAliasGridFit
-#            $Graphics.DrawString($Name, $Font, [System.Drawing.Brushes]::Black, $Rectangle.X, $Rectangle.Top)
-#            $Graphics.FillRectangle($Brush, $Rectangle.X + 110, $Rectangle.Y + 5, $Rectangle.Width -10, $Rectangle.Height -10)
-        
-            # Dispose of disposable objects
- #           $Brush.Dispose()
-  #      }
-        $e.Graphics.DrawString($s.Items[$e.Index], $e.Font, [System.Drawing.SystemBrushes]::ControlText, $e.Bounds.Left+10, $e.Bounds.Top, [System.Drawing.StringFormat]::GenericDefault)
-        
+        ProdLBDrawItem $s $e
     })
-    $ProdLB.Add_SelectedIndexChanged({
-      
+
+    $ProdLB.Add_SelectedIndexChanged({     
         $DesktopBtn.Enabled = $True  
     })
 
@@ -1273,7 +1222,6 @@ Try
     $ReturnBtn.Add_Click({
         $SecoForm.Close()
         $SecoForm.Dispose()
-    #    & D:\ATE\IT\Root\Main\Main.ps1
     & "$MainRoot\$($this.Name).ps1"
     }.GetNewClosure())
 
@@ -1305,18 +1253,7 @@ Try
     $SecoForm.Controls.Add($SaveBtn)
     $SecoForm.Controls.Add($DesktopGB)
 
-    #$SecoForm.Add_Shown({funDisAllCB})
     [void]$SecoForm.ShowDialog()
-    <#
-    $SecoForm.Add_KeyDown({
-        $_.SuppressKeyPress = $True
-     #   if     ($_.KeyCode -eq "Enter"){& $button_click}
-        if     ($_.KeyCode -eq "Enter"){}
-        elseif (($_.Control) -and ($_.KeyCode -eq 'A')){$objTextbox.SelectAll()}
-        elseif ($_.KeyCode -eq "Escape"){$Form1.Close()}
-        else {$_.SuppressKeyPress = $False}
-        })
-    #>
 }
 Catch
 { 
