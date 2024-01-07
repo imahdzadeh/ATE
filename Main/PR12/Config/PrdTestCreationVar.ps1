@@ -12,6 +12,7 @@ $ComRoot = "D:\ATE"
 #
 # Define objects and variables customed to this script between the lines
 #///////////////////////////////////////////////////////////////////////////////////
+$varDebugTrace = 0
 $Logging = $True
 $ConFolPRF = "PRF"
 $ConFolMAC = "MAC"
