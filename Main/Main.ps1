@@ -457,6 +457,7 @@ $Secoform.MaximizeBox = $false
 #$Mainform.controls.add($Panel)
 Start-Sleep -m 500
 Hide-Console
+#Show-Console
 [void]$Mainform.ShowDialog()
 
 #$Mainform.Dispose()

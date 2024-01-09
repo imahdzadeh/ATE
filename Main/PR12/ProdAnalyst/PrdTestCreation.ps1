@@ -1,19 +1,19 @@
 ﻿# Created by Isar Mahdzadeh
 # Decmeber 12 2023
 #
-
-if($varDebugTrace -ne 0)
-{
-    Set-PSDebug -Trace $varDebugTrace    
-}
-Else
-{
-    Set-PSDebug -Trace $varDebugTrace  
-}
-
-Try
-{
+#Try
+#{
  . "$(Split-Path $PSScriptRoot -Parent)\Config\$(($PSCommandPath.Split('\') | select -last 1) -replace (".ps1$","var.ps1"))"
+
+    if($varDebugTrace -ne 0)
+    {
+        Set-PSDebug -Trace $varDebugTrace    
+    }
+    Else
+    {
+        Set-PSDebug -Trace $varDebugTrace  
+    }
+
 #    throw [System.IO.FileNotFoundException] "$file not found."
     $strDupFileName = $null
     $ProjNames = Get-ChildItem -Path $ProdRoot -Directory | ForEach-Object{$_.Name}
@@ -1259,6 +1259,7 @@ Try
     $SecoForm.Controls.Add($DesktopGB)
 
     [void]$SecoForm.ShowDialog()
+<#
 }
 Catch
 { 
@@ -1266,3 +1267,4 @@ Catch
     select -last 1)-Main`t $_ `t$([Environment]::UserName)" | 
     Out-File $ErrLogPath -Append 
 }
+#>
