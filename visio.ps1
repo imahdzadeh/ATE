@@ -21,7 +21,7 @@ $mypen2.width = 2     # ste the pen line width
 $mypen2.CustomEndCap = $bigarrow
 
 $brushBg = [System.Drawing.Brushes]::gray
-$ClearbrushBg = [System.Drawing.Brushes]::red
+$ClearbrushBg = [System.Drawing.Brushes]::white
 
 # Create a Rectangle object for use when drawing rectangle
 $rect = new-object Drawing.Rectangle 10, 10, 180, 180
@@ -39,36 +39,52 @@ $DesktopGB.AutoSize = $true
 $DesktopGB.add_MouseDown({
 $mouse = [System.Windows.Forms.Cursor]::Position
 $point = $DesktopGB.PointToClient($mouse)
-  foreach($arrItem in $arrRegions)
-  {
-    If ($arrItem.isVisible($point))
+    If ($arrRegions -ne $null)
     {
-        If($Show2.Checked -eq $false)
+        foreach($arrItem in $arrRegions)
         {
-            $test   
-        }
-        $Show.Checked = $false
-        $Show.Refresh()
-        $Show2.Checked = $false
-        $Show2.Refresh()
-        $ShowPRFbtn.Focus()
-        $g.FillRegion($brushBg, $arrItem) 
-#        $arrItem.Intersect((New-Object System.Drawing.Rectangle 50 , 50, 100 , 100))
-#         $g.DrawRectangle($mypen, $point.X , $point.Y, 100 , 100) # draw a line
-    }
-    Else
-    {
-        $g.FillRegion($ClearbrushBg, $arrItem) 
-        
-    }
+            If ($arrItem.isVisible($point))
+            {
+                If($Show2.Checked -eq $false)
+                {
+                    $test   
+                }
+                $Show.Checked = $false
+                $Show.Refresh()
+                $Show2.Checked = $false
+                $Show2.Refresh()
+                $PolygonRB.checked = $false
+                $PolygonRB.Refresh()
+    <#
+                $m = new-object  System.Drawing.Drawing2D.Matrix
+                $m.RotateAt(45,$point)
+                $g.Transform = $m
+    #>
+                $ShowPRFbtn.Focus()
+                $g.FillRegion($brushBg, $arrItem) 
+                $g.ResetTransform()
+            #        $arrItem.Intersect((New-Object System.Drawing.Rectangle 50 , 50, 100 , 100))
+            #         $g.DrawRectangle($mypen, $point.X , $point.Y, 100 , 100) # draw a line
+            }
+            Else
+            {
+    <#  
+                $m = new-object  System.Drawing.Drawing2D.Matrix
+                $m.RotateAt(45,$point)
+                $g.Transform = $m
+    #>
+                $g.FillRegion($ClearbrushBg, $arrItem) 
 
-  }  
+                $g.ResetTransform()
+            }
 
+        }  
+    }
 })
 
 $DesktopGB.add_MouseUp({
 
-    If ($show.Checked -or $show2.Checked)
+    If ($show.Checked -or $show2.Checked -or $PolygonRB.Checked)
     {
         $Global:intIterate ++
 
@@ -89,26 +105,83 @@ $DesktopGB.add_MouseUp({
         {
             'circle' {
             
-                New-Variable -Force -Name "circle$Global:intIterate" -Value (New-Object System.Windows.Forms.Button)
+                New-Variable -Force -Name "circle$Global:intIterate" -Value (new-object System.Drawing.Region)
                 $thisButton = Get-Variable -ValueOnly -Include "circle$Global:intIterate"
-                $thisButton.Anchor = 'right'
-                $thisButton.Name = "circle$Global:intIterate"
-                $thisButton.Text = "circle$Global:intIterate"
-                $thisButton = $DesktopGB.CreateGraphics()
+
+                $myrect = New-Object System.Drawing.Rectangle $point.X , $point.Y, 100 , 100
+                $myGP = New-Object System.Drawing.Drawing2D.GraphicsPath
+                $myGP.AddEllipse($myrect)
+                $thisButton.Intersect($myGP)
+                $thisButton | Add-Member NoteProperty 'Name' "circle$Global:intIterate"
+                [void]$arrRegions.Add($thisButton)
+#                $thisButton.Anchor = 'right'
+#                $thisButton.Name = "circle$Global:intIterate"
+ #               $thisButton.Text = "circle$Global:intIterate"
+#                $thisButton = $DesktopGB.CreateGraphics()
             
-                $thisButton.PageUnit = 'pixel'     
-                $thisButton.InterpolationMode = 7      
-                $thisButton.DrawEllipse($mypen, $point.X , $point.Y, 100 , 100) # draw a line
+                $g.PageUnit = 'pixel'     
+                $g.InterpolationMode = 7   
+                $g.FillRegion($brushBg, $thisButton)    
+                $g.DrawEllipse($mypen, $point.X , $point.Y, 100 , 100) # draw a line
     #            $thisButton.DrawLine($mypen, $point.X, $point.Y, $point.X  , $point.Y+ 100) # draw a line
     #            $thisButton.DrawLine($mypen, $point.X, $point.Y+ 100, $point.X  + 100, $point.Y+ 100) # draw a line
     #            $thisButton.DrawLine($mypen, $point.X+ 100, $point.Y+ 100, $point.X  + 100, $point.Y) # draw a line       
             }
             'dimond' {
+                $p1 = New-Object System.Drawing.Point ($point.X) , ($point.Y+50)
+                $p2 = New-Object System.Drawing.Point ($point.X+50 ), ($point.Y)
+                $p3 = New-Object System.Drawing.Point ($point.X+50) , ($point.Y)
+                $p4 = New-Object System.Drawing.Point ($point.X+100 ), ($point.Y+50)
+                $p5 = New-Object System.Drawing.Point ($point.X+100 ), ($point.Y+50)
+                $p6 = New-Object System.Drawing.Point ($point.X+50 ), ($point.Y+100)
+                $points = @($p1,$p2,$p3,$p4,$p5,$p6)
         #           New-Variable -Force -Name "newshape$intIterate" -Value (New-Object System.Windows.Forms.Button)
                 New-Variable -Force -Name "dimond$Global:intIterate" -Value (new-object System.Drawing.Region)
                 $thisButton = Get-Variable -ValueOnly -Include "dimond$Global:intIterate"
-                $thisButton.Intersect((New-Object System.Drawing.Rectangle $point.X , $point.Y, 100 , 100))
-                $thisButton | Add-Member NoteProperty 'Name' "dimond$Global:intIterate"
+                $myrect = New-Object System.Drawing.Rectangle $point.X , $point.Y, 100 , 100
+                $myGP = New-Object System.Drawing.Drawing2D.GraphicsPath
+                $myGP.AddPolygon($points)
+                $thisButton.Intersect($myGP)
+
+ #                  $points = @($p1,$p2) 
+ #               $thisButton.Intersect((New-Object System.Drawing.Rectangle $point.X , $point.Y, 100 , 100))
+ #               $thisButton | Add-Member NoteProperty 'Name' "dimond$Global:intIterate"
+                [void]$arrRegions.Add($thisButton)
+                
+    #            $thisButton.Anchor = 'right'
+    #            $thisButton.Name = "newshape$intIterate"
+        #           $thisButton.Text = "newshape$intIterate"
+            
+                $g.PageUnit = 'pixel' 
+                $g.InterpolationMode = 4
+  #              $g.TranslateTransform(0 ,0)
+ <# 
+                $m = new-object  System.Drawing.Drawing2D.Matrix
+                $m.RotateAt(45,$point)
+                $g.Transform = $m
+#>
+                $g.FillRegion($brushBg, $thisButton)       
+                $g.DrawPolygon($mypen,$points) # draw a line
+    #            $g.DrawRectangle($mypen, $thisButton.GetBounds($g)) # draw a line
+
+                $g.ResetTransform()  
+
+            
+            }
+            'Square' {
+                $p1 = New-Object System.Drawing.Point ($point.X-25) , ($point.Y+15)
+                $p2 = New-Object System.Drawing.Point ($point.X+125 ), ($point.Y+15)
+                $p3 = New-Object System.Drawing.Point ($point.X+125) , ($point.Y+85)
+                $p4 = New-Object System.Drawing.Point ($point.X-25 ), ($point.Y+85)
+                 $points = @($p1,$p2,$p3,$p4)
+#                $points = @($p1,$p2,$p3,$p4,$p5,$p6)
+        #           New-Variable -Force -Name "newshape$intIterate" -Value (New-Object System.Windows.Forms.Button)
+                New-Variable -Force -Name "Square$Global:intIterate" -Value (new-object System.Drawing.Region)
+                $thisButton = Get-Variable -ValueOnly -Include "Square$Global:intIterate"
+                $myrect = New-Object System.Drawing.Rectangle $point.X , $point.Y, 100 , 100
+                $myGP = New-Object System.Drawing.Drawing2D.GraphicsPath
+                $myGP.AddPolygon($points)
+                $thisButton.Intersect($myGP)
                 [void]$arrRegions.Add($thisButton)
             
     #            $thisButton.Anchor = 'right'
@@ -117,11 +190,18 @@ $DesktopGB.add_MouseUp({
             
                 $g.PageUnit = 'pixel' 
                 $g.InterpolationMode = 4
-    #            $thisButton.TranslateTransform(-100 ,-100)
-    #            $thisButton.RotateTransform(45);  
+  #              $g.TranslateTransform(0 ,0)
+ <# 
+                $m = new-object  System.Drawing.Drawing2D.Matrix
+                $m.RotateAt(45,$point)
+                $g.Transform = $m
+#>
                 $g.FillRegion($brushBg, $thisButton)       
-                $g.DrawRectangle($mypen, $point.X , $point.Y, 100 , 100) # draw a line
+                $g.DrawPolygon($mypen,$points) # draw a line
     #            $g.DrawRectangle($mypen, $thisButton.GetBounds($g)) # draw a line
+
+                $g.ResetTransform()  
+
             
             }
         }
@@ -163,23 +243,22 @@ $DesktopGB.add_paint(
 $ShowPRFbtn = New-Object system.Windows.Forms.Button
 $ShowPRFbtn.Location = New-Object System.Drawing.Size(1000,38) 
 $ShowPRFbtn.BackColor = "#d2d4d6"
-$ShowPRFbtn.text = "First square"
+$ShowPRFbtn.text = "Clear"
 $ShowPRFbtn.width = 120
 $ShowPRFbtn.height = 25
 $ShowPRFbtn.Font = 'Microsoft Sans Serif,10'
 $ShowPRFbtn.ForeColor = "#000"
 $ShowPRFbtn.Add_Click({
-$test.Clear('window')
-$test.DrawLine($mypen, $x, $y, $x, $y +100) # draw a line
-$test.DrawLine($mypen, $x, $y, $y + 100, $x) # draw a line
-$test.DrawLine($mypen, $x + 100, $y + 100, $x + 100, $y) # draw a line
-
-$test.DrawLine($mypen, $x, $y + 100, $x + 100, $y + 100) # draw a line
-
-#$formGraphics.DrawLine($mypen, 10, 100, 100, 100) # draw a line
-
-$test.DrawLine($mypen2, $x + 100, ($y + 100)/2, ($x + 100)*2, ($y + 100)/2) # draw a line
-
+#$g.Clear('window')
+#$g.Flush()
+<#
+foreach($arrItem in $arrRegions)
+  {
+    $arrRegions.Clear()
+  }
+#>
+  $arrRegions.Clear()
+  $g.Clear([System.Drawing.Color]::White)
 #$test.DrawLine($mypen, 10, 100, 100, 150) # draw a line
 #$test.Clear('red')
 #$form.Refresh()
@@ -217,8 +296,23 @@ $Show2.width = 80
 $Show2.height =80
 $Show2.Padding = 5
 
+$PolygonRB = New-Object System.Windows.Forms.RadioButton
+$PolygonRB.name = 'Square'
+$image = [System.Drawing.Image]::FromFile("D:\ATE\IT\Root\images\VSquare.png")
+$PolygonRB.Image= $image
+$PolygonRB.ImageAlign = 'MiddleCenter'
+$PolygonRB.Location = New-Object System.Drawing.Size(20,300) 
+$PolygonRB.Appearance = 1
+$PolygonRB.FlatStyle = 2
+#$Show.BackColor = "#d2d4d6"
+#$Show.text = "sec square"
+$PolygonRB.width = 80
+$PolygonRB.height =80
+$PolygonRB.Padding = 5
+
 
 $g = $DesktopGB.CreateGraphics()
+$ShapesGB.Controls.Add($PolygonRB)
 $ShapesGB.Controls.Add($Show)
 $ShapesGB.Controls.Add($Show2)
 $DesktopGB.Controls.Add($ShapesGB)
