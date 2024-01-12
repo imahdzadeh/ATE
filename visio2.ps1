@@ -53,70 +53,16 @@ $DesktopGB.Size = New-Object System.Drawing.Size(1100,750)
 #$DesktopGB.Dock = [System.Windows.Forms.DockStyle]::Fill
 $DesktopGB.AutoSize = $true
 $DesktopGB.Add_paint({
-
+    param([System.Object]$s, [System.Windows.Forms.PaintEventArgs]$e)
     
-})
-
-$DesktopGB.add_MouseDown({
-$mouse = [System.Windows.Forms.Cursor]::Position
-$point = $DesktopGB.PointToClient($mouse)
-    If ($arrRegions -ne $null)
-    {
-        foreach($arrItem in $arrRegions)
-        {
- #           If ($arrItem.isVisible($point))
-            If ($arrItem.region.isVisible($point))
-            {
-                If($Show2.Checked -eq $false)
-                {
-                    $test   
-                }
-                $Show.Checked = $false
-                $Show.Refresh()
-                $Show2.Checked = $false
-                $Show2.Refresh()
-                $PolygonRB.checked = $false
-                $PolygonRB.Refresh()
-    <#
-                $m = new-object  System.Drawing.Drawing2D.Matrix
-                $m.RotateAt(45,$point)
-                $g.Transform = $m
-    #>
-                $ShowPRFbtn.Focus()
-#                $g.Clip = $arrItem
- #               write-host ($arrItem.GetRegionData()).data 
-                $g.DrawPath($mypen2, $arrItem.path2)
-                $g.ResetTransform()
-            #        $arrItem.Intersect((New-Object System.Drawing.Rectangle 50 , 50, 100 , 100))
-            #         $g.DrawRectangle($mypen, $point.X , $point.Y, 100 , 100) # draw a line
-            }
-            Else
-            {
-    <#  
-                $m = new-object  System.Drawing.Drawing2D.Matrix
-                $m.RotateAt(45,$point)
-                $g.Transform = $m
-    #>
-#                $g.Clip = $arrItem
-#                $g.FillRegion($ClearbrushBg, $arrItem) 
-                $g.DrawPath($mypen3, $arrItem.path2)
- #               $g.ResetTransform()
-            
-            }
-
-        }  
-    }
-})
-
-$DesktopGB.add_MouseUp({
-
+    $mouse = [System.Windows.Forms.Cursor]::Position
+    $point = $DesktopGB.PointToClient($mouse)
     If ($show.Checked -or $show2.Checked -or $PolygonRB.Checked)
     {
         $Global:intIterate ++
 
 
-        $mouse = [System.Windows.Forms.Cursor]::Position
-        $point = $DesktopGB.PointToClient($mouse)
+
         $point.X = $point.X - 50
         $point.Y = $point.Y - 50
         #$test.Clear('window')
@@ -131,36 +77,41 @@ $DesktopGB.add_MouseUp({
         {
             'circle' {
                 
-               
+            
  #               $p1 = New-Object System.Drawing.Point ($point.X) , ($point.Y+100)
                 $myPath = New-Object System.Drawing.Drawing2D.GraphicsPath
                 $myPath2 = New-Object System.Drawing.Drawing2D.GraphicsPath
                 $myPath.AddEllipse($point.X,$point.Y,100,100)
-#                $myPath2.AddEllipse(($point.X)-3,($point.Y)-3,106,106)
-                $myPath2.AddEllipse($point.X,$point.Y,100,100)
+                $myPath2.AddEllipse(($point.X)-2,($point.Y)-2,105,105)
+#                $myPath2.AddEllipse($point.X,$point.Y,100,100)
                 $myregion2 = new-object System.Drawing.Region  $myPath2
                 New-Variable -Force -Name "$(($ShapesGB.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate" -Value (new-object System.Drawing.Region  $myPath) 
                 $myregion = Get-Variable -ValueOnly -Include "$(($ShapesGB.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate"
 #                $myregion = new-object System.Drawing.Region $myPath
-                $g.DrawPath($mypen, $myPath)
-                $g.DrawPath($mypen2, $myPath2)
-                $g.DrawPath($mypen, $myPath)
-                $g.DrawString("test", $fonty , $myBrush, $point.X+40,$point.y+55, [System.Drawing.StringFormat]::GenericDefault)
-                $g.DrawImage($avatar,$point.X+50,$point.y+55,10,10)
-                $g.SetClip($myregion,4)
+                $strMess = 'test'
+<#
+                $e.Graphics.DrawPath($mypen, $myPath)
+                $e.Graphics.DrawPath($mypen2, $myPath2)
+                $e.Graphics.DrawPath($mypen, $myPath)
+                $e.Graphics.DrawString("test", $fonty , $myBrush, $point.X+40,$point.y+55, [System.Drawing.StringFormat]::GenericDefault)
+                $e.Graphics.DrawImage($avatar,$point.X+50,$point.y+55,10,10)
+                $e.Graphics.SetClip($myregion,4)
+#>
  #               [void]$arrRegions.Add($myregion) 
 
                 [void]$arrRegions.Add(              
                     [pscustomobject]@{
                         name = "$(($ShapesGB.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate"
                         Location = $location
-                        region = $myregion
-                        region2 = $myregion2
+                        myregion = $myregion
+                        myregion2 = $myregion2
                         P = $point
-                        Path = $myPath
-                        Path2 = $myPath2
+                        myPath = $myPath
+                        myPath2 = $myPath2
+                        str = $strMess
                     }                    
                 )
+#                $DesktopGB.Invalidate()
 
 #                $g.FillRegion($brushBg, $myregion2)
  <#           
@@ -217,26 +168,29 @@ $DesktopGB.add_MouseUp({
                 New-Variable -Force -Name "$(($ShapesGB.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate" -Value (new-object System.Drawing.Region  $myPath) 
                 $myregion = Get-Variable -ValueOnly -Include "$(($ShapesGB.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate"
 #                $myregion = new-object System.Drawing.Region $myPath
-                $g.DrawPath($mypen, $myPath)
-                $g.DrawPath($mypen2, $myPath2)
-                $g.DrawPath($mypen, $myPath)
-                $g.DrawString("test", $fonty , $myBrush, $point.X+40,$point.y+55, [System.Drawing.StringFormat]::GenericDefault)
-                $g.DrawImage($avatar,$point.X+50,$point.y+55,10,10)
-                $g.SetClip($myregion,4)
+<#
+                $e.Graphics.DrawPath($mypen, $myPath)
+                $e.Graphics.DrawPath($mypen2, $myPath2)
+                $e.Graphics.DrawPath($mypen, $myPath)
+                $e.Graphics.DrawString("test", $fonty , $myBrush, $point.X+40,$point.y+55, [System.Drawing.StringFormat]::GenericDefault)
+                $e.Graphics.DrawImage($avatar,$point.X+50,$point.y+55,10,10)
+                $e.Graphics.SetClip($myregion,4)
+#>
  #               [void]$arrRegions.Add($myregion) 
 
                 [void]$arrRegions.Add(              
                     [pscustomobject]@{
                         name = "$(($ShapesGB.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate"
                         Location = $location
-                        region = $myregion
-                        region2 = $myregion2
+                        myregion = $myregion
+                        myregion2 = $myregion2
                         P = $point
-                        Path = $myPath
-                        Path2 = $myPath2
+                        myPath = $myPath
+                        myPath2 = $myPath2
+                        str = $strMess
                     }                    
                 )
-                    
+#                 $DesktopGB.Invalidate()    
 
 <#
         #           New-Variable -Force -Name "newshape$intIterate" -Value (New-Object System.Windows.Forms.Button)
@@ -279,7 +233,7 @@ $DesktopGB.add_MouseUp({
                 $p3 = New-Object System.Drawing.Point ($point.X+125) , ($point.Y+85)
                 $p4 = New-Object System.Drawing.Point ($point.X-25 ), ($point.Y+85)
                 $points = @($p1,$p2,$p3,$p4)
-
+                
                 $myPath = New-Object System.Drawing.Drawing2D.GraphicsPath
                 $myPath2 = New-Object System.Drawing.Drawing2D.GraphicsPath
                 $myPath.AddPolygon($points)
@@ -288,26 +242,31 @@ $DesktopGB.add_MouseUp({
                 New-Variable -Force -Name "$(($ShapesGB.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate" -Value (new-object System.Drawing.Region  $myPath) 
                 $myregion = Get-Variable -ValueOnly -Include "$(($ShapesGB.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate"
 #                $myregion = new-object System.Drawing.Region $myPath
-                $g.DrawPath($mypen, $myPath)
-                $g.DrawPath($mypen2, $myPath2)
-                $g.DrawPath($mypen, $myPath)
-                $g.DrawString("test", $fonty , $myBrush, $point.X+40,$point.y+55, [System.Drawing.StringFormat]::GenericDefault)
-                $g.DrawImage($avatar,$point.X+50,$point.y+55,10,10)
-                $g.SetClip($myregion,4)
+                
+               
+<#
+                $e.Graphics.DrawPath($mypen, $myPath)
+                $e.Graphics.DrawPath($mypen2, $myPath2)
+                $e.Graphics.DrawPath($mypen, $myPath)
+                $e.Graphics.DrawString("test", $fonty , $myBrush, $point.X+40,$point.y+55, [System.Drawing.StringFormat]::GenericDefault)
+                $e.Graphics.DrawImage($avatar,$point.X+50,$point.y+55,10,10)
+                $e.Graphics.SetClip($myregion,4)
+#>
  #               [void]$arrRegions.Add($myregion) 
              
                 [void]$arrRegions.Add(              
                     [pscustomobject]@{
                         name = "$(($ShapesGB.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate"
                         Location = $location
-                        region = $myregion
-                        region2 = $myregion2
+                        myregion = $myregion
+                        myregion2 = $myregion2
                         P = $point
-                        Path = $myPath
-                        Path2 = $myPath2
+                        myPath = $myPath
+                        myPath2 = $myPath2
+                        str = $strMess
                     }                    
                 )
-                 $desktopGB.Invalidate() 
+#                 $desktopGB.Invalidate() 
                 
 <#
                 $p1 = New-Object System.Drawing.Point ($point.X-25) , ($point.Y+15)
@@ -346,9 +305,131 @@ $DesktopGB.add_MouseUp({
             
             }
         }
+
+    }
+    If ($arrRegions.count -gt 0)
+    {
+#        foreach($arrItem in $arrRegions)
+         for($i = 0; $i -lt $arrRegions.Count; $i++)
+        {
+ #           If ($arrItem.isVisible($point))
+            $arrItem = $arrRegions[$i]
+ #           If ($arrItem.isVisible($point))
+            If ($arrItem.myregion.isVisible($point))
+            {
+                If($Show2.Checked -eq $false)
+                {
+                    $test   
+                }
+                $Show.Checked = $false
+                $Show.Refresh()
+                $Show2.Checked = $false
+                $Show2.Refresh()
+                $PolygonRB.checked = $false
+                $PolygonRB.Refresh()
+
+                $DesktopGB.Focus()
+#                $g.Clip = $arrItem
+ #               write-host ($arrItem.GetRegionData()).data 
+#                $g.DrawPath($mypen2, $arrItem.mypath2)
+ #               $g.ResetTransform()
+            #        $arrItem.Intersect((New-Object System.Drawing.Rectangle 50 , 50, 100 , 100))
+            #         $g.DrawRectangle($mypen, $point.X , $point.Y, 100 , 100) # draw a line
+
+                $e.Graphics.DrawPath($mypen2, $arrItem.myPath2)
+                $e.Graphics.DrawPath($mypen, $arrItem.myPath)
+                $e.Graphics.DrawString("test", $fonty , $myBrush, $arrItem.p.X+40,$arrItem.p.y+55, [System.Drawing.StringFormat]::GenericDefault)
+                $e.Graphics.DrawImage($avatar,$arrItem.p.X+50,$arrItem.p.y+55,10,10)
+                $e.Graphics.SetClip($arrItem.myregion,4)
+
+            }
+            Else
+            {
+#                $g.Clip = $arrItem
+#                $g.FillRegion($ClearbrushBg, $arrItem) 
+#                $g.DrawPath($mypen3, $arrItem.path2)
+ #               $g.ResetTransform()
+#                $e.Graphics.DrawPath($mypen2, $arrItem.myPath2)
+                $e.Graphics.DrawPath($mypen, $arrItem.myPath)
+                $e.Graphics.DrawString("test", $fonty , $myBrush, $arrItem.p.X+40,$arrItem.p.y+55, [System.Drawing.StringFormat]::GenericDefault)
+                $e.Graphics.DrawImage($avatar,$arrItem.p.X+50,$arrItem.p.y+55,10,10)
+                $e.Graphics.SetClip($arrItem.myregion,4)
+            }
+#            $e.Graphics.DrawPath($mypen, $myPath)
+
+
+        }  
+    }     
+
+
+    
+})
+
+ 
+
+$DesktopGB.add_MouseDown({
+
+$mouse = [System.Windows.Forms.Cursor]::Position
+$point = $DesktopGB.PointToClient($mouse)
+    If ($arrRegions.Count -gt 0)
+    {
+#        foreach($arrItem in $arrRegions)
+         for($i = 0; $i -lt $arrRegions.Count; $i++)
+        {
+ #           If ($arrItem.isVisible($point))
+            $arrItem = $arrRegions[$i]
+            If ($arrItem.myregion2.isVisible($point))
+            {
+                If($Show2.Checked -eq $false)
+                {
+                    $test   
+                }
+                write-host "inside"
+                $Show.Checked = $false
+                $Show.Refresh()
+                $Show2.Checked = $false
+                $Show2.Refresh()
+                $PolygonRB.checked = $false
+                $PolygonRB.Refresh()
+                $desktopGB.Invalidate($arrItem.myregion2)
+                 
+#                $DesktopGB.Focus()
+#                $g.Clip = $arrItem
+ #               write-host ($arrItem.GetRegionData()).data 
+#                $g.DrawPath($mypen2, $arrItem.path2)
+#                $g.ResetTransform()
+            #        $arrItem.Intersect((New-Object System.Drawing.Rectangle 50 , 50, 100 , 100))
+            #         $g.DrawRectangle($mypen, $point.X , $point.Y, 100 , 100) # draw a line
+            }
+            Else
+            {
+                $desktopGB.Invalidate() 
+#                $g.Clip = $arrItem
+#                $g.FillRegion($ClearbrushBg, $arrItem) 
+#                $g.DrawPath($mypen3, $arrItem.path2)
+ #               $g.ResetTransform()
+            
+            }
+            
+ #           $desktopGB.Update()
+        }  
+    }
+    Else
+    {
+         $desktopGB.Invalidate() 
     }
 
 })
+
+
+
+$DesktopGB.add_MouseUp({
+
+  
+
+})
+
+
 
 $ShapesGB = New-Object system.Windows.Forms.Groupbox
 $ShapesGB.Size = New-Object System.Drawing.Size(100,700)
@@ -416,23 +497,25 @@ $ShowPRFbtn.Font = 'Microsoft Sans Serif,10'
 $ShowPRFbtn.ForeColor = "#000"
 $ShowPRFbtn.Add_Click({
     
-    
-   foreach($arrItem in $arrRegions)
-        {
-            
+  If($arrRegions.Count -gt 0)
+  {  
+
+  <#          
             $DesktopGB.Invalidate($arrItem.region)
             $DesktopGB.Invalidate($arrItem.region2)
             $DesktopGB.Invalidate($arrItem.Path)
             $DesktopGB.Invalidate($arrItem.Path2)
-      
+     
              $arrItem.region.dispose()
             $arrItem.region2.dispose()
             $arrItem.Path.dispose()
             $arrItem.Path2.dispose()
-
+#>
+        $arrRegions.Clear()
+    }
  #           $DesktopGB.Invalidate($arrItem.region2)
  #           $g.Clear([System.Drawing.Color]::White)
-        }     
+    $DesktopGB.Invalidate()         
 })
 
 $Show = New-Object System.Windows.Forms.CheckBox

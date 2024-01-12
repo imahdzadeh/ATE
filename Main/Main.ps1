@@ -185,6 +185,8 @@ $listBox_DrawItem={
  #$e.Graphics.DrawString($lbItem, $e.Font, [System.Drawing.SystemBrushes]::ControlText, (new-object System.Drawing.PointF($e.Bounds.X, $e.Bounds.Y)))
  $Yp = ($e.Bounds.Y) + 18 
  $e.Graphics.DrawString($lbItem, $e.Font, [System.Drawing.SystemBrushes]::ControlText, (new-object System.Drawing.PointF(25, $Yp)))
+#$fonty = New-Object System.Drawing.Font 'arial',16
+#$e.Graphics.DrawString("test", $fonty , [System.Drawing.SystemBrushes]::ControlText, 50, 50, [System.Drawing.StringFormat]::GenericDefault)  
 }
 $listBox = New-Object System.Windows.Forms.ListBox
 $listBox.Location = New-Object System.Drawing.Point(5,40)
