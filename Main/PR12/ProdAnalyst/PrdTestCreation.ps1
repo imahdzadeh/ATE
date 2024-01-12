@@ -16,20 +16,20 @@
 
 #    throw [System.IO.FileNotFoundException] "$file not found."
     $strDupFileName = $null
-    $ProjNames = Get-ChildItem -Path $ProdRoot -Directory | ForEach-Object{$_.Name}
+    $ProjNames = Get-ChildItem -Path $ProdRoot -Directory | ForEach-Object {$_.Name}
     $DGVCellValueChanging = $flase
     $DGVCBInfo = New-Object system.Data.DataTable
-    $DGVCBInfoVer = gci "$confRoot\$ConFolPRF" -file | Foreach{
+    $DGVCBInfoVer = gci "$confRoot\$ConFolPRF" -file | Foreach {
       $_ -replace '^PRF', ''
       } | Select-Object *, @{ n = "IntVal"; e = {[int]($_)}} | Sort-Object IntVal | Select-Object -Last 1
 
     $DGVCBInfoCol = @()
     (Get-Content "$confRoot\$ConFolPRF\$ConFolPRF$($DGVCBInfoVer.IntVal)" | select -First 1) -split $CSVDelimiter | foreach {
-    $DGVCBInfoCol += $_
-    $col2 = New-Object System.Data.DataColumn
-    $col2.DataType = [string]
-    $col2.ColumnName = $_
-    $DGVCBInfo.Columns.Add($col2)
+        $DGVCBInfoCol += $_
+        $col2 = New-Object System.Data.DataColumn
+        $col2.DataType = [string]
+        $col2.ColumnName = $_
+        $DGVCBInfo.Columns.Add($col2)
     }
    
     $DGVCBColumn = New-Object system.Data.DataTable
@@ -40,6 +40,7 @@
         foreach($column in $DGVCBInfoCol){
             $row2.$column=$_.$column
         }
+        #تعریف ستونهای دیتا گرید ویو با خصوصیات ستونهای آن
         [void]$DGVCBInfo.Rows.Add($row2)
     }
 
