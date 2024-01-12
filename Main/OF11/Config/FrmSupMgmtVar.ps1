@@ -1,0 +1,26 @@
+﻿# Created by Atena Mahdzadeh
+# Jan 12 2024
+#
+# Below line temporary till we have AD and can insert env variable in login script
+$ComRoot = "D:\ATE"
+#
+# ---------------->>>>>IMPORTANT<<<<<<<<<<<<----------------
+# This line retrieves all the types and high level variables from main config file
+# and must be included in all sub config files
+<#-----------------#>. "$($ComRoot)\IT\Root\Config\Config.ps1" <#-----------------#>
+#
+#
+# Define objects and variables customed to this script between the lines
+#///////////////////////////////////////////////////////////////////////////////////
+$varDebugTrace = 0
+#اسم دکمه برگشت به صفحه اصلی
+$retunBtnName = "Main"
+# فرم جاری
+$Mainform = New-Object Windows.Forms.Form -Property @{
+    StartPosition = [Windows.Forms.FormStartPosition]::CenterScreen
+    Size          = New-Object Drawing.Size 800, 600
+    Text          =            $shamsiYear.ToString() + "/" + 
+                               ($shamsiMonth = $persianCalendar.GetMonth($gregorianDate)) + "/" + 
+                               ( $shamsiDay = $persianCalendar.GetDayOfMonth($gregorianDate)).ToString() + "`t`t`t`t`t`t`t`t`t`t" + "مهد پویان اطلس" 
+    Topmost       = $false
+}
