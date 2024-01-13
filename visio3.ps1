@@ -78,7 +78,7 @@ $fonty = New-Object System.Drawing.Font 'arial',16
 
 # Create a Form
 $form = New-Object Windows.Forms.Form
-
+$form.StartPosition = [Windows.Forms.FormStartPosition]::CenterScreen
 #$form.BackColor = [System.Drawing.Color]::FromArgb(220,220,220)
 $form.Size = New-Object Drawing.Size 1300, 800
 $form.AutoScroll = $true
@@ -262,21 +262,9 @@ $point = $DesktopPan.PointToClient($mouse)
                 $Dimond.Refresh()
                 $Square.checked = $false
                 $Square.Refresh()
- #               $objShape = Get-Variable -ValueOnly -Include $arrItem.type
-#                $objShape.Checked = $true
                 $global:objShape = $arrItem
-   #             $DesktopPan.Invalidate($arrItem.myregion2)
-                 
-            }
-            Else
-            {
- #               $DesktopPan.Invalidate()           
-            }
+            }                     
         }  
-    }
-    Else
-    {
-#         $DesktopPan.Invalidate() 
     }
 $DesktopPan.Invalidate() 
 })
@@ -323,8 +311,8 @@ $ShapesTbl.Location = New-Object System.Drawing.size(2,100)
 #$DesktopPan.Dock = [System.Windows.Forms.DockStyle]::Fill
 $ShapesTbl.AutoSize = $true
 $ShapesTbl.ColumnCount = 2
-$ShapesTbl.CellBorderStyle = 2
-
+#$ShapesTbl.CellBorderStyle = 2
+$ShapesTbl.TabIndex = 5
 #$formGraphics = $form.createGraphics()
 $x = 10
 $y= 10
@@ -339,7 +327,7 @@ $ShowPRFbtn.height = 25
 $ShowPRFbtn.Font = 'Microsoft Sans Serif,10'
 $ShowPRFbtn.ForeColor = "#000"
 $ShowPRFbtn.Add_Click({
-    
+  funDisAllShapes $ShapesTbl    
   If($arrRegions.Count -gt 0)
   {  
 
@@ -356,12 +344,15 @@ $DelShape.width = 110
 $DelShape.height = 25
 $DelShape.Font = 'Microsoft Sans Serif,10'
 $DelShape.ForeColor = "#000"
+$DelShape.TabIndex = 1
 $DelShape.Add_Click({
+    funDisAllShapes $ShapesTbl
     funDelShape       
 })
 
 $StartCircle = New-Object System.Windows.Forms.CheckBox
 $StartCircle.Size = New-Object System.Drawing.Size(45,45)
+
 $StartCircle.name = 'StartCircle'
 $image = [System.Drawing.Image]::FromFile("D:\ATE\IT\Root\images\StartCircle.png")
 $StartCircle.Image= $image
@@ -453,8 +444,11 @@ $MainTbl.Controls.Add($butsTbl,0,1)
 $MainTbl.SetRowSpan($DesktopPan,3)
 
 $form.Controls.Add($MainTbl)
+$form.Add_Shown({$form.Activate(); $DesktopPan.Focus()})
 $form.Add_Load{
     Set-DoubleBuffer -grid $DesktopPan -Enabled $true
+    $DelShape.Focus()
+    
 }
 
 [void]$form.ShowDialog()   # display the dialog
