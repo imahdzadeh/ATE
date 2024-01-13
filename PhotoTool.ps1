@@ -1,5 +1,5 @@
 ﻿$wia = New-Object -com wia.imagefile
-$wia.LoadFile("D:\ATE\IT\Root\images\Untitled.png")
+$wia.LoadFile("D:\ATE\IT\Root\images\InterCircle.png")
 $wip = New-Object -ComObject wia.imageprocess
 $scale = $wip.FilterInfos.Item("Scale").FilterId                    
 $wip.Filters.Add($scale)

@@ -7,26 +7,27 @@ Function funDelShape{
     {
         $arrRegions.Remove($global:objShape)       
     }
-    $DesktopGB.Invalidate()     
+    $DesktopPan.Invalidate()     
 }
 
-$DesktopGB = New-Object system.Windows.Forms.Groupbox
-$DesktopGB.BackColor = ''
-$DesktopGB.Location = New-Object System.Drawing.size(120,50)
-$DesktopGB.Size = New-Object System.Drawing.Size(1100,700)
-#$DesktopGB.Dock = [System.Windows.Forms.DockStyle]::Fill
-$DesktopGB.AutoSize = $true
-$DesktopGB.name = "Main"
+$DesktopPan = New-Object System.Windows.Forms.Panel
+#$DesktopPan.BackColor = 'green'
+$DesktopPan.Location = New-Object System.Drawing.size(120,50)
+$DesktopPan.Size = New-Object System.Drawing.Size(1100,700)
+$DesktopPan.Dock = [System.Windows.Forms.DockStyle]::Fill
+#$DesktopPan.AutoSize = $true
+$DesktopPan.name = "Main"
+$DesktopPan.BorderStyle = 1
 
 
-$DesktopGB.Add_KeyDown({
+$DesktopPan.Add_KeyDown({
 if ($_.KeyCode -eq [System.Windows.Forms.Keys]::Delete) {     
             funDelShape
         }
 })
 
 Function funDisAllShapes($O) {
-    foreach($obj in $shapesGB.Controls)
+    foreach($obj in $ShapesTbl.Controls)
     {
         If($obj -ne $O)
         {
@@ -37,7 +38,7 @@ Function funDisAllShapes($O) {
 
 function Set-DoubleBuffer {
     param ([Parameter(Mandatory = $true)]
-        [System.Windows.Forms.GroupBox]$grid,
+        [System.Windows.Forms.Panel]$grid,
         [boolean]$Enabled)  
     $type = $grid.GetType();
     $propInfo = $type.GetProperty("DoubleBuffered", ('Instance','NonPublic'))
@@ -78,7 +79,7 @@ $fonty = New-Object System.Drawing.Font 'arial',16
 # Create a Form
 $form = New-Object Windows.Forms.Form
 
-$form.BackColor = [System.Drawing.Color]::FromArgb(220,220,220)
+#$form.BackColor = [System.Drawing.Color]::FromArgb(220,220,220)
 $form.Size = New-Object Drawing.Size 1300, 800
 $form.AutoScroll = $true
 # Get the form's graphics object
@@ -87,31 +88,31 @@ $form.AutoScroll = $true
 
 
 
-$DesktopGB.Add_paint({
+$DesktopPan.Add_paint({
     param([System.Object]$s, [System.Windows.Forms.PaintEventArgs]$e)
 #    $e.Graphics.InterpolationMode = 2
     $e.Graphics.SmoothingMode = 4
     $mouse = [System.Windows.Forms.Cursor]::Position
-    $point = $DesktopGB.PointToClient($mouse)
-    If ($circle.Checked -or $Dimond.Checked -or $Square.Checked)
+    $point = $DesktopPan.PointToClient($mouse)
+    If ($StartCircle.Checked -or $Dimond.Checked -or $Square.Checked)
     {
         $Global:intIterate ++
         $point.X = $point.X - 50
         $point.Y = $point.Y - 50
-        switch (($ShapesGB.Controls | Where-Object -FilterScript {$_.Checked}).name)
+        switch (($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)
         {
-            'circle' {          
+            'StartCircle' {          
                 $myPath = New-Object System.Drawing.Drawing2D.GraphicsPath
                 $myPath2 = New-Object System.Drawing.Drawing2D.GraphicsPath
                 $myPath.AddEllipse($point.X,$point.Y,100,100)
                 $myPath2.AddEllipse(($point.X)-2,($point.Y)-2,104,104)
                 $myregion2 = new-object System.Drawing.Region  $myPath2
-                New-Variable -Force -Name "$(($ShapesGB.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate" -Value (new-object System.Drawing.Region  $myPath) 
-                $myregion = Get-Variable -ValueOnly -Include "$(($ShapesGB.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate"
+                New-Variable -Force -Name "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate" -Value (new-object System.Drawing.Region  $myPath) 
+                $myregion = Get-Variable -ValueOnly -Include "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate"
                 $strMess = 'test'
                 $objPSCircle = [pscustomobject]@{
-                    name = "$(($ShapesGB.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate"
-                    type = 'Circle'
+                    name = "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate"
+                    type = 'StartCircle'
                     Location = $location
                     myregion = $myregion
                     myregion2 = $myregion2
@@ -145,10 +146,10 @@ $DesktopGB.Add_paint({
                 $myPath.AddPolygon($points)
                 $myPath2.AddPolygon($points2)
                 $myregion2 = new-object System.Drawing.Region  $myPath2
-                New-Variable -Force -Name "$(($ShapesGB.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate" -Value (new-object System.Drawing.Region  $myPath) 
-                $myregion = Get-Variable -ValueOnly -Include "$(($ShapesGB.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate"
+                New-Variable -Force -Name "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate" -Value (new-object System.Drawing.Region  $myPath) 
+                $myregion = Get-Variable -ValueOnly -Include "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate"
                 $objPSDimond = [pscustomobject]@{
-                    name = "$(($ShapesGB.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate"
+                    name = "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate"
                     type = 'Dimond'
                     Location = $location
                     myregion = $myregion
@@ -183,10 +184,10 @@ $DesktopGB.Add_paint({
                 $myPath.AddPolygon($points)
                 $myPath2.AddPolygon($points2)
                 $myregion2 = new-object System.Drawing.Region  $myPath2
-                New-Variable -Force -Name "$(($ShapesGB.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate" -Value (new-object System.Drawing.Region  $myPath) 
-                $myregion = Get-Variable -ValueOnly -Include "$(($ShapesGB.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate"
+                New-Variable -Force -Name "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate" -Value (new-object System.Drawing.Region  $myPath) 
+                $myregion = Get-Variable -ValueOnly -Include "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate"
                 $objPSSquare = [pscustomobject]@{
-                    name = "$(($ShapesGB.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate"
+                    name = "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate"
                     type = 'Square'
                     Location = $location
                     myregion = $myregion
@@ -213,14 +214,14 @@ $DesktopGB.Add_paint({
             $arrItem = $arrRegions[$i]
             If ($arrItem.myregion.isVisible($point))
             {
-                $circle.Checked = $false
-                $circle.Refresh()
+                $StartCircle.Checked = $false
+                $StartCircle.Refresh()
                 $Dimond.Checked = $false
                 $Dimond.Refresh()
                 $Square.checked = $false
                 $Square.Refresh()
 
-                $DesktopGB.Focus()
+                $DesktopPan.Focus()
 
                 $e.Graphics.DrawPath($mypen2, $arrItem.myPath2)
                 $e.Graphics.DrawPath($mypen, $arrItem.myPath)
@@ -243,11 +244,11 @@ $DesktopGB.Add_paint({
 
  
 
-$DesktopGB.add_MouseDown({
+$DesktopPan.add_MouseDown({
 $Global:bolMouseDown = $true
 $Global:objShape = $null
 $mouse = [System.Windows.Forms.Cursor]::Position
-$point = $DesktopGB.PointToClient($mouse)
+$point = $DesktopPan.PointToClient($mouse)
     If ($arrRegions.Count -gt 0)
     {
          for($i = 0; $i -lt $arrRegions.Count; $i++)
@@ -255,8 +256,8 @@ $point = $DesktopGB.PointToClient($mouse)
             $arrItem = $arrRegions[$i]
             If ($arrItem.myregion2.isVisible($point))
             {
-                $circle.Checked = $false
-                $circle.Refresh()
+                $StartCircle.Checked = $false
+                $StartCircle.Refresh()
                 $Dimond.Checked = $false
                 $Dimond.Refresh()
                 $Square.checked = $false
@@ -264,29 +265,29 @@ $point = $DesktopGB.PointToClient($mouse)
  #               $objShape = Get-Variable -ValueOnly -Include $arrItem.type
 #                $objShape.Checked = $true
                 $global:objShape = $arrItem
-   #             $desktopGB.Invalidate($arrItem.myregion2)
+   #             $DesktopPan.Invalidate($arrItem.myregion2)
                  
             }
             Else
             {
- #               $desktopGB.Invalidate()           
+ #               $DesktopPan.Invalidate()           
             }
         }  
     }
     Else
     {
-#         $desktopGB.Invalidate() 
+#         $DesktopPan.Invalidate() 
     }
-$desktopGB.Invalidate() 
+$DesktopPan.Invalidate() 
 })
 
-$DesktopGB.add_MouseUp({
+$DesktopPan.add_MouseUp({
     If($Global:bolMouseDown)
     {
         $Global:bolMouseDown = $false
         If ($Global:objShape -ne $null)
         {
-            foreach($cont in $ShapesGB.Controls)
+            foreach($cont in $ShapesTbl.Controls)
             {
                 $cont.checked = $false
             }
@@ -296,48 +297,44 @@ $DesktopGB.add_MouseUp({
 
 })
 
-$desktopGB.add_MouseMove({
+$DesktopPan.add_MouseMove({
     If(($Global:bolMouseDown) -and ($global:objShape -ne $null))
     {
-         $objShape = Get-Variable -ValueOnly -Include $global:objShape.type               
-         $objShape.Checked = $true
-         $arrRegions.Remove($global:objShape)         
-         $DesktopGB.Invalidate() 
+        $mouse = [System.Windows.Forms.Cursor]::Position
+        $point = $DesktopPan.PointToClient($mouse)
+        If(($point.X  -gt 50) -and ($point.Y -gt 50))
+        {
+            If(($point.X + 50  -lt $DesktopPan.Size.Width) -and ($point.Y + 50  -lt $DesktopPan.Size.Height))
+            {
+                $objShape = Get-Variable -ValueOnly -Include $global:objShape.type               
+                $objShape.Checked = $true
+                $arrRegions.Remove($global:objShape)         
+                $DesktopPan.Invalidate()
+            }
+        } 
     }
 
 })
 
-$ShapesGB = New-Object system.Windows.Forms.Groupbox
-$ShapesGB.BackColor = 'blue'
-$ShapesGB.Size = New-Object System.Drawing.Size(100,700)
-$ShapesGB.Location = New-Object System.Drawing.size(2,100)
-#$DesktopGB.Dock = [System.Windows.Forms.DockStyle]::Fill
-$ShapesGB.AutoSize = $true
+$ShapesTbl = New-Object System.Windows.Forms.TableLayoutPanel
+$ShapesTbl.BackColor = ''
+$ShapesTbl.Size = New-Object System.Drawing.Size(100,700)
+$ShapesTbl.Location = New-Object System.Drawing.size(2,100)
+#$DesktopPan.Dock = [System.Windows.Forms.DockStyle]::Fill
+$ShapesTbl.AutoSize = $true
+$ShapesTbl.ColumnCount = 2
+$ShapesTbl.CellBorderStyle = 2
 
 #$formGraphics = $form.createGraphics()
 $x = 10
 $y= 10
 
-$ShowPRFbtn = New-Object system.Windows.Forms.Button
-$ShowPRFbtn.Location = New-Object System.Drawing.Size(1000,38) 
-$ShowPRFbtn.BackColor = "#d2d4d6"
-$ShowPRFbtn.text = "Clear"
-$ShowPRFbtn.width = 120
-$ShowPRFbtn.height = 25
-$ShowPRFbtn.Font = 'Microsoft Sans Serif,10'
-$ShowPRFbtn.ForeColor = "#000"
-$ShowPRFbtn.Add_Click({
-
-  $arrRegions.Clear()
-  $g.Clear([System.Drawing.Color]::White)
-
-})
 
 $ShowPRFbtn = New-Object system.Windows.Forms.Button
 #$ShowPRFbtn.Location = New-Object System.Drawing.Size(1000,38) 
 $ShowPRFbtn.BackColor = "#d2d4d6"
-$ShowPRFbtn.text = "Clear"
-$ShowPRFbtn.width = 120
+$ShowPRFbtn.text = "پاک کردن همه شکلها"
+$ShowPRFbtn.width = 110
 $ShowPRFbtn.height = 25
 $ShowPRFbtn.Font = 'Microsoft Sans Serif,10'
 $ShowPRFbtn.ForeColor = "#000"
@@ -348,14 +345,14 @@ $ShowPRFbtn.Add_Click({
 
           $arrRegions.Clear()
     }
-    $DesktopGB.Invalidate()         
+    $DesktopPan.Invalidate()         
 })
 
 $DelShape = New-Object system.Windows.Forms.Button
 $DelShape.Location = New-Object System.Drawing.Size(2,50) 
 $DelShape.BackColor = "#d2d4d6"
 $DelShape.text = "حذف شکل"
-$DelShape.width = 120
+$DelShape.width = 110
 $DelShape.height = 25
 $DelShape.Font = 'Microsoft Sans Serif,10'
 $DelShape.ForeColor = "#000"
@@ -363,74 +360,101 @@ $DelShape.Add_Click({
     funDelShape       
 })
 
-$circle = New-Object System.Windows.Forms.CheckBox
-$circle.name = 'circle'
-$image = [System.Drawing.Image]::FromFile("D:\ATE\IT\Root\images\VCircle.png")
-
-$circle.Image= $image
-$circle.Location = New-Object System.Drawing.Size(20,100) 
-$circle.Appearance = 1
-$circle.FlatStyle = 2
-$circle.width = 80
-$circle.height = 80
-$circle.Padding = 5
-$circle.Add_click({
-    If(!$This.Checked){$DesktopGB.Focus()}
-    funDisAllShapes $circle
+$StartCircle = New-Object System.Windows.Forms.CheckBox
+$StartCircle.Size = New-Object System.Drawing.Size(45,45)
+$StartCircle.name = 'StartCircle'
+$image = [System.Drawing.Image]::FromFile("D:\ATE\IT\Root\images\StartCircle.png")
+$StartCircle.Image= $image
+#$StartCircle.Location = New-Object System.Drawing.Size(20,100) 
+$StartCircle.Appearance = 1
+$StartCircle.FlatStyle = 2
+#$StartCircle.width = 80
+#$StartCircle.height = 80
+#$StartCircle.AutoSize = $true
+#$StartCircle.Padding = 5
+$StartCircle.Add_click({
+    If(!$This.Checked){$DesktopPan.Focus()}
+    funDisAllShapes $StartCircle
 })
 
+$InterCircle = New-Object System.Windows.Forms.CheckBox
+$InterCircle.Size = New-Object System.Drawing.Size(45,45)
+$InterCircle.name = 'InterCircle'
+$image = [System.Drawing.Image]::FromFile("D:\ATE\IT\Root\images\InterCircle.png")
+$InterCircle.Image= $image
+#$StartCircle.Location = New-Object System.Drawing.Size(20,100) 
+$InterCircle.Appearance = 1
+$InterCircle.FlatStyle = 2
+#$StartCircle.width = 80
+#$StartCircle.height = 80
+#$StartCircle.AutoSize = $true
+#$StartCircle.Padding = 5
+$InterCircle.Add_click({
+    If(!$This.Checked){$DesktopPan.Focus()}
+    funDisAllShapes $InterCircle
+})
+
+
+
 $Dimond = New-Object System.Windows.Forms.CheckBox
+$Dimond.Size = New-Object System.Drawing.Size(45,45)
 $Dimond.name = 'Dimond'
 $image = [System.Drawing.Image]::FromFile("D:\ATE\IT\Root\images\VDimond.png")
 $Dimond.Image= $image
 $Dimond.ImageAlign = 'MiddleCenter'
-$Dimond.Location = New-Object System.Drawing.Size(20,200) 
+#$Dimond.Location = New-Object System.Drawing.Size(20,200) 
 $Dimond.Appearance = 1
 $Dimond.FlatStyle = 2
 $Dimond.Add_click({
-    If(!$This.Checked){$DesktopGB.Focus()}
+    If(!$This.Checked){$DesktopPan.Focus()}
     funDisAllShapes $Dimond
 })
-
-$Dimond.width = 80
-$Dimond.height =80
 $Dimond.Padding = 5
 
 
 $Square = New-Object System.Windows.Forms.CheckBox
+$Square.Size = New-Object System.Drawing.Size(45,45)
 $Square.name = 'Square'
 $image = [System.Drawing.Image]::FromFile("D:\ATE\IT\Root\images\VSquare.png")
 $Square.Image= $image
 $Square.ImageAlign = 'MiddleCenter'
-$Square.Location = New-Object System.Drawing.Size(20,300) 
 $Square.Appearance = 1
 $Square.FlatStyle = 2
-
-$Square.width = 80
-$Square.height =80
 $Square.Padding = 5
 $Square.Add_click({
-    If(!$This.Checked){$DesktopGB.Focus()}
+    If(!$This.Checked){$DesktopPan.Focus()}
     funDisAllShapes $Square
 })
 
+$MainTbl = New-Object System.Windows.Forms.TableLayoutPanel
+#$MainTbl.Location = New-Object System.Drawing.Size(2,50) 
+$MainTbl.AutoSize = $true
+$MainTbl.CellBorderStyle = 0
+#$MainTbl.BackColor = "#d2d4d6"
+$MainTbl.ColumnCount = 3
+$MainTbl.RowCount = 3
 
+$butsTbl =  New-Object System.Windows.Forms.TableLayoutPanel
+$butsTbl.BackColor = ''
+$butsTbl.Controls.Add($ShowPRFbtn)
+$butsTbl.Controls.Add($DelShape)
+$butsTbl.AutoSize = $true
 
-$butsGB =  New-Object System.Windows.Forms.GroupBox
-$butsGB.BackColor = 'red'
-$butsGB.Controls.Add($ShowPRFbtn)
-$butsGB.Controls.Add($DelShape)
+#$ShapesTbl.Controls.Add($butsPanel)
+$ShapesTbl.Controls.Add($StartCircle,0,0)
+$ShapesTbl.Controls.Add($InterCircle,0,0)
+$ShapesTbl.Controls.Add($Dimond,0,1)
+$ShapesTbl.Controls.Add($Square,1,0)
+#$DesktopPan.Controls.Add()
 
-#$ShapesGB.Controls.Add($butsPanel)
-$ShapesGB.Controls.Add($circle)
-$ShapesGB.Controls.Add($Dimond)
-$ShapesGB.Controls.Add($Square)
-#$DesktopGB.Controls.Add()
-$form.Controls.Add($DesktopGB)
-$form.Controls.Add($ShapesGB)
-$form.Controls.Add($butsGB)
+$MainTbl.Controls.Add($DesktopPan,1,0)
+$MainTbl.Controls.Add($ShapesTbl,0,0)
+$MainTbl.Controls.Add($butsTbl,0,1)
+$MainTbl.SetRowSpan($DesktopPan,3)
+
+$form.Controls.Add($MainTbl)
 $form.Add_Load{
-    Set-DoubleBuffer -grid $DesktopGB -Enabled $true
+    Set-DoubleBuffer -grid $DesktopPan -Enabled $true
 }
 
 [void]$form.ShowDialog()   # display the dialog
