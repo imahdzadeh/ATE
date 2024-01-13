@@ -1,20 +1,52 @@
-﻿#Load the GDI+ and WinForms Assemblies
+﻿﻿#Load the GDI+ and WinForms Assemblies
 [void][reflection.assembly]::LoadWithPartialName( "System.Windows.Forms")
 [void][reflection.assembly]::LoadWithPartialName( "System.Drawing")
 
-Function funDisAllShapes($O) {
+Function funDelShape{
+    If ($arrRegions.Count -gt 0 -and $global:objShape -ne $null)
+    {
+        $arrRegions.Remove($global:objShape)       
+    }
+    $DesktopGB.Invalidate()     
+}
 
+$DesktopGB = New-Object system.Windows.Forms.Groupbox
+$DesktopGB.BackColor = ''
+$DesktopGB.Location = New-Object System.Drawing.size(120,50)
+$DesktopGB.Size = New-Object System.Drawing.Size(1100,700)
+#$DesktopGB.Dock = [System.Windows.Forms.DockStyle]::Fill
+$DesktopGB.AutoSize = $true
+$DesktopGB.name = "Main"
+
+
+$DesktopGB.Add_KeyDown({
+if ($_.KeyCode -eq [System.Windows.Forms.Keys]::Delete) {     
+            funDelShape
+        }
+})
+
+Function funDisAllShapes($O) {
     foreach($obj in $shapesGB.Controls)
     {
         If($obj -ne $O)
         {
             $obj.checked = $false   
         }    
-    }
-    
+    }    
+}
+
+function Set-DoubleBuffer {
+    param ([Parameter(Mandatory = $true)]
+        [System.Windows.Forms.GroupBox]$grid,
+        [boolean]$Enabled)  
+    $type = $grid.GetType();
+    $propInfo = $type.GetProperty("DoubleBuffered", ('Instance','NonPublic'))
+    $propInfo.SetValue($grid, $Enabled)
 }
 
 $intIterate = 0
+$bolMouseDown = $false
+$objShape = $null
 
 $arrRegions = [System.Collections.ArrayList]@()
 # Create pen and brush objects 
@@ -22,7 +54,7 @@ $myBrush = new-object Drawing.SolidBrush black
 $mypen = new-object Drawing.Pen black,2
 $mypen2 = new-object Drawing.Pen gray, 4
 $mypen3 = new-object Drawing.Pen white, 4
-$mypen2.Color = [System.Drawing.Color]::FromArgb(200,200,200)
+$mypen2.Color = [System.Drawing.Color]::FromArgb(180,180,180)
 $bigarrow = New-Object System.Drawing.Drawing2D.AdjustableArrowCap 5,5
 #$mypen.color = "black" # Set the pen color
 #$mypen.width = 4     # ste the pen line width
@@ -45,140 +77,151 @@ $fonty = New-Object System.Drawing.Font 'arial',16
 
 # Create a Form
 $form = New-Object Windows.Forms.Form
-$form.Size = New-Object Drawing.Size 1200, 800
+
+$form.BackColor = [System.Drawing.Color]::FromArgb(220,220,220)
+$form.Size = New-Object Drawing.Size 1300, 800
 $form.AutoScroll = $true
 # Get the form's graphics object
-$DesktopGB = New-Object system.Windows.Forms.Groupbox
-$DesktopGB.Size = New-Object System.Drawing.Size(1100,750)
-#$DesktopGB.Dock = [System.Windows.Forms.DockStyle]::Fill
-$DesktopGB.AutoSize = $true
+
+
+
+
+
 $DesktopGB.Add_paint({
     param([System.Object]$s, [System.Windows.Forms.PaintEventArgs]$e)
-    
+#    $e.Graphics.InterpolationMode = 2
+    $e.Graphics.SmoothingMode = 4
     $mouse = [System.Windows.Forms.Cursor]::Position
     $point = $DesktopGB.PointToClient($mouse)
-    If ($show.Checked -or $show2.Checked -or $PolygonRB.Checked)
+    If ($circle.Checked -or $Dimond.Checked -or $Square.Checked)
     {
         $Global:intIterate ++
-
         $point.X = $point.X - 50
         $point.Y = $point.Y - 50
-
-        $Test= ($ShapesGB.Controls | Where-Object -FilterScript {$_.Checked}).name
-
         switch (($ShapesGB.Controls | Where-Object -FilterScript {$_.Checked}).name)
         {
-            'circle' {
-
+            'circle' {          
                 $myPath = New-Object System.Drawing.Drawing2D.GraphicsPath
                 $myPath2 = New-Object System.Drawing.Drawing2D.GraphicsPath
                 $myPath.AddEllipse($point.X,$point.Y,100,100)
-                $myPath2.AddEllipse(($point.X)-2,($point.Y)-2,105,105)
-
+                $myPath2.AddEllipse(($point.X)-2,($point.Y)-2,104,104)
                 $myregion2 = new-object System.Drawing.Region  $myPath2
                 New-Variable -Force -Name "$(($ShapesGB.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate" -Value (new-object System.Drawing.Region  $myPath) 
                 $myregion = Get-Variable -ValueOnly -Include "$(($ShapesGB.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate"
-
                 $strMess = 'test'
-
-                [void]$arrRegions.Add(              
-                    [pscustomobject]@{
-                        name = "$(($ShapesGB.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate"
-                        Location = $location
-                        myregion = $myregion
-                        myregion2 = $myregion2
-                        P = $point
-                        myPath = $myPath
-                        myPath2 = $myPath2
-                        str = $strMess
-                    }                    
-                )     
+                $objPSCircle = [pscustomobject]@{
+                    name = "$(($ShapesGB.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate"
+                    type = 'Circle'
+                    Location = $location
+                    myregion = $myregion
+                    myregion2 = $myregion2
+                    P = $point
+                    myPath = $myPath
+                    myPath2 = $myPath2
+                    str = $strMess
+                }
+                [void]$arrRegions.Add($objPSCircle)                
+                 If(($Global:bolMouseDown) -and ($global:objShape -ne $null))
+                 {
+                    $global:objShape = $objPSCircle
+                 }
             }
             'dimond' {
                 
-                $p1 = New-Object System.Drawing.Point ($point.X) , ($point.Y+50)
-                $p2 = New-Object System.Drawing.Point ($point.X+50 ), ($point.Y)
-                $p3 = New-Object System.Drawing.Point ($point.X+50) , ($point.Y)
-                $p4 = New-Object System.Drawing.Point ($point.X+100 ), ($point.Y+50)
-                $p5 = New-Object System.Drawing.Point ($point.X+100 ), ($point.Y+50)
-                $p6 = New-Object System.Drawing.Point ($point.X+50 ), ($point.Y+100)
-                $points = @($p1,$p2,$p3,$p4,$p5,$p6)
+                $pp1 = New-Object System.Drawing.Point ($point.X) , ($point.Y+50)
+                $pp2 = New-Object System.Drawing.Point ($point.X+50 ), ($point.Y)
+                $pp3 = New-Object System.Drawing.Point ($point.X+100 ), ($point.Y+50)
+                $pp4 = New-Object System.Drawing.Point ($point.X+50 ), ($point.Y+100)
+                $points = @($pp1,$pp2,$pp3,$pp4)
+
+                $sp1 = New-Object System.Drawing.Point ($pp1.X-2) , ($pp1.Y)
+                $sp2 = New-Object System.Drawing.Point ($pp2.X ), ($pp2.Y-2)
+                $sp3 = New-Object System.Drawing.Point ($pp3.X+2) , ($pp3.Y)
+                $sp4 = New-Object System.Drawing.Point ($pp4.X ), ($pp4.Y+2)
+                $points2 = @($sp1,$sp2,$sp3,$sp4)
 
                 $myPath = New-Object System.Drawing.Drawing2D.GraphicsPath
                 $myPath2 = New-Object System.Drawing.Drawing2D.GraphicsPath
                 $myPath.AddPolygon($points)
-                $myPath2.AddPolygon($points)
+                $myPath2.AddPolygon($points2)
                 $myregion2 = new-object System.Drawing.Region  $myPath2
                 New-Variable -Force -Name "$(($ShapesGB.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate" -Value (new-object System.Drawing.Region  $myPath) 
                 $myregion = Get-Variable -ValueOnly -Include "$(($ShapesGB.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate"
-                [void]$arrRegions.Add($myregion) 
-
-                [void]$arrRegions.Add(              
-                    [pscustomobject]@{
-                        name = "$(($ShapesGB.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate"
-                        Location = $location
-                        myregion = $myregion
-                        myregion2 = $myregion2
-                        P = $point
-                        myPath = $myPath
-                        myPath2 = $myPath2
-                        str = $strMess
-                })
-            
+                $objPSDimond = [pscustomobject]@{
+                    name = "$(($ShapesGB.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate"
+                    type = 'Dimond'
+                    Location = $location
+                    myregion = $myregion
+                    myregion2 = $myregion2
+                    P = $point
+                    myPath = $myPath
+                    myPath2 = $myPath2
+                    str = $strMess
+                 }
+                [void]$arrRegions.Add($objPSDimond)                
+                 If(($Global:bolMouseDown) -and ($global:objShape -ne $null))
+                 {
+                    $global:objShape = $objPSDimond
+                 }           
             }
             'Square' {
 
-                $p1 = New-Object System.Drawing.Point ($point.X-25) , ($point.Y+15)
-                $p2 = New-Object System.Drawing.Point ($point.X+125 ), ($point.Y+15)
-                $p3 = New-Object System.Drawing.Point ($point.X+125) , ($point.Y+85)
-                $p4 = New-Object System.Drawing.Point ($point.X-25 ), ($point.Y+85)
-                $points = @($p1,$p2,$p3,$p4)
+                $pp1 = New-Object System.Drawing.Point ($point.X-25) , ($point.Y+15)
+                $pp2 = New-Object System.Drawing.Point ($point.X+125 ), ($point.Y+15)
+                $pp3 = New-Object System.Drawing.Point ($point.X+125) , ($point.Y+85)
+                $pp4 = New-Object System.Drawing.Point ($point.X-25 ), ($point.Y+85)
+                $points = @($pp1,$pp2,$pp3,$pp4)
+
+                $sp1 = New-Object System.Drawing.Point ($pp1.X-2 ), ($pp1.Y-2)
+                $sp2 = New-Object System.Drawing.Point ($pp2.X+2 ), ($pp2.Y-2)
+                $sp3 = New-Object System.Drawing.Point ($pp3.X+2) , ($pp3.Y+2)
+                $sp4 = New-Object System.Drawing.Point ($pp4.X-2 ), ($pp4.Y+2)
+                $points2 = @($sp1,$sp2,$sp3,$sp4)
                 
                 $myPath = New-Object System.Drawing.Drawing2D.GraphicsPath
                 $myPath2 = New-Object System.Drawing.Drawing2D.GraphicsPath
                 $myPath.AddPolygon($points)
-                $myPath2.AddPolygon($points)
+                $myPath2.AddPolygon($points2)
                 $myregion2 = new-object System.Drawing.Region  $myPath2
                 New-Variable -Force -Name "$(($ShapesGB.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate" -Value (new-object System.Drawing.Region  $myPath) 
                 $myregion = Get-Variable -ValueOnly -Include "$(($ShapesGB.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate"
-             
-                [void]$arrRegions.Add(              
-                    [pscustomobject]@{
-                        name = "$(($ShapesGB.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate"
-                        Location = $location
-                        myregion = $myregion
-                        myregion2 = $myregion2
-                        P = $point
-                        myPath = $myPath
-                        myPath2 = $myPath2
-                        str = $strMess
-                })           
+                $objPSSquare = [pscustomobject]@{
+                    name = "$(($ShapesGB.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate"
+                    type = 'Square'
+                    Location = $location
+                    myregion = $myregion
+                    myregion2 = $myregion2
+                    P = $point
+                    myPath = $myPath
+                    myPath2 = $myPath2
+                    str = $strMess
+                }
+                [void]$arrRegions.Add($objPSSquare              
+                    )               
+                If(($Global:bolMouseDown) -and ($global:objShape -ne $null))
+                {
+                $global:objShape = $objPSSquare
+                }            
             }
         }
 
     }
     If ($arrRegions.count -gt 0)
     {
-#        foreach($arrItem in $arrRegions)
          for($i = 0; $i -lt $arrRegions.Count; $i++)
         {
- #           If ($arrItem.isVisible($point))
             $arrItem = $arrRegions[$i]
- #           If ($arrItem.isVisible($point))
             If ($arrItem.myregion.isVisible($point))
             {
-                If($Show2.Checked -eq $false)
-                {
-                    $test   
-                }
-                $Show.Checked = $false
-                $Show.Refresh()
-                $Show2.Checked = $false
-                $Show2.Refresh()
-                $PolygonRB.checked = $false
-                $PolygonRB.Refresh()
+                $circle.Checked = $false
+                $circle.Refresh()
+                $Dimond.Checked = $false
+                $Dimond.Refresh()
+                $Square.checked = $false
+                $Square.Refresh()
 
                 $DesktopGB.Focus()
+
                 $e.Graphics.DrawPath($mypen2, $arrItem.myPath2)
                 $e.Graphics.DrawPath($mypen, $arrItem.myPath)
                 $e.Graphics.DrawString("test", $fonty , $myBrush, $arrItem.p.X+40,$arrItem.p.y+55, [System.Drawing.StringFormat]::GenericDefault)
@@ -188,98 +231,92 @@ $DesktopGB.Add_paint({
             }
             Else
             {
+
                 $e.Graphics.DrawPath($mypen, $arrItem.myPath)
                 $e.Graphics.DrawString("test", $fonty , $myBrush, $arrItem.p.X+40,$arrItem.p.y+55, [System.Drawing.StringFormat]::GenericDefault)
                 $e.Graphics.DrawImage($avatar,$arrItem.p.X+50,$arrItem.p.y+55,10,10)
                 $e.Graphics.SetClip($arrItem.myregion,4)
             }
         }  
-    }     
-   
+    }       
 })
 
  
 
 $DesktopGB.add_MouseDown({
-
+$Global:bolMouseDown = $true
+$Global:objShape = $null
 $mouse = [System.Windows.Forms.Cursor]::Position
 $point = $DesktopGB.PointToClient($mouse)
     If ($arrRegions.Count -gt 0)
     {
-#        foreach($arrItem in $arrRegions)
          for($i = 0; $i -lt $arrRegions.Count; $i++)
         {
- #           If ($arrItem.isVisible($point))
             $arrItem = $arrRegions[$i]
             If ($arrItem.myregion2.isVisible($point))
             {
-                If($Show2.Checked -eq $false)
-                {
-                    $test   
-                }
-                write-host "inside"
-                $Show.Checked = $false
-                $Show.Refresh()
-                $Show2.Checked = $false
-                $Show2.Refresh()
-                $PolygonRB.checked = $false
-                $PolygonRB.Refresh()
-                $desktopGB.Invalidate($arrItem.myregion2)
+                $circle.Checked = $false
+                $circle.Refresh()
+                $Dimond.Checked = $false
+                $Dimond.Refresh()
+                $Square.checked = $false
+                $Square.Refresh()
+ #               $objShape = Get-Variable -ValueOnly -Include $arrItem.type
+#                $objShape.Checked = $true
+                $global:objShape = $arrItem
+   #             $desktopGB.Invalidate($arrItem.myregion2)
                  
             }
             Else
             {
-                $desktopGB.Invalidate()           
+ #               $desktopGB.Invalidate()           
             }
         }  
     }
     Else
     {
-         $desktopGB.Invalidate() 
+#         $desktopGB.Invalidate() 
+    }
+$desktopGB.Invalidate() 
+})
+
+$DesktopGB.add_MouseUp({
+    If($Global:bolMouseDown)
+    {
+        $Global:bolMouseDown = $false
+        If ($Global:objShape -ne $null)
+        {
+            foreach($cont in $ShapesGB.Controls)
+            {
+                $cont.checked = $false
+            }
+        }
+    }
+   
+
+})
+
+$desktopGB.add_MouseMove({
+    If(($Global:bolMouseDown) -and ($global:objShape -ne $null))
+    {
+         $objShape = Get-Variable -ValueOnly -Include $global:objShape.type               
+         $objShape.Checked = $true
+         $arrRegions.Remove($global:objShape)         
+         $DesktopGB.Invalidate() 
     }
 
 })
 
-
-
-$DesktopGB.add_MouseUp({
-
-  
-
-})
-
-
-
 $ShapesGB = New-Object system.Windows.Forms.Groupbox
+$ShapesGB.BackColor = 'blue'
 $ShapesGB.Size = New-Object System.Drawing.Size(100,700)
+$ShapesGB.Location = New-Object System.Drawing.size(2,100)
 #$DesktopGB.Dock = [System.Windows.Forms.DockStyle]::Fill
 $ShapesGB.AutoSize = $true
 
 #$formGraphics = $form.createGraphics()
 $x = 10
 $y= 10
-
-
-#$test.DrawString("test", [System.Drawing.Font]::GenericDefault, [System.Drawing.SystemBrushes]::ControlText, 50, 50, [System.Drawing.StringFormat]::GenericDefault)   
-
-
-# Define the paint handler
-<#
-$DesktopGB.add_paint(
-{
-
-#$formGraphics.FillEllipse($myBrush, $rect) # draw an ellipse using rectangle object
-
-
-
-
-#$formGraphics.DrawLine($mypen, 300, 10, 300, 190) # draw a line
-
-
-
-}
-)
-#>
 
 $ShowPRFbtn = New-Object system.Windows.Forms.Button
 $ShowPRFbtn.Location = New-Object System.Drawing.Size(1000,38) 
@@ -290,24 +327,14 @@ $ShowPRFbtn.height = 25
 $ShowPRFbtn.Font = 'Microsoft Sans Serif,10'
 $ShowPRFbtn.ForeColor = "#000"
 $ShowPRFbtn.Add_Click({
-#$g.Clear('window')
-#$g.Flush()
-<#
-foreach($arrItem in $arrRegions)
-  {
-    $arrRegions.Clear()
-  }
-#>
+
   $arrRegions.Clear()
   $g.Clear([System.Drawing.Color]::White)
-#$test.DrawLine($mypen, 10, 100, 100, 150) # draw a line
-#$test.Clear('red')
-#$form.Refresh()
 
 })
 
 $ShowPRFbtn = New-Object system.Windows.Forms.Button
-$ShowPRFbtn.Location = New-Object System.Drawing.Size(1000,38) 
+#$ShowPRFbtn.Location = New-Object System.Drawing.Size(1000,38) 
 $ShowPRFbtn.BackColor = "#d2d4d6"
 $ShowPRFbtn.text = "Clear"
 $ShowPRFbtn.width = 120
@@ -319,89 +346,91 @@ $ShowPRFbtn.Add_Click({
   If($arrRegions.Count -gt 0)
   {  
 
-  <#          
-            $DesktopGB.Invalidate($arrItem.region)
-            $DesktopGB.Invalidate($arrItem.region2)
-            $DesktopGB.Invalidate($arrItem.Path)
-            $DesktopGB.Invalidate($arrItem.Path2)
-     
-             $arrItem.region.dispose()
-            $arrItem.region2.dispose()
-            $arrItem.Path.dispose()
-            $arrItem.Path2.dispose()
-#>
-        $arrRegions.Clear()
+          $arrRegions.Clear()
     }
- #           $DesktopGB.Invalidate($arrItem.region2)
- #           $g.Clear([System.Drawing.Color]::White)
     $DesktopGB.Invalidate()         
 })
 
-$Show = New-Object System.Windows.Forms.CheckBox
-$Show.name = 'circle'
+$DelShape = New-Object system.Windows.Forms.Button
+$DelShape.Location = New-Object System.Drawing.Size(2,50) 
+$DelShape.BackColor = "#d2d4d6"
+$DelShape.text = "حذف شکل"
+$DelShape.width = 120
+$DelShape.height = 25
+$DelShape.Font = 'Microsoft Sans Serif,10'
+$DelShape.ForeColor = "#000"
+$DelShape.Add_Click({
+    funDelShape       
+})
+
+$circle = New-Object System.Windows.Forms.CheckBox
+$circle.name = 'circle'
 $image = [System.Drawing.Image]::FromFile("D:\ATE\IT\Root\images\VCircle.png")
 
-$Show.Image= $image
-$Show.Location = New-Object System.Drawing.Size(20,100) 
-$Show.Appearance = 1
-$Show.FlatStyle = 2
-#$Show.BackColor = "#d2d4d6"
-#$Show.text = "sec square"
-$Show.width = 80
-$Show.height = 80
-$Show.Padding = 5
-$Show.Add_click({
+$circle.Image= $image
+$circle.Location = New-Object System.Drawing.Size(20,100) 
+$circle.Appearance = 1
+$circle.FlatStyle = 2
+$circle.width = 80
+$circle.height = 80
+$circle.Padding = 5
+$circle.Add_click({
     If(!$This.Checked){$DesktopGB.Focus()}
-    funDisAllShapes $Show
+    funDisAllShapes $circle
 })
-#$Show.Font = 'Microsoft Sans Serif,10'
-#$Show.ForeColor = "#000"
-#$Show.
 
-$Show2 = New-Object System.Windows.Forms.CheckBox
-$Show2.name = 'Dimond'
+$Dimond = New-Object System.Windows.Forms.CheckBox
+$Dimond.name = 'Dimond'
 $image = [System.Drawing.Image]::FromFile("D:\ATE\IT\Root\images\VDimond.png")
-$Show2.Image= $image
-$Show2.ImageAlign = 'MiddleCenter'
-$Show2.Location = New-Object System.Drawing.Size(20,200) 
-$Show2.Appearance = 1
-$Show2.FlatStyle = 2
-$Show2.Add_click({
+$Dimond.Image= $image
+$Dimond.ImageAlign = 'MiddleCenter'
+$Dimond.Location = New-Object System.Drawing.Size(20,200) 
+$Dimond.Appearance = 1
+$Dimond.FlatStyle = 2
+$Dimond.Add_click({
     If(!$This.Checked){$DesktopGB.Focus()}
-    funDisAllShapes $Show2
+    funDisAllShapes $Dimond
 })
-#$Show.BackColor = "#d2d4d6"
-#$Show.text = "sec square"
-$Show2.width = 80
-$Show2.height =80
-$Show2.Padding = 5
+
+$Dimond.width = 80
+$Dimond.height =80
+$Dimond.Padding = 5
 
 
-$PolygonRB = New-Object System.Windows.Forms.CheckBox
-$PolygonRB.name = 'Square'
+$Square = New-Object System.Windows.Forms.CheckBox
+$Square.name = 'Square'
 $image = [System.Drawing.Image]::FromFile("D:\ATE\IT\Root\images\VSquare.png")
-$PolygonRB.Image= $image
-$PolygonRB.ImageAlign = 'MiddleCenter'
-$PolygonRB.Location = New-Object System.Drawing.Size(20,300) 
-$PolygonRB.Appearance = 1
-$PolygonRB.FlatStyle = 2
-#$Show.BackColor = "#d2d4d6"
-#$Show.text = "sec square"
-$PolygonRB.width = 80
-$PolygonRB.height =80
-$PolygonRB.Padding = 5
-$PolygonRB.Add_click({
+$Square.Image= $image
+$Square.ImageAlign = 'MiddleCenter'
+$Square.Location = New-Object System.Drawing.Size(20,300) 
+$Square.Appearance = 1
+$Square.FlatStyle = 2
+
+$Square.width = 80
+$Square.height =80
+$Square.Padding = 5
+$Square.Add_click({
     If(!$This.Checked){$DesktopGB.Focus()}
-    funDisAllShapes $PolygonRB
+    funDisAllShapes $Square
 })
 
-$g = $DesktopGB.CreateGraphics()
-$g.SmoothingMode = 2
 
-$ShapesGB.Controls.Add($PolygonRB)
-$ShapesGB.Controls.Add($Show)
-$ShapesGB.Controls.Add($Show2)
-$DesktopGB.Controls.Add($ShapesGB)
-$DesktopGB.Controls.Add($ShowPRFbtn)
+
+$butsGB =  New-Object System.Windows.Forms.GroupBox
+$butsGB.BackColor = 'red'
+$butsGB.Controls.Add($ShowPRFbtn)
+$butsGB.Controls.Add($DelShape)
+
+#$ShapesGB.Controls.Add($butsPanel)
+$ShapesGB.Controls.Add($circle)
+$ShapesGB.Controls.Add($Dimond)
+$ShapesGB.Controls.Add($Square)
+#$DesktopGB.Controls.Add()
 $form.Controls.Add($DesktopGB)
+$form.Controls.Add($ShapesGB)
+$form.Controls.Add($butsGB)
+$form.Add_Load{
+    Set-DoubleBuffer -grid $DesktopGB -Enabled $true
+}
+
 [void]$form.ShowDialog()   # display the dialog
