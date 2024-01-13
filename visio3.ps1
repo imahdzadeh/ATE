@@ -1,4 +1,4 @@
-﻿﻿#Load the GDI+ and WinForms Assemblies
+﻿# Load the GDI+ and WinForms Assemblies
 [void][reflection.assembly]::LoadWithPartialName( "System.Windows.Forms")
 [void][reflection.assembly]::LoadWithPartialName( "System.Drawing")
 
