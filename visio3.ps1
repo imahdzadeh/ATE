@@ -1,4 +1,5 @@
 ﻿using namespace System.IO
+using namespace System.Collections
 using namespace System.Drawing
 using namespace System.Drawing.Imaging
 using namespace System.Windows.Forms
@@ -97,7 +98,7 @@ $arrRegions = [System.Collections.ArrayList]@()
 $myBrush = new-object Drawing.SolidBrush black
 $mypen = new-object Drawing.Pen black,2
 $mypen2 = new-object Drawing.Pen gray, 4
-$mypen3 = new-object Drawing.Pen black, 6
+$mypen3 = new-object Drawing.Pen black, 10
 $mypen2.Color = [System.Drawing.Color]::FromArgb(180,180,180)
 $bigarrow = New-Object Drawing2D.AdjustableArrowCap 5,5
 #$mypen.color = "black" # Set the pen color
@@ -132,8 +133,10 @@ $form.AutoScroll = $true
 $arcSize = 10
 $ShadowSize = 2
 $squareSize = 150
+$squareSizeY = 100
 $DimondSize = 50
-$CircleSize = 50
+$StartCircleSize = 50
+$InterCircleSize = 50
 $DataObjSizeY = 50
 $DataObjSizeX = 35
 
@@ -155,8 +158,8 @@ $DesktopPan.Add_paint({
                 $point.Y = $point.Y + 25       
                 $myPath = New-Object Drawing2D.GraphicsPath
                 $myPath2 = New-Object Drawing2D.GraphicsPath
-                $myPath.AddEllipse($point.X,$point.Y,$CircleSize,$CircleSize)
-                $myPath2.AddEllipse(($point.X)-$ShadowSize,($point.Y)-$ShadowSize,$CircleSize+($ShadowSize*2),$CircleSize+($ShadowSize*2))
+                $myPath.AddEllipse($point.X,$point.Y,$StartCircleSize,$StartCircleSize)
+                $myPath2.AddEllipse(($point.X)-$ShadowSize,($point.Y)-$ShadowSize,$StartCircleSize+($ShadowSize*2),$StartCircleSize+($ShadowSize*2))
                 $myregion2 = new-object Region  $myPath2
                 New-Variable -Force -Name "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate" -Value (new-object Region  $myPath) 
                 $myregion = Get-Variable -ValueOnly -Include "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate"
@@ -167,11 +170,13 @@ $DesktopPan.Add_paint({
                     Location = $location
                     myregion = $myregion
                     myregion2 = $myregion2
-                    P = $point
+                    P1 = New-Object Point ($point.X) , ($point.Y -10)
+                    P2 = New-Object Point ($point.X) , (($point.Y + $StartCircleSize)+10)
                     myPath = $myPath
                     myPath2 = $myPath2
                     myPen1 = $mypen
-                   
+                    fillColor = [color]::lightgreen
+                    ConnObj = [ArrayList]@()
                     str = $strMess
                 }
                 [void]$arrRegions.Add($objPSCircle)                
@@ -185,9 +190,9 @@ $DesktopPan.Add_paint({
                 $point.Y = $point.Y + 25            
                 $myPath = New-Object Drawing2D.GraphicsPath
                 $myPath2 = New-Object Drawing2D.GraphicsPath
-                $myPath.AddEllipse($point.X,$point.Y,$CircleSize-4,$CircleSize-4)
+                $myPath.AddEllipse($point.X,$point.Y,$InterCircleSize-4,$InterCircleSize-4)
                 
-                $myPath2.AddEllipse(($point.X)-($ShadowSize*2),($point.Y)-($ShadowSize*2),$CircleSize+($ShadowSize*2),$CircleSize+($ShadowSize*2))
+                $myPath2.AddEllipse(($point.X)-($ShadowSize*2),($point.Y)-($ShadowSize*2),$InterCircleSize+($ShadowSize*2),$InterCircleSize+($ShadowSize*2))
                 $myregion2 = new-object Region  $myPath2
                 New-Variable -Force -Name "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate" -Value (new-object Region  $myPath) 
                 $myregion = Get-Variable -ValueOnly -Include "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate"
@@ -198,11 +203,12 @@ $DesktopPan.Add_paint({
                     Location = $location
                     myregion = $myregion
                     myregion2 = $myregion2
-                    P = $point
+                    P1 = New-Object Point ($point.X) , ($point.Y -10)
+                    P2 = New-Object Point ($point.X) , (($point.Y + $InterCircleSize)+10)
                     myPath = $myPath
                     myPath2 = $myPath2
                     myPen1 = $mypen3
-                    
+                    fillColor = [color]::BurlyWood
                     str = $strMess
                 }
                 [void]$arrRegions.Add($objPSInterCircle)                
@@ -254,11 +260,12 @@ $DesktopPan.Add_paint({
                     Location = $location
                     myregion = $myregion
                     myregion2 = $myregion2
-                    P = $point
+                    P1 = New-Object Point ($point.X) , ($point.Y -10)
+                    P2 = New-Object Point ($point.X) , (($point.Y + $DimondSize)+10)
                     myPath = $myPath
                     myPath2 = $myPath2
                     myPen1 = $mypen
-                    
+                    fillColor = [color]::FromArgb(216, 191, 216)
                     str = $strMess
                  }
                 [void]$arrRegions.Add($objPSDimond)                
@@ -308,11 +315,12 @@ $DesktopPan.Add_paint({
                     Location = $location
                     myregion = $myregion
                     myregion2 = $myregion2
-                    P = $point
+                    P1 = New-Object Point ($point.X) , ($point.Y -$arcSize)
+                    P2 = New-Object Point ($point.X) , (($point.Y + $squareSizeY)+$arcSize)
                     myPath = $myPath
                     myPath2 = $myPath2
                     myPen1 = $mypen
-                    
+                    fillColor = [color]::lightblue
                     str = $strMess
                 }
                 [void]$arrRegions.Add($objPSSquare)               
@@ -364,11 +372,12 @@ $DesktopPan.Add_paint({
                     Location = $location
                     myregion = $myregion
                     myregion2 = $myregion2
-                    P = $point
+                    P1 = New-Object Point ($point.X) , ($point.Y - $DataObjSizeY)
+                    P2 = New-Object Point ($point.X) , ($point.Y + $DataObjSizeY)
                     myPath = $myPath
                     myPath2 = $myPath2
                     myPen1 = $mypen
-                    
+                    fillColor = [color]::FromArgb(211,211,211)
                     str = $strMess
                 }
                 [void]$arrRegions.Add($objPSSquare)               
@@ -393,11 +402,15 @@ $DesktopPan.Add_paint({
                 $Dimond.Refresh()
                 $Square.checked = $false
                 $Square.Refresh()
-
                 $DesktopPan.Focus()
+                    
 
                 $e.Graphics.DrawPath($mypen2, $arrItem.myPath2)
                 $e.Graphics.DrawPath($arrItem.mypen1, $arrItem.myPath)
+                $PathGraBrush = New-Object Drawing2D.PathGradientBrush($arrItem.myPath)
+                $PathGraBrush.SurroundColors = $arrItem.fillColor
+                $e.Graphics.FillPath($PathGraBrush,$arrItem.myPath)
+                
  #               $e.Graphics.DrawString("test", $fonty , $myBrush, $arrItem.p.X+40,$arrItem.p.y+55, [StringFormat]::GenericDefault)
 #                $e.Graphics.DrawImage($avatar,$arrItem.p.X+50,$arrItem.p.y+55,10,10)
                 $e.Graphics.SetClip($arrItem.myregion,4)
@@ -408,8 +421,14 @@ $DesktopPan.Add_paint({
 
                 $e.Graphics.DrawPath($arrItem.mypen1, $arrItem.myPath)
 
+                $PathGraBrush = New-Object Drawing2D.LinearGradientBrush ($arrItem.P2,$arrItem.P1,$arrItem.fillColor,[color]::White)
+#                $PathGraBrush.SurroundColors = $arrItem.fillColor
+                $e.Graphics.FillPath($PathGraBrush,$arrItem.myPath)
+                
+
 #                $e.Graphics.DrawString("test", $fonty , $myBrush, $arrItem.p.X+40,$arrItem.p.y+55, [StringFormat]::GenericDefault)
- #               $e.Graphics.DrawImage($avatar,$arrItem.p.X+50,$arrItem.p.y+55,10,10)
+ #               $e.Graphics.DrawImage($avatar,$arrItem.P1.x,$arrItem.P1.y)
+#                $e.Graphics.DrawImage($avatar,$arrItem.P2.x,$arrItem.P2.y)
                 $e.Graphics.SetClip($arrItem.myregion,4)
             }
         }  
@@ -419,33 +438,41 @@ $DesktopPan.Add_paint({
  
 
 $DesktopPan.add_MouseDown({
-$Global:bolMouseDown = $true
-$Global:objShape = $null
-$mouse = [Cursor]::Position
-$point = $DesktopPan.PointToClient($mouse)
-    If ($arrRegions.Count -gt 0)
-    {
-         for($i = 0; $i -lt $arrRegions.Count; $i++)
-        {
-            $arrItem = $arrRegions[$i]
-            If ($arrItem.myregion2.isVisible($point))
+    $Global:bolMouseDown = $true
+    write-host ($Global:objShape -eq $null)
+ #   If ($Global:objShape -eq $null )
+ #   {
+        $Global:objShape = $null
+        $mouse = [Cursor]::Position
+        $point = $DesktopPan.PointToClient($mouse)
+            If ($arrRegions.Count -gt 0)
             {
-                $StartCircle.Checked = $false
-                $StartCircle.Refresh()
-                $InterCircle.Checked = $false
-                $InterCircle.Refresh()
-                $Dimond.Checked = $false
-                $Dimond.Refresh()
-                $Square.checked = $false
-                $Square.Refresh()
-                $DataObj.checked = $false
-                $DataObj.Refresh()
-                funDisAllShapes $null
-                $global:objShape = $arrItem
-            }                     
-        }  
-    }
-$DesktopPan.Invalidate() 
+                 for($i = 0; $i -lt $arrRegions.Count; $i++)
+                {
+                    $arrItem = $arrRegions[$i]
+                    If ($arrItem.myregion2.isVisible($point))
+                    {
+                        $StartCircle.Checked = $false
+                        $StartCircle.Refresh()
+                        $InterCircle.Checked = $false
+                        $InterCircle.Refresh()
+                        $Dimond.Checked = $false
+                        $Dimond.Refresh()
+                        $Square.checked = $false
+                        $Square.Refresh()
+                        $DataObj.checked = $false
+                        $DataObj.Refresh()
+                        funDisAllShapes $null
+                        $global:objShape = $arrItem
+                    }                     
+                }  
+            }
+ #   }
+ #   Else
+ #   {
+
+#    }
+    $DesktopPan.Invalidate() 
 })
 
 $DesktopPan.add_MouseUp({
