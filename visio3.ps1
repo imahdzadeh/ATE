@@ -21,7 +21,8 @@ $Win32Helpers = Add-Type -MemberDefinition $code -Name "Win32Helpers" -PassThru
 Function funDelShape{
     If ($arrRegions.Count -gt 0 -and $global:objShape -ne $null)
     {
-        $arrRegions.Remove($global:objShape)       
+        $arrRegions.Remove($global:objShape)
+        $Global:objShape = $null       
     }
     $DesktopPan.Invalidate()     
 }
@@ -93,7 +94,7 @@ $intIterate = 0
 $bolMouseDown = $false
 $objShape = $null
 
-$arrRegions = [System.Collections.ArrayList]@()
+$arrRegions = [ArrayList]@()
 # Create pen and brush objects 
 $myBrush = new-object Drawing.SolidBrush black
 $mypen = new-object Drawing.Pen black,2
@@ -146,21 +147,34 @@ $DesktopPan.Add_paint({
     $e.Graphics.SmoothingMode = 4
     $mouse = [Cursor]::Position
     $point = $DesktopPan.PointToClient($mouse)
+    $strSwitch = ""
+ #   If($global:objShape -eq $null)
+ #   {
     If ($StartCircle.Checked -or $Dimond.Checked -or $Square.Checked -Or $InterCircle.Checked -Or $DataObj.Checked)
     {
-        $Global:intIterate ++
-        $point.X = $point.X - 50
-        $point.Y = $point.Y - 50
-        switch (($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)
-        {
-            'StartCircle' { 
-                $point.X = $point.X + 25
-                $point.Y = $point.Y + 25       
-                $myPath = New-Object Drawing2D.GraphicsPath
-                $myPath2 = New-Object Drawing2D.GraphicsPath
-                $myPath.AddEllipse($point.X,$point.Y,$StartCircleSize,$StartCircleSize)
-                $myPath2.AddEllipse(($point.X)-$ShadowSize,($point.Y)-$ShadowSize,$StartCircleSize+($ShadowSize*2),$StartCircleSize+($ShadowSize*2))
-                $myregion2 = new-object Region  $myPath2
+        $strSwitch = ($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name
+    }
+    If($Global:bolMouseMove -And $Global:bolMouseDown -And $global:objShape -ne $null)
+    {
+        $strSwitch = $global:objShape.type  
+    }
+    
+    $Global:intIterate ++
+    $point.X = $point.X - 50
+    $point.Y = $point.Y - 50
+    switch ($strSwitch)
+    {
+        'StartCircle' { 
+            $point.X = $point.X + 25
+            $point.Y = $point.Y + 25       
+            $myPath = New-Object Drawing2D.GraphicsPath
+            $myPath2 = New-Object Drawing2D.GraphicsPath
+            $myPath.AddEllipse($point.X,$point.Y,$StartCircleSize,$StartCircleSize)
+            $myPath2.AddEllipse(($point.X)-$ShadowSize,($point.Y)-$ShadowSize,$StartCircleSize+($ShadowSize*2),$StartCircleSize+($ShadowSize*2))
+            $myregion2 = new-object Region  $myPath2
+            
+            If(($Global:bolMouseMove -eq $false) -or ($Global:bolMouseDown -eq $faslse) -or ($global:objShape -eq $null))
+            {
                 New-Variable -Force -Name "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate" -Value (new-object Region  $myPath) 
                 $myregion = Get-Variable -ValueOnly -Include "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate"
                 $strMess = 'test'
@@ -178,22 +192,31 @@ $DesktopPan.Add_paint({
                     fillColor = [color]::lightgreen
                     ConnObj = [ArrayList]@()
                     str = $strMess
+                    ConnArr = [ArrayList]@()
                 }
-                [void]$arrRegions.Add($objPSCircle)                
-                 If(($Global:bolMouseDown) -and ($global:objShape -ne $null))
-                 {
-                    $global:objShape = $objPSCircle
-                 }
+                [void]$arrRegions.Add($objPSCircle)
+                funDisAllShapes $null
             }
-            'InterCircle' {
-                $point.X = $point.X + 25
-                $point.Y = $point.Y + 25            
-                $myPath = New-Object Drawing2D.GraphicsPath
-                $myPath2 = New-Object Drawing2D.GraphicsPath
-                $myPath.AddEllipse($point.X,$point.Y,$InterCircleSize-4,$InterCircleSize-4)
-                
-                $myPath2.AddEllipse(($point.X)-($ShadowSize*2),($point.Y)-($ShadowSize*2),$InterCircleSize+($ShadowSize*2),$InterCircleSize+($ShadowSize*2))
-                $myregion2 = new-object Region  $myPath2
+            Else
+            {
+               $global:objShape.myPath = $myPath
+               $global:objShape.myPath2 = $myPath2
+               $global:objShape.myregion = new-object Region  $myPath
+               $global:objShape.myregion2 = $myregion2
+               $global:objShape.p1 = New-Object Point ($point.X) , ($point.Y -10)
+               $global:objShape.p2 = New-Object Point ($point.X) , (($point.Y + $StartCircleSize)+10)              
+            }
+        }
+        'InterCircle' {
+            $point.X = $point.X + 25
+            $point.Y = $point.Y + 25            
+            $myPath = New-Object Drawing2D.GraphicsPath
+            $myPath2 = New-Object Drawing2D.GraphicsPath
+            $myPath.AddEllipse($point.X,$point.Y,$InterCircleSize-4,$InterCircleSize-4)                
+            $myPath2.AddEllipse(($point.X)-($ShadowSize*2),($point.Y)-($ShadowSize*2),$InterCircleSize+($ShadowSize*2),$InterCircleSize+($ShadowSize*2))
+            $myregion2 = new-object Region  $myPath2
+            If(($Global:bolMouseMove -eq $false) -or ($Global:bolMouseDown -eq $faslse) -or ($global:objShape -eq $null))
+            {
                 New-Variable -Force -Name "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate" -Value (new-object Region  $myPath) 
                 $myregion = Get-Variable -ValueOnly -Include "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate"
                 $strMess = 'test'
@@ -210,48 +233,65 @@ $DesktopPan.Add_paint({
                     myPen1 = $mypen3
                     fillColor = [color]::BurlyWood
                     str = $strMess
+                    ConnArr = [ArrayList]@()
                 }
-                [void]$arrRegions.Add($objPSInterCircle)                
-                 If(($Global:bolMouseDown) -and ($global:objShape -ne $null))
-                 {
-                    $global:objShape = $objPSInterCircle
-                 }
+                [void]$arrRegions.Add($objPSInterCircle) 
+                funDisAllShapes $null
             }
-            'dimond' {
-                $point.X = $point.X + 25
-                $point.Y = $point.Y + 25
-                $pp1 = New-Object Point ($point.X) , ($point.Y+25)
-                $pp2 = New-Object Point ($point.X+25 ), ($point.Y)
-                $pp3 = New-Object Point ($point.X+$DimondSize ), ($point.Y+25)
-                $pp4 = New-Object Point ($point.X+25 ), ($point.Y+$DimondSize)
-                $points = @($pp1,$pp2,$pp3,$pp4)
+            Else
+            {
+               $global:objShape.myPath = $myPath
+               $global:objShape.myPath2 = $myPath2
+               $global:objShape.myregion = new-object Region  $myPath
+               $global:objShape.myregion2 = $myregion2
+               $global:objShape.p1 = New-Object Point ($point.X) , ($point.Y -10)
+               $global:objShape.p2 = New-Object Point ($point.X) , (($point.Y + $InterCircleSize)+10)                  
+            }
+<#                             
+                If(($Global:bolMouseDown) -and ($global:objShape -ne $null))
+                {
+                $global:objShape = $objPSInterCircle
+                }
 
-                $sp1 = New-Object Point ($pp1.X-$ShadowSize) , ($pp1.Y)
-                $sp2 = New-Object Point ($pp2.X ), ($pp2.Y-$ShadowSize)
-                $sp3 = New-Object Point ($pp3.X+$ShadowSize) , ($pp3.Y)
-                $sp4 = New-Object Point ($pp4.X ), ($pp4.Y+$ShadowSize)
-                $points2 = @($sp1,$sp2,$sp3,$sp4)
+#>
+        }
+        'dimond' {
+            $point.X = $point.X + 25
+            $point.Y = $point.Y + 25
+            $pp1 = New-Object Point ($point.X) , ($point.Y+25)
+            $pp2 = New-Object Point ($point.X+25 ), ($point.Y)
+            $pp3 = New-Object Point ($point.X+$DimondSize ), ($point.Y+25)
+            $pp4 = New-Object Point ($point.X+25 ), ($point.Y+$DimondSize)
+            $points = @($pp1,$pp2,$pp3,$pp4)
+
+            $sp1 = New-Object Point ($pp1.X-$ShadowSize) , ($pp1.Y)
+            $sp2 = New-Object Point ($pp2.X ), ($pp2.Y-$ShadowSize)
+            $sp3 = New-Object Point ($pp3.X+$ShadowSize) , ($pp3.Y)
+            $sp4 = New-Object Point ($pp4.X ), ($pp4.Y+$ShadowSize)
+            $points2 = @($sp1,$sp2,$sp3,$sp4)
 
                 
                
 
-                $myPath = New-Object Drawing2D.GraphicsPath
-                $myPath2 = New-Object Drawing2D.GraphicsPath
+            $myPath = New-Object Drawing2D.GraphicsPath
+            $myPath2 = New-Object Drawing2D.GraphicsPath
 
-                $myPath.AddArc($pp2.x,$pp2.Y,$arcSize,$arcSize,225,90)
-                $myPath.AddArc($pp3.x,$pp3.Y,$arcSize,$arcSize,-45,90)
-                $myPath.AddArc($pp4.x,$pp4.Y,$arcSize,$arcSize,45,90)
-                $myPath.AddArc($pp1.x,$pp1.Y,$arcSize,$arcSize,135,90)
-                $myPath.CloseAllFigures()
+            $myPath.AddArc($pp2.x,$pp2.Y,$arcSize,$arcSize,225,90)
+            $myPath.AddArc($pp3.x,$pp3.Y,$arcSize,$arcSize,-45,90)
+            $myPath.AddArc($pp4.x,$pp4.Y,$arcSize,$arcSize,45,90)
+            $myPath.AddArc($pp1.x,$pp1.Y,$arcSize,$arcSize,135,90)
+            $myPath.CloseAllFigures()
 #                $myPath.AddPolygon($points)
 #                $myPath2.AddPolygon($points2)
-                $myPath2.AddArc($sp2.x,$sp2.Y,$arcSize,$arcSize,225,90)
-                $myPath2.AddArc($sp3.x,$sp3.Y,$arcSize,$arcSize,-45,90)
-                $myPath2.AddArc($sp4.x,$sp4.Y,$arcSize,$arcSize,45,90)
-                $myPath2.AddArc($sp1.x,$sp1.Y,$arcSize,$arcSize,135,90)
-                $myPath2.CloseAllFigures()
+            $myPath2.AddArc($sp2.x,$sp2.Y,$arcSize,$arcSize,225,90)
+            $myPath2.AddArc($sp3.x,$sp3.Y,$arcSize,$arcSize,-45,90)
+            $myPath2.AddArc($sp4.x,$sp4.Y,$arcSize,$arcSize,45,90)
+            $myPath2.AddArc($sp1.x,$sp1.Y,$arcSize,$arcSize,135,90)
+            $myPath2.CloseAllFigures()
 
-                $myregion2 = new-object Region $myPath2
+            $myregion2 = new-object Region $myPath2
+            If(($Global:bolMouseMove -eq $false) -or ($Global:bolMouseDown -eq $faslse) -or ($global:objShape -eq $null))
+            {
                 New-Variable -Force -Name "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate" -Value (new-object Region  $myPath) 
                 $myregion = Get-Variable -ValueOnly -Include "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate"
                 $objPSDimond = [pscustomobject]@{
@@ -267,47 +307,64 @@ $DesktopPan.Add_paint({
                     myPen1 = $mypen
                     fillColor = [color]::FromArgb(216, 191, 216)
                     str = $strMess
-                 }
-                [void]$arrRegions.Add($objPSDimond)                
-                 If(($Global:bolMouseDown) -and ($global:objShape -ne $null))
-                 {
+                    ConnArr = [ArrayList]@()
+                    }
+                [void]$arrRegions.Add($objPSDimond)
+                funDisAllShapes $null
+<#                                  
+                    If(($Global:bolMouseDown) -and ($global:objShape -ne $null))
+                    {
                     $global:objShape = $objPSDimond
-                 }           
-            }
-            'Square' {
-
-                $pp1 = New-Object Point ($point.X) , ($point.Y)
-                $pp2 = New-Object Point ($point.X+ $squareSize ), ($point.Y)
-                $pp3 = New-Object Point ($point.X+ $squareSize) , ($point.Y+100)
-                $pp4 = New-Object Point ($point.X ), ($point.Y+100)
- #               $points = @($pp1,$pp2,$pp3,$pp4)
- #               $pp2.x = 400
-#                $pp2.Y  = 400
-                $sp1 = New-Object Point ($pp1.X-$ShadowSize ), ($pp1.Y-$ShadowSize)
-                $sp2 = New-Object Point ($pp2.X+$ShadowSize ), ($pp2.Y-$ShadowSize)
-                $sp3 = New-Object Point ($pp3.X+$ShadowSize) , ($pp3.Y+$ShadowSize)
-                $sp4 = New-Object Point ($pp4.X-$ShadowSize ), ($pp4.Y+$ShadowSize)
- #               $points2 = @($sp1,$sp2,$sp3,$sp4)
- #               $hrgn = $Win32Helpers::CreateRoundRectRgn($point.X-25,$point.Y+15,$point.X+125, $point.Y+85, 10,10)
-                $myPath = New-Object Drawing2D.GraphicsPath
-                $myPath2 = New-Object Drawing2D.GraphicsPath
-
-                $arcSize = 10
-                $myPath.AddArc($pp2.x,$pp2.Y,$arcSize,$arcSize,270,90)
-                $myPath.AddArc($pp3.x,$pp3.y,$arcSize,$arcSize,0,90)
-                $myPath.AddArc($pp4.x,$pp4.y,$arcSize,$arcSize,90,90)
-                $myPath.AddArc($pp1.x,$pp1.Y,$arcSize,$arcSize,180,90)
-                $myPath.CloseAllFigures()
+                    }
+#>
                 
-                $myPath2.AddArc($sp2.x,$sp2.Y,$arcSize,$arcSize,270,90)
-                $myPath2.AddArc($sp3.x,$sp3.y,$arcSize,$arcSize,0,90)
-                $myPath2.AddArc($sp4.x,$sp4.y,$arcSize,$arcSize,90,90)
-                $myPath2.AddArc($sp1.x,$sp1.Y,$arcSize,$arcSize,180,90)
-                $myPath2.CloseAllFigures()
+            }
+            Else
+            {
+                $global:objShape.myPath = $myPath
+                $global:objShape.myPath2 = $myPath2
+                $global:objShape.myregion = new-object Region  $myPath
+                $global:objShape.myregion2 = $myregion2
+                $global:objShape.p1 = New-Object Point ($point.X) , ($point.Y -10)
+                $global:objShape.p2 = New-Object Point ($point.X) , (($point.Y + $DimondSize)+10)
+            }              
+        }
+        'Square' {
 
-                $myregion2 = new-object Region $myPath2
+            $pp1 = New-Object Point ($point.X) , ($point.Y)
+            $pp2 = New-Object Point ($point.X+ $squareSize ), ($point.Y)
+            $pp3 = New-Object Point ($point.X+ $squareSize) , ($point.Y+100)
+            $pp4 = New-Object Point ($point.X ), ($point.Y+100)
+#               $points = @($pp1,$pp2,$pp3,$pp4)
+#               $pp2.x = 400
+#                $pp2.Y  = 400
+            $sp1 = New-Object Point ($pp1.X-$ShadowSize ), ($pp1.Y-$ShadowSize)
+            $sp2 = New-Object Point ($pp2.X+$ShadowSize ), ($pp2.Y-$ShadowSize)
+            $sp3 = New-Object Point ($pp3.X+$ShadowSize) , ($pp3.Y+$ShadowSize)
+            $sp4 = New-Object Point ($pp4.X-$ShadowSize ), ($pp4.Y+$ShadowSize)
+#               $points2 = @($sp1,$sp2,$sp3,$sp4)
+#               $hrgn = $Win32Helpers::CreateRoundRectRgn($point.X-25,$point.Y+15,$point.X+125, $point.Y+85, 10,10)
+            $myPath = New-Object Drawing2D.GraphicsPath
+            $myPath2 = New-Object Drawing2D.GraphicsPath
+
+            $arcSize = 10
+            $myPath.AddArc($pp2.x,$pp2.Y,$arcSize,$arcSize,270,90)
+            $myPath.AddArc($pp3.x,$pp3.y,$arcSize,$arcSize,0,90)
+            $myPath.AddArc($pp4.x,$pp4.y,$arcSize,$arcSize,90,90)
+            $myPath.AddArc($pp1.x,$pp1.Y,$arcSize,$arcSize,180,90)
+            $myPath.CloseAllFigures()
+                
+            $myPath2.AddArc($sp2.x,$sp2.Y,$arcSize,$arcSize,270,90)
+            $myPath2.AddArc($sp3.x,$sp3.y,$arcSize,$arcSize,0,90)
+            $myPath2.AddArc($sp4.x,$sp4.y,$arcSize,$arcSize,90,90)
+            $myPath2.AddArc($sp1.x,$sp1.Y,$arcSize,$arcSize,180,90)
+            $myPath2.CloseAllFigures()
+
+            $myregion2 = new-object Region $myPath2
+            If(($Global:bolMouseMove -eq $false) -or ($Global:bolMouseDown -eq $faslse) -or ($global:objShape -eq $null))
+            {
                 New-Variable -Force -Name "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate" -Value (new-object Region  $myPath) 
-#                New-Variable -Force -Name "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate" -Value ([region]::FromHrgn($hrgn)) 
+    #                New-Variable -Force -Name "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate" -Value ([region]::FromHrgn($hrgn)) 
                 $myregion = Get-Variable -ValueOnly -Include "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate"
                 $objPSSquare = [pscustomobject]@{
                     name = "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate"
@@ -322,53 +379,69 @@ $DesktopPan.Add_paint({
                     myPen1 = $mypen
                     fillColor = [color]::lightblue
                     str = $strMess
+                    ConnArr = [ArrayList]@()
                 }
-                [void]$arrRegions.Add($objPSSquare)               
-                If(($Global:bolMouseDown) -and ($global:objShape -ne $null))
-                {
-                $global:objShape = $objPSSquare
-                }            
+                [void]$arrRegions.Add($objPSSquare)
+                funDisAllShapes $null  
             }
-            'DataObject' {
-                $point.X = $point.X + 25
-                $point.Y = $point.Y + 25
-                $pp1 = New-Object Point ($point.X) , ($point.Y)
-                $pp2 = New-Object Point ($point.X +$DataObjSizeX), ($point.Y)
-                $pp3 = New-Object Point (($point.X +$DataObjSizeX)+10) , ($point.Y+$DataObjSizeY)
-                $pp4 = New-Object Point ($point.X ), ($point.Y + $DataObjSizeY)
-                $pp5 = New-Object Point ($point.X +$DataObjSizeX), ($point.Y  +10)
-                $pp6 = New-Object Point (($point.X +$DataObjSizeX) + 10), (($point.Y) + 10)
+            Else
+            {
+                $global:objShape.myPath = $myPath
+                $global:objShape.myPath2 = $myPath2
+                $global:objShape.myregion = new-object Region  $myPath
+                $global:objShape.myregion2 = $myregion2
+                $global:objShape.p1 = New-Object Point ($point.X) , ($point.Y -$arcSize)
+                $global:objShape.p2 = New-Object Point ($point.X) , (($point.Y + $squareSizeY)+$arcSize)           
+            }
+<#                           
+            If(($Global:bolMouseDown) -and ($global:objShape -ne $null))
+            {
+                $global:objShape = $objPSSquare
+            }
+#>                        
+        }
+        'DataObject' {
+            $point.X = $point.X + 25
+            $point.Y = $point.Y + 25
+            $pp1 = New-Object Point ($point.X) , ($point.Y)
+            $pp2 = New-Object Point ($point.X +$DataObjSizeX), ($point.Y)
+            $pp3 = New-Object Point (($point.X +$DataObjSizeX)+10) , ($point.Y+$DataObjSizeY)
+            $pp4 = New-Object Point ($point.X ), ($point.Y + $DataObjSizeY)
+            $pp5 = New-Object Point ($point.X +$DataObjSizeX), ($point.Y  +10)
+            $pp6 = New-Object Point (($point.X +$DataObjSizeX) + 10), (($point.Y) + 10)
 
-                $sp1 = New-Object Point ($point.X - $ShadowSize) , (($point.Y)-$ShadowSize)
-                $sp2 = New-Object Point (($point.X +$DataObjSizeX)), ($point.Y -$ShadowSize)
-                $sp3 = New-Object Point ((($point.X +$DataObjSizeX)+10)+$ShadowSize) , (($point.Y+$DataObjSizeY)+$ShadowSize)
-                $sp4 = New-Object Point (($point.X)-$ShadowSize), (($point.Y + $DataObjSizeY)+$ShadowSize)
-                $sp5 = New-Object Point (($point.X +$DataObjSizeX)-$ShadowSize), ($point.Y  +10)
-                $sp6 = New-Object Point ((($point.X +$DataObjSizeX) + 10) + $ShadowSize), (($point.Y) + 10)
+            $sp1 = New-Object Point ($point.X - $ShadowSize) , (($point.Y)-$ShadowSize)
+            $sp2 = New-Object Point (($point.X +$DataObjSizeX)), ($point.Y -$ShadowSize)
+            $sp3 = New-Object Point ((($point.X +$DataObjSizeX)+10)+$ShadowSize) , (($point.Y+$DataObjSizeY)+$ShadowSize)
+            $sp4 = New-Object Point (($point.X)-$ShadowSize), (($point.Y + $DataObjSizeY)+$ShadowSize)
+            $sp5 = New-Object Point (($point.X +$DataObjSizeX)-$ShadowSize), ($point.Y  +10)
+            $sp6 = New-Object Point ((($point.X +$DataObjSizeX) + 10) + $ShadowSize), (($point.Y) + 10)
 
-                $myPath = New-Object Drawing2D.GraphicsPath
-                $myPath2 = New-Object Drawing2D.GraphicsPath       
+            $myPath = New-Object Drawing2D.GraphicsPath
+            $myPath2 = New-Object Drawing2D.GraphicsPath       
                                
-                $myPath.AddLine($pp2,$pp5)
-                $myPath.AddLine($pp5,$pp6)
-                $myPath.AddArc($pp3.x-10,$pp3.y-10,$arcSize,$arcSize,0,90)
-                $myPath.AddArc($pp4.x+10,$pp4.y-10,$arcSize,$arcSize,90,90)
-                $myPath.AddArc($pp1.x+10,$pp1.Y,$arcSize,$arcSize,180,90)
-                $myPath.AddLine($pp2,$pp6)
+            $myPath.AddLine($pp2,$pp5)
+            $myPath.AddLine($pp5,$pp6)
+            $myPath.AddArc($pp3.x-10,$pp3.y-10,$arcSize,$arcSize,0,90)
+            $myPath.AddArc($pp4.x+10,$pp4.y-10,$arcSize,$arcSize,90,90)
+            $myPath.AddArc($pp1.x+10,$pp1.Y,$arcSize,$arcSize,180,90)
+            $myPath.AddLine($pp2,$pp6)
                 
-                $myPath2.AddArc($sp3.x-10,$sp3.y-10,$arcSize,$arcSize,0,90)
-                $myPath2.AddArc($sp4.x+10,$sp4.y-10,$arcSize,$arcSize,90,90)
-                $myPath2.AddArc($sp1.x+10,$sp1.Y,$arcSize,$arcSize,180,90)
-                $myPath2.AddLine($sp2,$sp6)
-                $myPath2.CloseFigure()
+            $myPath2.AddArc($sp3.x-10,$sp3.y-10,$arcSize,$arcSize,0,90)
+            $myPath2.AddArc($sp4.x+10,$sp4.y-10,$arcSize,$arcSize,90,90)
+            $myPath2.AddArc($sp1.x+10,$sp1.Y,$arcSize,$arcSize,180,90)
+            $myPath2.AddLine($sp2,$sp6)
+            $myPath2.CloseFigure()
 
-                $myregion2 = new-object Region $myPath2
+            $myregion2 = new-object Region $myPath2
+            If(($Global:bolMouseMove -eq $false) -or ($Global:bolMouseDown -eq $faslse) -or ($global:objShape -eq $null))
+            {
                 New-Variable -Force -Name "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate" -Value (new-object Region  $myPath) 
-#                New-Variable -Force -Name "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate" -Value ([region]::FromHrgn($hrgn)) 
+        #                New-Variable -Force -Name "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate" -Value ([region]::FromHrgn($hrgn)) 
                 $myregion = Get-Variable -ValueOnly -Include "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate"
                 $objPSSquare = [pscustomobject]@{
                     name = "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate"
-                    type = 'DataObj'
+                    type = 'DataObject'
                     Location = $location
                     myregion = $myregion
                     myregion2 = $myregion2
@@ -379,38 +452,41 @@ $DesktopPan.Add_paint({
                     myPen1 = $mypen
                     fillColor = [color]::FromArgb(211,211,211)
                     str = $strMess
+                    ConnArr = [ArrayList]@()
                 }
-                [void]$arrRegions.Add($objPSSquare)               
-                If(($Global:bolMouseDown) -and ($global:objShape -ne $null))
-                {
-                $global:objShape = $objPSSquare
-                }            
+                [void]$arrRegions.Add($objPSSquare)
+                funDisAllShapes $null
             }
+            Else
+            {
+                $global:objShape.myPath = $myPath
+                $global:objShape.myPath2 = $myPath2
+                $global:objShape.myregion = new-object Region  $myPath
+                $global:objShape.myregion2 = $myregion2
+                $global:objShape.p1 = New-Object Point ($point.X) , ($point.Y - $DataObjSizeY)
+                $global:objShape.p2 = New-Object Point ($point.X) , ($point.Y + $DataObjSizeY)                   
+            }
+<#                             
+            If(($Global:bolMouseDown) -and ($global:objShape -ne $null))
+            {
+                $global:objShape = $objPSSquare
+            }
+#>
         }
-
     }
     If ($arrRegions.count -gt 0)
     {
+        
          for($i = 0; $i -lt $arrRegions.Count; $i++)
         {
-            $arrItem = $arrRegions[$i]
-            If ($arrItem.myregion.isVisible($point))
-            {
-                $StartCircle.Checked = $false
-                $StartCircle.Refresh()
-                $Dimond.Checked = $false
-                $Dimond.Refresh()
-                $Square.checked = $false
-                $Square.Refresh()
-                $DesktopPan.Focus()
-                    
-
+            $arrItem = $arrRegions[$i]           
+            If ($arrItem.myregion.isVisible($DesktopPan.PointToClient([Cursor]::Position)))
+            {       
                 $e.Graphics.DrawPath($mypen2, $arrItem.myPath2)
                 $e.Graphics.DrawPath($arrItem.mypen1, $arrItem.myPath)
                 $PathGraBrush = New-Object Drawing2D.PathGradientBrush($arrItem.myPath)
                 $PathGraBrush.SurroundColors = $arrItem.fillColor
-                $e.Graphics.FillPath($PathGraBrush,$arrItem.myPath)
-                
+                $e.Graphics.FillPath($PathGraBrush,$arrItem.myPath)                
  #               $e.Graphics.DrawString("test", $fonty , $myBrush, $arrItem.p.X+40,$arrItem.p.y+55, [StringFormat]::GenericDefault)
 #                $e.Graphics.DrawImage($avatar,$arrItem.p.X+50,$arrItem.p.y+55,10,10)
                 $e.Graphics.SetClip($arrItem.myregion,4)
@@ -418,14 +494,10 @@ $DesktopPan.Add_paint({
             }
             Else
             {
-
                 $e.Graphics.DrawPath($arrItem.mypen1, $arrItem.myPath)
-
                 $PathGraBrush = New-Object Drawing2D.LinearGradientBrush ($arrItem.P2,$arrItem.P1,$arrItem.fillColor,[color]::White)
 #                $PathGraBrush.SurroundColors = $arrItem.fillColor
-                $e.Graphics.FillPath($PathGraBrush,$arrItem.myPath)
-                
-
+                $e.Graphics.FillPath($PathGraBrush,$arrItem.myPath)                
 #                $e.Graphics.DrawString("test", $fonty , $myBrush, $arrItem.p.X+40,$arrItem.p.y+55, [StringFormat]::GenericDefault)
  #               $e.Graphics.DrawImage($avatar,$arrItem.P1.x,$arrItem.P1.y)
 #                $e.Graphics.DrawImage($avatar,$arrItem.P2.x,$arrItem.P2.y)
@@ -435,16 +507,15 @@ $DesktopPan.Add_paint({
     }       
 })
 
- 
-
 $DesktopPan.add_MouseDown({
     $Global:bolMouseDown = $true
-    write-host ($Global:objShape -eq $null)
+    $BolCont = $false
+    $mouse = [Cursor]::Position
+    $point = $DesktopPan.PointToClient($mouse)
  #   If ($Global:objShape -eq $null )
  #   {
-        $Global:objShape = $null
-        $mouse = [Cursor]::Position
-        $point = $DesktopPan.PointToClient($mouse)
+ #       $Global:objShape = $null
+
             If ($arrRegions.Count -gt 0)
             {
                  for($i = 0; $i -lt $arrRegions.Count; $i++)
@@ -452,6 +523,19 @@ $DesktopPan.add_MouseDown({
                     $arrItem = $arrRegions[$i]
                     If ($arrItem.myregion2.isVisible($point))
                     {
+                        $BolCont = $True
+                        If (($Global:objShape -ne $null) -and ($Global:objShape -ne $arrItem))
+                        {
+                           
+#                            $Global:objShape | Add-Member -MemberType NoteProperty -Name "test" -Value "Quincy"
+                            If(!$Global:objShape.ConnArr.Contains($arrItem) -and (!$arrItem.ConnArr.Contains($Global:objShape)))
+                            {
+                                $Global:objShape.ConnArr.Add($arrItem)
+                                write-host "$($Global:objShape.ConnArr.Count) - $($Global:objShape.type)"
+                            }
+                        }
+                        
+                        $Global:objShape = $null
                         $StartCircle.Checked = $false
                         $StartCircle.Refresh()
                         $InterCircle.Checked = $false
@@ -462,11 +546,14 @@ $DesktopPan.add_MouseDown({
                         $Square.Refresh()
                         $DataObj.checked = $false
                         $DataObj.Refresh()
-                        funDisAllShapes $null
+                        funDisAllShapes $null                         
                         $global:objShape = $arrItem
+                        
                     }                     
-                }  
+                }
+               
             }
+ #           If(!$BolCont){$Global:objShape = $null}
  #   }
  #   Else
  #   {
@@ -476,8 +563,9 @@ $DesktopPan.add_MouseDown({
 })
 
 $DesktopPan.add_MouseUp({
-    If($Global:bolMouseDown)
-    {
+ #   If($Global:bolMouseDown)
+ #   {
+        $Global:bolMouseMove = $false
         $Global:bolMouseDown = $false
         If ($Global:objShape -ne $null)
         {
@@ -486,7 +574,7 @@ $DesktopPan.add_MouseUp({
                 $cont.checked = $false
             }
         }
-    }
+ #   }
    
 
 })
@@ -494,20 +582,25 @@ $DesktopPan.add_MouseUp({
 $DesktopPan.add_MouseMove({
     If(($Global:bolMouseDown) -and ($global:objShape -ne $null))
     {
+        $Global:bolMouseMove = $true
         $mouse = [Cursor]::Position
         $point = $DesktopPan.PointToClient($mouse)
         If(($point.X  -gt 50) -and ($point.Y -gt 50))
         {
             If(($point.X + 50  -lt $DesktopPan.Size.Width) -and ($point.Y + 50  -lt $DesktopPan.Size.Height))
             {
+                <#
                 $objShape = Get-Variable -ValueOnly -Include $global:objShape.type               
                 $objShape.Checked = $true
                 $arrRegions.Remove($global:objShape)         
+                write-host "$($global:objShape.name) removed"
+                #>
                 $DesktopPan.Invalidate()
             }
         } 
+        
     }
-
+    
 })
 
 $ShapesTbl = New-Object TableLayoutPanel
