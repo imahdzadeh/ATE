@@ -1,11 +1,21 @@
 ﻿using namespace System.IO
 using namespace System.Drawing
 using namespace System.Drawing.Imaging
+using namespace System.Windows.Forms
+using assembly System.Windows.Forms
 # Load the GDI+ and WinForms Assemblies
 [void][reflection.assembly]::LoadWithPartialName( "System.IO")
 [void][reflection.assembly]::LoadWithPartialName( "System.Drawing")
 [void][reflection.assembly]::LoadWithPartialName( "System.Drawing.Imaging")
 
+$subIconButSize = 30
+$ShapesSize = 50
+$code = @"
+[System.Runtime.InteropServices.DllImport("gdi32.dll")]
+public static extern IntPtr CreateRoundRectRgn(int nLeftRect, int nTopRect,
+    int nRightRect, int nBottomRect, int nWidthEllipse, int nHeightEllipse);
+"@
+$Win32Helpers = Add-Type -MemberDefinition $code -Name "Win32Helpers" -PassThru
 
 Function funDelShape{
     If ($arrRegions.Count -gt 0 -and $global:objShape -ne $null)
@@ -22,18 +32,18 @@ Function imgStreamer($imgPath){
     $inStream.Dispose()
 }
 
-$DesktopPan = New-Object System.Windows.Forms.Panel
+$DesktopPan = New-Object Panel
 #$DesktopPan.BackColor = 'green'
-$DesktopPan.Location = New-Object System.Drawing.size(120,50)
-$DesktopPan.Size = New-Object System.Drawing.Size(1100,700)
-$DesktopPan.Dock = [System.Windows.Forms.DockStyle]::Fill
+$DesktopPan.Location = New-Object Size(120,50)
+$DesktopPan.Size = New-Object Size(1100,700)
+$DesktopPan.Dock = [DockStyle]::Fill
 #$DesktopPan.AutoSize = $true
 $DesktopPan.name = "Main"
 $DesktopPan.BorderStyle = 1
 
 
 $DesktopPan.Add_KeyDown({
-if ($_.KeyCode -eq [System.Windows.Forms.Keys]::Delete) {     
+if ($_.KeyCode -eq [Keys]::Delete) {     
             funDelShape
         }
 })
@@ -45,12 +55,26 @@ Function funDisAllShapes($O) {
         {
             $obj.checked = $false   
         }    
-    }    
+    }
+    foreach($obj in $SubIconTbl.Controls)
+    {
+        If($obj -ne $O)
+        {
+            $obj.checked = $false   
+        }  
+    }   
+        foreach($obj in $LinesTbl.Controls)
+    {
+        If($obj -ne $O)
+        {
+            $obj.checked = $false   
+        }  
+    } 
 }
 
 function Set-DoubleBuffer {
     param ([Parameter(Mandatory = $true)]
-        [System.Windows.Forms.Panel]$grid,
+        [Panel]$grid,
         [boolean]$Enabled)  
     $type = $grid.GetType();
     $propInfo = $type.GetProperty("DoubleBuffered", ('Instance','NonPublic'))
@@ -66,9 +90,9 @@ $arrRegions = [System.Collections.ArrayList]@()
 $myBrush = new-object Drawing.SolidBrush black
 $mypen = new-object Drawing.Pen black,2
 $mypen2 = new-object Drawing.Pen gray, 4
-$mypen3 = new-object Drawing.Pen white, 4
+$mypen3 = new-object Drawing.Pen black, 6
 $mypen2.Color = [System.Drawing.Color]::FromArgb(180,180,180)
-$bigarrow = New-Object System.Drawing.Drawing2D.AdjustableArrowCap 5,5
+$bigarrow = New-Object Drawing2D.AdjustableArrowCap 5,5
 #$mypen.color = "black" # Set the pen color
 #$mypen.width = 4     # ste the pen line width
 
@@ -86,10 +110,11 @@ $rect = new-object Drawing.Rectangle 10, 10, 180, 180
 
 $avatar = [System.Drawing.Image]::Fromfile('D:\ate\IT\Root\images\circle.png')
 
-$fonty = New-Object System.Drawing.Font 'arial',16
+$fonty = New-Object Font 'arial',16
 
 # Create a Form
 $form = New-Object Windows.Forms.Form
+
 $form.StartPosition = [Windows.Forms.FormStartPosition]::CenterScreen
 #$form.BackColor = [System.Drawing.Color]::FromArgb(220,220,220)
 $form.Size = New-Object Drawing.Size 1300, 800
@@ -97,16 +122,21 @@ $form.AutoScroll = $true
 # Get the form's graphics object
 
 
-
-
+$arcSize = 10
+$ShadowSize = 2
+$squareSize = 150
+$DimondSize = 50
+$CircleSize = 50
+$DataObjSizeY = 50
+$DataObjSizeX = 35
 
 $DesktopPan.Add_paint({
-    param([System.Object]$s, [System.Windows.Forms.PaintEventArgs]$e)
+    param([System.Object]$s, [PaintEventArgs]$e)
 #    $e.Graphics.InterpolationMode = 2
     $e.Graphics.SmoothingMode = 4
-    $mouse = [System.Windows.Forms.Cursor]::Position
+    $mouse = [Cursor]::Position
     $point = $DesktopPan.PointToClient($mouse)
-    If ($StartCircle.Checked -or $Dimond.Checked -or $Square.Checked)
+    If ($StartCircle.Checked -or $Dimond.Checked -or $Square.Checked -Or $InterCircle.Checked -Or $DataObj.Checked)
     {
         $Global:intIterate ++
         $point.X = $point.X - 50
@@ -114,12 +144,12 @@ $DesktopPan.Add_paint({
         switch (($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)
         {
             'StartCircle' {          
-                $myPath = New-Object System.Drawing.Drawing2D.GraphicsPath
-                $myPath2 = New-Object System.Drawing.Drawing2D.GraphicsPath
-                $myPath.AddEllipse($point.X,$point.Y,100,100)
-                $myPath2.AddEllipse(($point.X)-2,($point.Y)-2,104,104)
-                $myregion2 = new-object System.Drawing.Region  $myPath2
-                New-Variable -Force -Name "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate" -Value (new-object System.Drawing.Region  $myPath) 
+                $myPath = New-Object Drawing2D.GraphicsPath
+                $myPath2 = New-Object Drawing2D.GraphicsPath
+                $myPath.AddEllipse($point.X,$point.Y,$CircleSize,$CircleSize)
+                $myPath2.AddEllipse(($point.X)-$ShadowSize,($point.Y)-$ShadowSize,$CircleSize+($ShadowSize*2),$CircleSize+($ShadowSize*2))
+                $myregion2 = new-object Region  $myPath2
+                New-Variable -Force -Name "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate" -Value (new-object Region  $myPath) 
                 $myregion = Get-Variable -ValueOnly -Include "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate"
                 $strMess = 'test'
                 $objPSCircle = [pscustomobject]@{
@@ -131,6 +161,8 @@ $DesktopPan.Add_paint({
                     P = $point
                     myPath = $myPath
                     myPath2 = $myPath2
+                    myPen1 = $mypen
+                   
                     str = $strMess
                 }
                 [void]$arrRegions.Add($objPSCircle)                
@@ -139,26 +171,71 @@ $DesktopPan.Add_paint({
                     $global:objShape = $objPSCircle
                  }
             }
-            'dimond' {
+            'InterCircle' {          
+                $myPath = New-Object Drawing2D.GraphicsPath
+                $myPath2 = New-Object Drawing2D.GraphicsPath
+                $myPath.AddEllipse($point.X,$point.Y,$CircleSize-4,$CircleSize-4)
                 
-                $pp1 = New-Object System.Drawing.Point ($point.X) , ($point.Y+50)
-                $pp2 = New-Object System.Drawing.Point ($point.X+50 ), ($point.Y)
-                $pp3 = New-Object System.Drawing.Point ($point.X+100 ), ($point.Y+50)
-                $pp4 = New-Object System.Drawing.Point ($point.X+50 ), ($point.Y+100)
+                $myPath2.AddEllipse(($point.X)-($ShadowSize*2),($point.Y)-($ShadowSize*2),$CircleSize+($ShadowSize*2),$CircleSize+($ShadowSize*2))
+                $myregion2 = new-object Region  $myPath2
+                New-Variable -Force -Name "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate" -Value (new-object Region  $myPath) 
+                $myregion = Get-Variable -ValueOnly -Include "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate"
+                $strMess = 'test'
+                $objPSInterCircle = [pscustomobject]@{
+                    name = "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate"
+                    type = 'InterCircle'
+                    Location = $location
+                    myregion = $myregion
+                    myregion2 = $myregion2
+                    P = $point
+                    myPath = $myPath
+                    myPath2 = $myPath2
+                    myPen1 = $mypen3
+                    
+                    str = $strMess
+                }
+                [void]$arrRegions.Add($objPSInterCircle)                
+                 If(($Global:bolMouseDown) -and ($global:objShape -ne $null))
+                 {
+                    $global:objShape = $objPSInterCircle
+                 }
+            }
+            'dimond' {
+                $point.X = $point.X + 25
+                $point.Y = $point.Y + 25
+                $pp1 = New-Object Point ($point.X) , ($point.Y+25)
+                $pp2 = New-Object Point ($point.X+25 ), ($point.Y)
+                $pp3 = New-Object Point ($point.X+$DimondSize ), ($point.Y+25)
+                $pp4 = New-Object Point ($point.X+25 ), ($point.Y+$DimondSize)
                 $points = @($pp1,$pp2,$pp3,$pp4)
 
-                $sp1 = New-Object System.Drawing.Point ($pp1.X-2) , ($pp1.Y)
-                $sp2 = New-Object System.Drawing.Point ($pp2.X ), ($pp2.Y-2)
-                $sp3 = New-Object System.Drawing.Point ($pp3.X+2) , ($pp3.Y)
-                $sp4 = New-Object System.Drawing.Point ($pp4.X ), ($pp4.Y+2)
+                $sp1 = New-Object Point ($pp1.X-$ShadowSize) , ($pp1.Y)
+                $sp2 = New-Object Point ($pp2.X ), ($pp2.Y-$ShadowSize)
+                $sp3 = New-Object Point ($pp3.X+$ShadowSize) , ($pp3.Y)
+                $sp4 = New-Object Point ($pp4.X ), ($pp4.Y+$ShadowSize)
                 $points2 = @($sp1,$sp2,$sp3,$sp4)
 
-                $myPath = New-Object System.Drawing.Drawing2D.GraphicsPath
-                $myPath2 = New-Object System.Drawing.Drawing2D.GraphicsPath
-                $myPath.AddPolygon($points)
-                $myPath2.AddPolygon($points2)
-                $myregion2 = new-object System.Drawing.Region  $myPath2
-                New-Variable -Force -Name "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate" -Value (new-object System.Drawing.Region  $myPath) 
+                
+               
+
+                $myPath = New-Object Drawing2D.GraphicsPath
+                $myPath2 = New-Object Drawing2D.GraphicsPath
+
+                $myPath.AddArc($pp2.x,$pp2.Y,$arcSize,$arcSize,225,90)
+                $myPath.AddArc($pp3.x,$pp3.Y,$arcSize,$arcSize,-45,90)
+                $myPath.AddArc($pp4.x,$pp4.Y,$arcSize,$arcSize,45,90)
+                $myPath.AddArc($pp1.x,$pp1.Y,$arcSize,$arcSize,135,90)
+                $myPath.CloseAllFigures()
+#                $myPath.AddPolygon($points)
+#                $myPath2.AddPolygon($points2)
+                $myPath2.AddArc($sp2.x,$sp2.Y,$arcSize,$arcSize,225,90)
+                $myPath2.AddArc($sp3.x,$sp3.Y,$arcSize,$arcSize,-45,90)
+                $myPath2.AddArc($sp4.x,$sp4.Y,$arcSize,$arcSize,45,90)
+                $myPath2.AddArc($sp1.x,$sp1.Y,$arcSize,$arcSize,135,90)
+                $myPath2.CloseAllFigures()
+
+                $myregion2 = new-object Region $myPath2
+                New-Variable -Force -Name "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate" -Value (new-object Region  $myPath) 
                 $myregion = Get-Variable -ValueOnly -Include "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate"
                 $objPSDimond = [pscustomobject]@{
                     name = "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate"
@@ -169,6 +246,8 @@ $DesktopPan.Add_paint({
                     P = $point
                     myPath = $myPath
                     myPath2 = $myPath2
+                    myPen1 = $mypen
+                    
                     str = $strMess
                  }
                 [void]$arrRegions.Add($objPSDimond)                
@@ -179,24 +258,38 @@ $DesktopPan.Add_paint({
             }
             'Square' {
 
-                $pp1 = New-Object System.Drawing.Point ($point.X-25) , ($point.Y+15)
-                $pp2 = New-Object System.Drawing.Point ($point.X+125 ), ($point.Y+15)
-                $pp3 = New-Object System.Drawing.Point ($point.X+125) , ($point.Y+85)
-                $pp4 = New-Object System.Drawing.Point ($point.X-25 ), ($point.Y+85)
-                $points = @($pp1,$pp2,$pp3,$pp4)
+                $pp1 = New-Object Point ($point.X) , ($point.Y)
+                $pp2 = New-Object Point ($point.X+ $squareSize ), ($point.Y)
+                $pp3 = New-Object Point ($point.X+ $squareSize) , ($point.Y+100)
+                $pp4 = New-Object Point ($point.X ), ($point.Y+100)
+ #               $points = @($pp1,$pp2,$pp3,$pp4)
+ #               $pp2.x = 400
+#                $pp2.Y  = 400
+                $sp1 = New-Object Point ($pp1.X-$ShadowSize ), ($pp1.Y-$ShadowSize)
+                $sp2 = New-Object Point ($pp2.X+$ShadowSize ), ($pp2.Y-$ShadowSize)
+                $sp3 = New-Object Point ($pp3.X+$ShadowSize) , ($pp3.Y+$ShadowSize)
+                $sp4 = New-Object Point ($pp4.X-$ShadowSize ), ($pp4.Y+$ShadowSize)
+ #               $points2 = @($sp1,$sp2,$sp3,$sp4)
+ #               $hrgn = $Win32Helpers::CreateRoundRectRgn($point.X-25,$point.Y+15,$point.X+125, $point.Y+85, 10,10)
+                $myPath = New-Object Drawing2D.GraphicsPath
+                $myPath2 = New-Object Drawing2D.GraphicsPath
 
-                $sp1 = New-Object System.Drawing.Point ($pp1.X-2 ), ($pp1.Y-2)
-                $sp2 = New-Object System.Drawing.Point ($pp2.X+2 ), ($pp2.Y-2)
-                $sp3 = New-Object System.Drawing.Point ($pp3.X+2) , ($pp3.Y+2)
-                $sp4 = New-Object System.Drawing.Point ($pp4.X-2 ), ($pp4.Y+2)
-                $points2 = @($sp1,$sp2,$sp3,$sp4)
+                $arcSize = 10
+                $myPath.AddArc($pp2.x,$pp2.Y,$arcSize,$arcSize,270,90)
+                $myPath.AddArc($pp3.x,$pp3.y,$arcSize,$arcSize,0,90)
+                $myPath.AddArc($pp4.x,$pp4.y,$arcSize,$arcSize,90,90)
+                $myPath.AddArc($pp1.x,$pp1.Y,$arcSize,$arcSize,180,90)
+                $myPath.CloseAllFigures()
                 
-                $myPath = New-Object System.Drawing.Drawing2D.GraphicsPath
-                $myPath2 = New-Object System.Drawing.Drawing2D.GraphicsPath
-                $myPath.AddPolygon($points)
-                $myPath2.AddPolygon($points2)
-                $myregion2 = new-object System.Drawing.Region  $myPath2
-                New-Variable -Force -Name "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate" -Value (new-object System.Drawing.Region  $myPath) 
+                $myPath2.AddArc($sp2.x,$sp2.Y,$arcSize,$arcSize,270,90)
+                $myPath2.AddArc($sp3.x,$sp3.y,$arcSize,$arcSize,0,90)
+                $myPath2.AddArc($sp4.x,$sp4.y,$arcSize,$arcSize,90,90)
+                $myPath2.AddArc($sp1.x,$sp1.Y,$arcSize,$arcSize,180,90)
+                $myPath2.CloseAllFigures()
+
+                $myregion2 = new-object Region $myPath2
+                New-Variable -Force -Name "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate" -Value (new-object Region  $myPath) 
+#                New-Variable -Force -Name "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate" -Value ([region]::FromHrgn($hrgn)) 
                 $myregion = Get-Variable -ValueOnly -Include "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate"
                 $objPSSquare = [pscustomobject]@{
                     name = "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate"
@@ -207,10 +300,75 @@ $DesktopPan.Add_paint({
                     P = $point
                     myPath = $myPath
                     myPath2 = $myPath2
+                    myPen1 = $mypen
+                    
                     str = $strMess
                 }
-                [void]$arrRegions.Add($objPSSquare              
-                    )               
+                [void]$arrRegions.Add($objPSSquare)               
+                If(($Global:bolMouseDown) -and ($global:objShape -ne $null))
+                {
+                $global:objShape = $objPSSquare
+                }            
+            }
+            'DataObject' {
+                $point.X = $point.X + 25
+                $point.Y = $point.Y + 25
+                $pp1 = New-Object Point ($point.X) , ($point.Y)
+                $pp2 = New-Object Point ($point.X +$DataObjSizeX), ($point.Y)
+                $pp3 = New-Object Point (($point.X +$DataObjSizeX)+10) , ($point.Y+$DataObjSizeY)
+                $pp4 = New-Object Point ($point.X ), ($point.Y + $DataObjSizeY)
+                $pp5 = New-Object Point ($point.X +$DataObjSizeX), ($point.Y  +10)
+                $pp6 = New-Object Point (($point.X +$DataObjSizeX) + 10), (($point.Y) + 10)
+
+                $sp1 = New-Object Point ($point.X - $ShadowSize) , (($point.Y)-$ShadowSize)
+                $sp2 = New-Object Point (($point.X +$DataObjSizeX)), ($point.Y -$ShadowSize)
+                $sp3 = New-Object Point ((($point.X +$DataObjSizeX)+10)+$ShadowSize) , (($point.Y+$DataObjSizeY)+$ShadowSize)
+                $sp4 = New-Object Point (($point.X)-$ShadowSize), (($point.Y + $DataObjSizeY)+$ShadowSize)
+                $sp5 = New-Object Point (($point.X +$DataObjSizeX)-$ShadowSize), ($point.Y  +10)
+                $sp6 = New-Object Point ((($point.X +$DataObjSizeX) + 10) + $ShadowSize), (($point.Y) + 10)
+
+                $myPath = New-Object Drawing2D.GraphicsPath
+                $myPath2 = New-Object Drawing2D.GraphicsPath       
+                               
+                $myPath.AddLine($pp2,$pp5)
+                $myPath.AddLine($pp5,$pp6)
+                $myPath.AddArc($pp3.x-10,$pp3.y-10,$arcSize,$arcSize,0,90)
+                $myPath.AddArc($pp4.x+10,$pp4.y-10,$arcSize,$arcSize,90,90)
+                $myPath.AddArc($pp1.x+10,$pp1.Y,$arcSize,$arcSize,180,90)
+                $myPath.AddLine($pp2,$pp6)
+                
+#                $myPath2.AddLine($sp2,$sp5)
+ #               $myPath2.AddLine($sp5,$sp6)
+                $myPath2.AddArc($sp3.x-10,$sp3.y-10,$arcSize,$arcSize,0,90)
+                $myPath2.AddArc($sp4.x+10,$sp4.y-10,$arcSize,$arcSize,90,90)
+                $myPath2.AddArc($sp1.x+10,$sp1.Y,$arcSize,$arcSize,180,90)
+                $myPath2.AddLine($sp2,$sp6)
+                $myPath2.CloseFigure()
+<#                
+                $myPath2.AddArc($sp2.x,$sp2.Y,$arcSize,$arcSize,270,90)
+                $myPath2.AddArc($sp3.x,$sp3.y,$arcSize,$arcSize,0,90)
+                $myPath2.AddArc($sp4.x,$sp4.y,$arcSize,$arcSize,90,90)
+                $myPath2.AddArc($sp1.x,$sp1.Y,$arcSize,$arcSize,180,90)
+#>
+
+                $myregion2 = new-object Region $myPath2
+                New-Variable -Force -Name "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate" -Value (new-object Region  $myPath) 
+#                New-Variable -Force -Name "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate" -Value ([region]::FromHrgn($hrgn)) 
+                $myregion = Get-Variable -ValueOnly -Include "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate"
+                $objPSSquare = [pscustomobject]@{
+                    name = "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate"
+                    type = 'DataObj'
+                    Location = $location
+                    myregion = $myregion
+                    myregion2 = $myregion2
+                    P = $point
+                    myPath = $myPath
+                    myPath2 = $myPath2
+                    myPen1 = $mypen
+                    
+                    str = $strMess
+                }
+                [void]$arrRegions.Add($objPSSquare)               
                 If(($Global:bolMouseDown) -and ($global:objShape -ne $null))
                 {
                 $global:objShape = $objPSSquare
@@ -236,18 +394,19 @@ $DesktopPan.Add_paint({
                 $DesktopPan.Focus()
 
                 $e.Graphics.DrawPath($mypen2, $arrItem.myPath2)
-                $e.Graphics.DrawPath($mypen, $arrItem.myPath)
-                $e.Graphics.DrawString("test", $fonty , $myBrush, $arrItem.p.X+40,$arrItem.p.y+55, [System.Drawing.StringFormat]::GenericDefault)
-                $e.Graphics.DrawImage($avatar,$arrItem.p.X+50,$arrItem.p.y+55,10,10)
+                $e.Graphics.DrawPath($arrItem.mypen1, $arrItem.myPath)
+ #               $e.Graphics.DrawString("test", $fonty , $myBrush, $arrItem.p.X+40,$arrItem.p.y+55, [StringFormat]::GenericDefault)
+#                $e.Graphics.DrawImage($avatar,$arrItem.p.X+50,$arrItem.p.y+55,10,10)
                 $e.Graphics.SetClip($arrItem.myregion,4)
 
             }
             Else
             {
 
-                $e.Graphics.DrawPath($mypen, $arrItem.myPath)
-                $e.Graphics.DrawString("test", $fonty , $myBrush, $arrItem.p.X+40,$arrItem.p.y+55, [System.Drawing.StringFormat]::GenericDefault)
-                $e.Graphics.DrawImage($avatar,$arrItem.p.X+50,$arrItem.p.y+55,10,10)
+                $e.Graphics.DrawPath($arrItem.mypen1, $arrItem.myPath)
+
+#                $e.Graphics.DrawString("test", $fonty , $myBrush, $arrItem.p.X+40,$arrItem.p.y+55, [StringFormat]::GenericDefault)
+ #               $e.Graphics.DrawImage($avatar,$arrItem.p.X+50,$arrItem.p.y+55,10,10)
                 $e.Graphics.SetClip($arrItem.myregion,4)
             }
         }  
@@ -259,7 +418,7 @@ $DesktopPan.Add_paint({
 $DesktopPan.add_MouseDown({
 $Global:bolMouseDown = $true
 $Global:objShape = $null
-$mouse = [System.Windows.Forms.Cursor]::Position
+$mouse = [Cursor]::Position
 $point = $DesktopPan.PointToClient($mouse)
     If ($arrRegions.Count -gt 0)
     {
@@ -270,10 +429,14 @@ $point = $DesktopPan.PointToClient($mouse)
             {
                 $StartCircle.Checked = $false
                 $StartCircle.Refresh()
+                $InterCircle.Checked = $false
+                $InterCircle.Refresh()
                 $Dimond.Checked = $false
                 $Dimond.Refresh()
                 $Square.checked = $false
                 $Square.Refresh()
+                $DataObj.checked = $false
+                $DataObj.Refresh()
                 $global:objShape = $arrItem
             }                     
         }  
@@ -300,7 +463,7 @@ $DesktopPan.add_MouseUp({
 $DesktopPan.add_MouseMove({
     If(($Global:bolMouseDown) -and ($global:objShape -ne $null))
     {
-        $mouse = [System.Windows.Forms.Cursor]::Position
+        $mouse = [Cursor]::Position
         $point = $DesktopPan.PointToClient($mouse)
         If(($point.X  -gt 50) -and ($point.Y -gt 50))
         {
@@ -316,7 +479,7 @@ $DesktopPan.add_MouseMove({
 
 })
 
-$ShapesTbl = New-Object System.Windows.Forms.TableLayoutPanel
+$ShapesTbl = New-Object TableLayoutPanel
 $ShapesTbl.BackColor = ''
 #$ShapesTbl.Size = New-Object System.Drawing.Size(100,700)
 #$ShapesTbl.Location = New-Object System.Drawing.size(2,100)
@@ -324,19 +487,38 @@ $ShapesTbl.BackColor = ''
 $ShapesTbl.AutoSize = $true
 $ShapesTbl.ColumnCount = 2
 #$ShapesTbl.CellBorderStyle = 2
-$ShapesTbl.TabIndex = 5
 
-$SubIconTbl = New-Object System.Windows.Forms.TableLayoutPanel
+
+$SubIconTbl = New-Object TableLayoutPanel
 $SubIconTbl.BackColor = ''
 #$SubIconTbl.Size = New-Object System.Drawing.Size(100,700)
 #$SubIconTbl.Location = New-Object System.Drawing.size(2,100)
 #$SubIconTbl.Dock = [System.Windows.Forms.DockStyle]::Fill
 $SubIconTbl.AutoSize = $true
-$SubIconTbl.ColumnCount = 2
+$SubIconTbl.ColumnCount = 3
 #$SubIconTbl.CellBorderStyle = 2
-$SubIconTbl.TabIndex = 5
 
-$LinesTbl = New-Object System.Windows.Forms.TableLayoutPanel
+
+$LaunchTbl = New-Object TableLayoutPanel
+$LaunchTbl.BackColor = ''
+#$LaunchTbl.Size = New-Object System.Drawing.Size(100,700)
+#$LaunchTbl.Location = New-Object System.Drawing.size(2,100)
+#$LaunchTbl.Dock = [System.Windows.Forms.DockStyle]::Fill
+$LaunchTbl.AutoSize = $true
+$LaunchTbl.ColumnCount = 3
+#$LaunchTbl.CellBorderStyle = 2
+
+$MagnifierTbl = New-Object TableLayoutPanel
+$MagnifierTbl.BackColor = ''
+#$MagnifierTbl.Size = New-Object System.Drawing.Size(100,700)
+#$MagnifierTbl.Location = New-Object System.Drawing.size(2,100)
+#$MagnifierTbl.Dock = [System.Windows.Forms.DockStyle]::Fill
+$MagnifierTbl.AutoSize = $true
+$MagnifierTbl.ColumnCount = 3
+#$LaunchTbl.CellBorderStyle = 2
+
+
+$LinesTbl = New-Object TableLayoutPanel
 $LinesTbl.BackColor = ''
 #$SubIconTbl.Size = New-Object System.Drawing.Size(100,700)
 #$SubIconTbl.Location = New-Object System.Drawing.size(2,100)
@@ -344,9 +526,9 @@ $LinesTbl.BackColor = ''
 $LinesTbl.AutoSize = $true
 $LinesTbl.ColumnCount = 1
 #$SubIconTbl.CellBorderStyle = 2
-$LinesTbl.TabIndex = 5
 
-$ShowPRFbtn = New-Object system.Windows.Forms.Button
+
+$ShowPRFbtn = New-Object Button
 #$ShowPRFbtn.Location = New-Object System.Drawing.Size(1000,38) 
 $ShowPRFbtn.BackColor = "#d2d4d6"
 $ShowPRFbtn.text = "پاک کردن همه شکلها"
@@ -364,8 +546,8 @@ $ShowPRFbtn.Add_Click({
     $DesktopPan.Invalidate()         
 })
 
-$DelShape = New-Object system.Windows.Forms.Button
-$DelShape.Location = New-Object System.Drawing.Size(2,50) 
+$DelShape = New-Object Button
+$DelShape.Location = New-Object Size(2,50) 
 $DelShape.BackColor = "#d2d4d6"
 $DelShape.text = "حذف شکل"
 $DelShape.width = 110
@@ -379,8 +561,8 @@ $DelShape.Add_Click({
 })
 
 
-$SolidLine = New-Object System.Windows.Forms.CheckBox
-$SolidLine.Size = New-Object System.Drawing.Size(100,25)
+$SolidLine = New-Object CheckBox
+$SolidLine.Size = New-Object Size(100,25)
 $SolidLine.name = 'LightMess'
 $SolidLine.Image = imgStreamer "D:\ATE\IT\Root\images\SolidLine.png"
 $SolidLine.Appearance = 1
@@ -390,8 +572,8 @@ $SolidLine.Add_click({
     funDisAllShapes $SolidLine
 })
 
-$DashedLine = New-Object System.Windows.Forms.CheckBox
-$DashedLine.Size = New-Object System.Drawing.Size(100,25)
+$DashedLine = New-Object CheckBox
+$DashedLine.Size = New-Object Size(100,25)
 $DashedLine.name = 'LightMess'
 $DashedLine.Image = imgStreamer "D:\ATE\IT\Root\images\DashedLine.png"
 $DashedLine.Appearance = 1
@@ -401,8 +583,8 @@ $DashedLine.Add_click({
     funDisAllShapes $DashedLine
 })
 
-$MessSubIcon = New-Object System.Windows.Forms.CheckBox
-$MessSubIcon.Size = New-Object System.Drawing.Size(45,45)
+$MessSubIcon = New-Object CheckBox
+$MessSubIcon.Size = New-Object Size($subIconButSize,$subIconButSize)
 $MessSubIcon.name = 'LightMess'
 $MessSubIcon.Image = imgStreamer "D:\ATE\IT\Root\images\LightMess.png"
 $MessSubIcon.Appearance = 1
@@ -412,8 +594,8 @@ $MessSubIcon.Add_click({
     funDisAllShapes $MessSubIcon
 })
 
-$DarkMessSubIcon = New-Object System.Windows.Forms.CheckBox
-$DarkMessSubIcon.Size = New-Object System.Drawing.Size(45,45)
+$DarkMessSubIcon = New-Object CheckBox
+$DarkMessSubIcon.Size = New-Object Size($subIconButSize,$subIconButSize)
 $DarkMessSubIcon.name = 'DarktMess'
 $DarkMessSubIcon.Image = imgStreamer "D:\ATE\IT\Root\images\DarkMess.png"
 $DarkMessSubIcon.Appearance = 1
@@ -423,8 +605,8 @@ $DarkMessSubIcon.Add_click({
     funDisAllShapes $DarkMessSubIcon
 })
 
-$GearSubIcon = New-Object System.Windows.Forms.CheckBox
-$GearSubIcon.Size = New-Object System.Drawing.Size(45,45)
+$GearSubIcon = New-Object CheckBox
+$GearSubIcon.Size = New-Object Size($subIconButSize,$subIconButSize)
 $GearSubIcon.name = 'Gear'
 $GearSubIcon.Image = imgStreamer "D:\ATE\IT\Root\images\Gear.png"
 $GearSubIcon.Appearance = 1
@@ -435,8 +617,8 @@ $GearSubIcon.Add_click({
 })
 
 
-$ClockSubIcon = New-Object System.Windows.Forms.CheckBox
-$ClockSubIcon.Size = New-Object System.Drawing.Size(45,45)
+$ClockSubIcon = New-Object CheckBox
+$ClockSubIcon.Size = New-Object Size($subIconButSize,$subIconButSize)
 $ClockSubIcon.name = 'Clock'
 $ClockSubIcon.Image = imgStreamer "D:\ATE\IT\Root\images\Clock.png"
 $ClockSubIcon.Appearance = 1
@@ -446,8 +628,8 @@ $ClockSubIcon.Add_click({
     funDisAllShapes $ClockSubIcon
 })
 
-$CrossSubIcon = New-Object System.Windows.Forms.CheckBox
-$CrossSubIcon.Size = New-Object System.Drawing.Size(45,45)
+$CrossSubIcon = New-Object CheckBox
+$CrossSubIcon.Size = New-Object Size($subIconButSize,$subIconButSize)
 $CrossSubIcon.name = 'Clock'
 $CrossSubIcon.Image = imgStreamer "D:\ATE\IT\Root\images\Cross.png"
 $CrossSubIcon.Appearance = 1
@@ -458,8 +640,8 @@ $CrossSubIcon.Add_click({
 })
 
 
-$SinStartSubIcon = New-Object System.Windows.Forms.CheckBox
-$SinStartSubIcon.Size = New-Object System.Drawing.Size(45,45)
+$SinStartSubIcon = New-Object CheckBox
+$SinStartSubIcon.Size = New-Object Size($subIconButSize,$subIconButSize)
 $SinStartSubIcon.name = 'Clock'
 $SinStartSubIcon.Image = imgStreamer "D:\ATE\IT\Root\images\SigStart.png"
 $SinStartSubIcon.Appearance = 1
@@ -469,8 +651,8 @@ $SinStartSubIcon.Add_click({
     funDisAllShapes $SinStartSubIcon
 })
 
-$ConSubIcon = New-Object System.Windows.Forms.CheckBox
-$ConSubIcon.Size = New-Object System.Drawing.Size(45,45)
+$ConSubIcon = New-Object CheckBox
+$ConSubIcon.Size = New-Object Size($subIconButSize,$subIconButSize)
 $ConSubIcon.name = 'Clock'
 $ConSubIcon.Image = imgStreamer "D:\ATE\IT\Root\images\Condition.png"
 $ConSubIcon.Appearance = 1
@@ -480,8 +662,8 @@ $ConSubIcon.Add_click({
     funDisAllShapes $ConSubIcon
 })
 
-$SigEndSubIcon = New-Object System.Windows.Forms.CheckBox
-$SigEndSubIcon.Size = New-Object System.Drawing.Size(45,45)
+$SigEndSubIcon = New-Object CheckBox
+$SigEndSubIcon.Size = New-Object Size($subIconButSize,$subIconButSize)
 $SigEndSubIcon.name = 'Clock'
 $SigEndSubIcon.Image = imgStreamer "D:\ATE\IT\Root\images\SigEnd.png"
 $SigEndSubIcon.Appearance = 1
@@ -491,8 +673,8 @@ $SigEndSubIcon.Add_click({
     funDisAllShapes $SigEndSubIcon
 })
 
-$ErrEndSubIcon = New-Object System.Windows.Forms.CheckBox
-$ErrEndSubIcon.Size = New-Object System.Drawing.Size(45,45)
+$ErrEndSubIcon = New-Object CheckBox
+$ErrEndSubIcon.Size = New-Object Size($subIconButSize,$subIconButSize)
 $ErrEndSubIcon.name = 'Clock'
 $ErrEndSubIcon.Image = imgStreamer "D:\ATE\IT\Root\images\ErrEnd.png"
 $ErrEndSubIcon.Appearance = 1
@@ -502,8 +684,8 @@ $ErrEndSubIcon.Add_click({
     funDisAllShapes $ErrEndSubIcon
 })
 
-$ErrorSubIcon = New-Object System.Windows.Forms.CheckBox
-$ErrorSubIcon.Size = New-Object System.Drawing.Size(45,45)
+$ErrorSubIcon = New-Object CheckBox
+$ErrorSubIcon.Size = New-Object Size($subIconButSize,$subIconButSize)
 $ErrorSubIcon.name = 'Clock'
 $ErrorSubIcon.Image = imgStreamer "D:\ATE\IT\Root\images\Error.png"
 $ErrorSubIcon.Appearance = 1
@@ -514,8 +696,8 @@ $ErrorSubIcon.Add_click({
 })
 
 
-$EscaSubIcon = New-Object System.Windows.Forms.CheckBox
-$EscaSubIcon.Size = New-Object System.Drawing.Size(45,45)
+$EscaSubIcon = New-Object CheckBox
+$EscaSubIcon.Size = New-Object Size($subIconButSize,$subIconButSize)
 $EscaSubIcon.name = 'Clock'
 $EscaSubIcon.Image = imgStreamer "D:\ATE\IT\Root\images\Escalation.png"
 $EscaSubIcon.Appearance = 1
@@ -525,8 +707,8 @@ $EscaSubIcon.Add_click({
     funDisAllShapes $EscaSubIcon
 })
 
-$EscaEndSubIcon = New-Object System.Windows.Forms.CheckBox
-$EscaEndSubIcon.Size = New-Object System.Drawing.Size(45,45)
+$EscaEndSubIcon = New-Object CheckBox
+$EscaEndSubIcon.Size = New-Object Size($subIconButSize,$subIconButSize)
 $EscaEndSubIcon.name = 'Clock'
 $EscaEndSubIcon.Image = imgStreamer "D:\ATE\IT\Root\images\EscalEnd.png"
 $EscaEndSubIcon.Appearance = 1
@@ -536,8 +718,8 @@ $EscaEndSubIcon.Add_click({
     funDisAllShapes $EscaEndSubIcon
 })
 
-$ArrowSubIcon = New-Object System.Windows.Forms.CheckBox
-$ArrowSubIcon.Size = New-Object System.Drawing.Size(45,45)
+$ArrowSubIcon = New-Object CheckBox
+$ArrowSubIcon.Size = New-Object Size($subIconButSize,$subIconButSize)
 $ArrowSubIcon.name = 'Clock'
 $ArrowSubIcon.Image = imgStreamer "D:\ATE\IT\Root\images\Arrow.png"
 $ArrowSubIcon.Appearance = 1
@@ -548,8 +730,8 @@ $ArrowSubIcon.Add_click({
 })
 
 
-$FArrowSubIcon = New-Object System.Windows.Forms.CheckBox
-$FArrowSubIcon.Size = New-Object System.Drawing.Size(45,45)
+$FArrowSubIcon = New-Object CheckBox
+$FArrowSubIcon.Size = New-Object Size($subIconButSize,$subIconButSize)
 $FArrowSubIcon.name = 'Clock'
 $FArrowSubIcon.Image = imgStreamer "D:\ATE\IT\Root\images\FArrow.png"
 $FArrowSubIcon.Appearance = 1
@@ -559,8 +741,8 @@ $FArrowSubIcon.Add_click({
     funDisAllShapes $FArrowSubIcon
 })
 
-$UserSubIcon = New-Object System.Windows.Forms.CheckBox
-$UserSubIcon.Size = New-Object System.Drawing.Size(45,45)
+$UserSubIcon = New-Object CheckBox
+$UserSubIcon.Size = New-Object Size($subIconButSize,$subIconButSize)
 $UserSubIcon.name = 'Clock'
 $UserSubIcon.Image = imgStreamer "D:\ATE\IT\Root\images\User.png"
 $UserSubIcon.Appearance = 1
@@ -570,8 +752,8 @@ $UserSubIcon.Add_click({
     funDisAllShapes $UserSubIcon
 })
 
-$PlusSubIcon = New-Object System.Windows.Forms.CheckBox
-$PlusSubIcon.Size = New-Object System.Drawing.Size(45,45)
+$PlusSubIcon = New-Object CheckBox
+$PlusSubIcon.Size = New-Object Size($subIconButSize,$subIconButSize)
 $PlusSubIcon.name = 'Clock'
 $PlusSubIcon.Image = imgStreamer "D:\ATE\IT\Root\images\Plus.png"
 $PlusSubIcon.Appearance = 1
@@ -581,8 +763,75 @@ $PlusSubIcon.Add_click({
     funDisAllShapes $PlusSubIcon
 })
 
-$StartCircle = New-Object System.Windows.Forms.CheckBox
-$StartCircle.Size = New-Object System.Drawing.Size(45,45)
+$Play = New-Object CheckBox
+$Play.Size = New-Object Size($subIconButSize,$subIconButSize)
+$Play.name = 'Clock'
+$Play.Image = imgStreamer "D:\ATE\IT\Root\images\Play.png"
+$Play.Appearance = 1
+$Play.FlatStyle = 2
+$Play.Add_click({
+    If(!$This.Checked){$DesktopPan.Focus()}
+    funDisAllShapes $Play
+})
+
+$Record = New-Object CheckBox
+$Record.Size = New-Object Size($subIconButSize,$subIconButSize)
+$Record.name = 'Record'
+$Record.Image = imgStreamer "D:\ATE\IT\Root\images\Record.png"
+$Record.Appearance = 1
+$Record.FlatStyle = 2
+$Record.Add_click({
+    If(!$This.Checked){$DesktopPan.Focus()}
+    funDisAllShapes $Record
+})
+
+$Stop = New-Object CheckBox
+$Stop.Size = New-Object Size($subIconButSize,$subIconButSize)
+$Stop.name = 'Record'
+$Stop.Image = imgStreamer "D:\ATE\IT\Root\images\Stop.png"
+$Stop.Appearance = 1
+$Stop.FlatStyle = 2
+$Stop.Add_click({
+    If(!$This.Checked){$DesktopPan.Focus()}
+    funDisAllShapes $Stop
+})
+
+$ZoomOut = New-Object CheckBox
+$ZoomOut.Size = New-Object Size($subIconButSize,$subIconButSize)
+$ZoomOut.name = 'Record'
+$ZoomOut.Image = imgStreamer "D:\ATE\IT\Root\images\ZoomOut.png"
+$ZoomOut.Appearance = 1
+$ZoomOut.FlatStyle = 2
+$ZoomOut.Add_click({
+    If(!$This.Checked){$DesktopPan.Focus()}
+    funDisAllShapes $ZoomOut
+})
+
+$Magnifier = New-Object CheckBox
+$Magnifier.Size = New-Object Size($subIconButSize,$subIconButSize)
+$Magnifier.name = 'Record'
+$Magnifier.Image = imgStreamer "D:\ATE\IT\Root\images\Magnifier.png"
+$Magnifier.Appearance = 1
+$Magnifier.FlatStyle = 2
+$Magnifier.Add_click({
+    If(!$This.Checked){$DesktopPan.Focus()}
+    funDisAllShapes $Magnifier
+})
+
+$ZoomIn = New-Object CheckBox
+$ZoomIn.Size = New-Object Size($subIconButSize,$subIconButSize)
+$ZoomIn.name = 'Record'
+$ZoomIn.Image = imgStreamer "D:\ATE\IT\Root\images\ZoomIn.png"
+$ZoomIn.Appearance = 1
+$ZoomIn.FlatStyle = 2
+$ZoomIn.Add_click({
+    If(!$This.Checked){$DesktopPan.Focus()}
+    funDisAllShapes $ZoomIn
+})
+
+
+$StartCircle = New-Object CheckBox
+$StartCircle.Size = New-Object Size($ShapesSize,$ShapesSize)
 $StartCircle.Name = 'StartCircle'
 $StartCircle.Image = imgStreamer "D:\ATE\IT\Root\images\StartCircle.png"
 #$StartCircle.Location = New-Object System.Drawing.Size(20,100) 
@@ -597,8 +846,8 @@ $StartCircle.Add_click({
     funDisAllShapes $StartCircle
 })
 
-$InterCircle = New-Object System.Windows.Forms.CheckBox
-$InterCircle.Size = New-Object System.Drawing.Size(45,45)
+$InterCircle = New-Object CheckBox
+$InterCircle.Size = New-Object Size($ShapesSize,$ShapesSize)
 $InterCircle.name = 'InterCircle'
 $InterCircle.Image= imgStreamer "D:\ATE\IT\Root\images\InterCircle.png"
 #$StartCircle.Location = New-Object System.Drawing.Size(20,100) 
@@ -615,8 +864,8 @@ $InterCircle.Add_click({
 
 
 
-$Dimond = New-Object System.Windows.Forms.CheckBox
-$Dimond.Size = New-Object System.Drawing.Size(45,45)
+$Dimond = New-Object CheckBox
+$Dimond.Size = New-Object Size($ShapesSize,$ShapesSize)
 $Dimond.name = 'Dimond'
 $Dimond.Image = imgStreamer "D:\ATE\IT\Root\images\VDimond.png"
 $Dimond.ImageAlign = 'MiddleCenter'
@@ -630,8 +879,8 @@ $Dimond.Add_click({
 $Dimond.Padding = 5
 
 
-$Square = New-Object System.Windows.Forms.CheckBox
-$Square.Size = New-Object System.Drawing.Size(45,45)
+$Square = New-Object CheckBox
+$Square.Size = New-Object Size($ShapesSize,$ShapesSize)
 $Square.name = 'Square'
 $Square.Image = imgStreamer "D:\ATE\IT\Root\images\VSquare.png"
 $Square.ImageAlign = 'MiddleCenter'
@@ -643,9 +892,9 @@ $Square.Add_click({
     funDisAllShapes $Square
 })
 
-$DataObj = New-Object System.Windows.Forms.CheckBox
-$DataObj.Size = New-Object System.Drawing.Size(45,45)
-$DataObj.name = 'Square'
+$DataObj = New-Object CheckBox
+$DataObj.Size = New-Object Size($ShapesSize,$ShapesSize)
+$DataObj.name = 'DataObject'
 $DataObj.Image = imgStreamer "D:\ATE\IT\Root\images\DataObj.png"
 $DataObj.ImageAlign = 'MiddleCenter'
 $DataObj.Appearance = 1
@@ -656,15 +905,15 @@ $DataObj.Add_click({
     funDisAllShapes $DataObj
 })
 
-$MainTbl = New-Object System.Windows.Forms.TableLayoutPanel
+$MainTbl = New-Object TableLayoutPanel
 #$MainTbl.Location = New-Object System.Drawing.Size(2,50) 
 $MainTbl.AutoSize = $true
 $MainTbl.CellBorderStyle = 0
 #$MainTbl.BackColor = "#d2d4d6"
 $MainTbl.ColumnCount = 2
-$MainTbl.RowCount = 4
+$MainTbl.RowCount = 5
 
-$butsTbl =  New-Object System.Windows.Forms.TableLayoutPanel
+$butsTbl =  New-Object TableLayoutPanel
 $butsTbl.BackColor = ''
 $butsTbl.Controls.Add($ShowPRFbtn)
 $butsTbl.Controls.Add($DelShape)
@@ -708,13 +957,23 @@ $SubIconTbl.Controls.Add($PlusSubIcon)
 $LinesTbl.Controls.Add($SolidLine)
 $LinesTbl.Controls.Add($DashedLine)
 
+$LaunchTbl.Controls.Add($Play)
+$LaunchTbl.Controls.Add($Record)
+$LaunchTbl.Controls.Add($Stop)
+
+$MagnifierTbl.Controls.Add($ZoomOut)
+$MagnifierTbl.Controls.Add($Magnifier)
+$MagnifierTbl.Controls.Add($ZoomIn)
 
 $MainTbl.Controls.Add($DesktopPan,1,0)
 $MainTbl.Controls.Add($ShapesTbl,0,0)
 $MainTbl.Controls.Add($SubIconTbl,0,1)
 $MainTbl.Controls.Add($LinesTbl,0,2)
 $MainTbl.Controls.Add($butsTbl,0,3)
-$MainTbl.SetRowSpan($DesktopPan,4)
+$MainTbl.Controls.Add($LaunchTbl,0,4)
+$MainTbl.Controls.Add($MagnifierTbl,0,5)
+$MainTbl.SetRowSpan($DesktopPan,6)
+
 
 $form.Controls.Add($MainTbl)
 $form.Add_Shown({$form.Activate(); $DesktopPan.Focus()})
