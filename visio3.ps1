@@ -69,6 +69,13 @@ Function funDisAllShapes($O) {
         {
             $obj.checked = $false   
         }  
+    }  
+    foreach($obj in  $LaunchTbl.Controls)
+    {
+        If($obj -ne $O)
+        {
+            $obj.checked = $false   
+        }  
     } 
 }
 
@@ -143,7 +150,9 @@ $DesktopPan.Add_paint({
         $point.Y = $point.Y - 50
         switch (($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)
         {
-            'StartCircle' {          
+            'StartCircle' { 
+                $point.X = $point.X + 25
+                $point.Y = $point.Y + 25       
                 $myPath = New-Object Drawing2D.GraphicsPath
                 $myPath2 = New-Object Drawing2D.GraphicsPath
                 $myPath.AddEllipse($point.X,$point.Y,$CircleSize,$CircleSize)
@@ -171,7 +180,9 @@ $DesktopPan.Add_paint({
                     $global:objShape = $objPSCircle
                  }
             }
-            'InterCircle' {          
+            'InterCircle' {
+                $point.X = $point.X + 25
+                $point.Y = $point.Y + 25            
                 $myPath = New-Object Drawing2D.GraphicsPath
                 $myPath2 = New-Object Drawing2D.GraphicsPath
                 $myPath.AddEllipse($point.X,$point.Y,$CircleSize-4,$CircleSize-4)
@@ -337,19 +348,11 @@ $DesktopPan.Add_paint({
                 $myPath.AddArc($pp1.x+10,$pp1.Y,$arcSize,$arcSize,180,90)
                 $myPath.AddLine($pp2,$pp6)
                 
-#                $myPath2.AddLine($sp2,$sp5)
- #               $myPath2.AddLine($sp5,$sp6)
                 $myPath2.AddArc($sp3.x-10,$sp3.y-10,$arcSize,$arcSize,0,90)
                 $myPath2.AddArc($sp4.x+10,$sp4.y-10,$arcSize,$arcSize,90,90)
                 $myPath2.AddArc($sp1.x+10,$sp1.Y,$arcSize,$arcSize,180,90)
                 $myPath2.AddLine($sp2,$sp6)
                 $myPath2.CloseFigure()
-<#                
-                $myPath2.AddArc($sp2.x,$sp2.Y,$arcSize,$arcSize,270,90)
-                $myPath2.AddArc($sp3.x,$sp3.y,$arcSize,$arcSize,0,90)
-                $myPath2.AddArc($sp4.x,$sp4.y,$arcSize,$arcSize,90,90)
-                $myPath2.AddArc($sp1.x,$sp1.Y,$arcSize,$arcSize,180,90)
-#>
 
                 $myregion2 = new-object Region $myPath2
                 New-Variable -Force -Name "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate" -Value (new-object Region  $myPath) 
@@ -437,6 +440,7 @@ $point = $DesktopPan.PointToClient($mouse)
                 $Square.Refresh()
                 $DataObj.checked = $false
                 $DataObj.Refresh()
+                funDisAllShapes $null
                 $global:objShape = $arrItem
             }                     
         }  
@@ -537,11 +541,15 @@ $ShowPRFbtn.height = 25
 $ShowPRFbtn.Font = 'Microsoft Sans Serif,10'
 $ShowPRFbtn.ForeColor = "#000"
 $ShowPRFbtn.Add_Click({
-  funDisAllShapes $ShapesTbl    
-  If($arrRegions.Count -gt 0)
-  {  
-
-          $arrRegions.Clear()
+    funDisAllShapes $ShapesTbl    
+    If($arrRegions.Count -gt 0)
+    {  
+        Write-host ($arrRegions.Count)
+        $arrRegions.Clear()
+    }
+    Else
+    {
+         Write-host "0"
     }
     $DesktopPan.Invalidate()         
 })
@@ -805,6 +813,7 @@ $ZoomOut.FlatStyle = 2
 $ZoomOut.Add_click({
     If(!$This.Checked){$DesktopPan.Focus()}
     funDisAllShapes $ZoomOut
+    $this.Checked = $false
 })
 
 $Magnifier = New-Object CheckBox
@@ -816,6 +825,7 @@ $Magnifier.FlatStyle = 2
 $Magnifier.Add_click({
     If(!$This.Checked){$DesktopPan.Focus()}
     funDisAllShapes $Magnifier
+    $this.Checked = $false
 })
 
 $ZoomIn = New-Object CheckBox
@@ -827,6 +837,7 @@ $ZoomIn.FlatStyle = 2
 $ZoomIn.Add_click({
     If(!$This.Checked){$DesktopPan.Focus()}
     funDisAllShapes $ZoomIn
+    $this.Checked = $false
 })
 
 
