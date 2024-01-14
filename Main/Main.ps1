@@ -427,7 +427,6 @@ $tableLayoutPanel4 = New-Object System.Windows.Forms.TableLayoutPanel
 $tableLayoutPanel4.RowCount = 1
 $tableLayoutPanel4.ColumnCount = 2
 $tableLayoutPanel4.AutoSize = $true
-
 $tableLayoutPanel4.Size = New-Object System.Drawing.Size(690,200)
 $tableLayoutPanel4.Controls.Add($GBemail, 0, 0);
 $tableLayoutPanel4.Controls.Add($EmailGV, 1, 0);
@@ -450,10 +449,10 @@ $Mainform.controls.Add($tableLayoutPanel2)
 
 #$Mainform.BackColor='yellow'
 
-#$Mainform.controls.add($tableLayoutPanel2)
 $Mainform.FormBorderStyle = 'FixedDialog'
 $Mainform.MaximizeBox = $false
 $Mainform.Icon = $Icon
+
 $Secoform.FormBorderStyle = 'FixedDialog'
 $Secoform.MaximizeBox = $false
 #$Mainform.controls.add($Panel)
