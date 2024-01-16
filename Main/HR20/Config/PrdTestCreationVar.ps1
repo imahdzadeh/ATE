@@ -33,7 +33,6 @@ $RegExMAC = "($($ConFolMAC))(\d*)($($AllDepCode))(\d*)(.csv)"
 $ArrColToCompare = @('Material code','ratio %','Weight ml' )
 #$RegExNoneCo= "^[a-zA-Z0-9.,$;]*$"
 $RegExNoneCo = "'^.*(?:\r?\n)?'"
-$DecimalRegEx = '^\d*\.?\d+$'
 $RegExComment= "#$_"
 $ExtrInfoArr = @('Latest Change','Date','User ID','Process No', 'Status')
 $ShowFrmArr = @('عکس','شماره','توضیحات','وضعیت','تاریخ')
