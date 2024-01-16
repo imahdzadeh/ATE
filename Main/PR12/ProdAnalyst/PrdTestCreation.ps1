@@ -771,7 +771,6 @@
         {
             $intSum = 0
             [Float]$intCal = 0
-            $global:floCellOldValue
             If ($_.columnindex -eq $intColToSum)
             {
                     foreach ($TGVRow in $EmailGV.Rows)
@@ -1074,7 +1073,7 @@
             $_.SuppressKeyPress = $True
             If($Global:TotMlIBOldValue -ne $TotMlIB.Text)
             {
-                 $Global:TotMlIBOldValue = $TotMlIB.Text
+                $TotMlIB.Text = $Global:TotMlIBOldValue
             }            
         }
         Else
@@ -1089,7 +1088,10 @@
         If ($TotMlIB.Text -match '^\d*\.?\d+$'){$TotMlIB.BackColor = ''}Else{$TotMlIB.BackColor = 'red'}
         If ($TotMlIB.Text -ne $Global:TotMlIBOldValue)
         {
-            Write-Host "sdfsdf"
+            If($Global:TotMlIBOldValue -ne $TotMlIB.Text)
+            {
+                $TotMlIB.Text = $Global:TotMlIBOldValue
+            }  
         }
     })
 
