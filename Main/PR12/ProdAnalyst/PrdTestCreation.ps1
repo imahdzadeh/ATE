@@ -771,95 +771,85 @@
         {
             $intSum = 0
             [Float]$intCal = 0
-            If ($_.columnindex -eq $intColToSum)
+            If(!$DGVCellValueChanging)
             {
-                    foreach ($TGVRow in $EmailGV.Rows)
-                    {
-                    $TGVRow.HeaderCell.Value = ($TGVRow.Index +1).ToString()
-                        If ($TGVRow.cells[$intColToSum].Value -match '^\d*\.?\d+$') 
+                $DGVCellValueChanging = $true
+                If ($_.columnindex -eq $intColToSum)
+                {
+                        foreach ($TGVRow in $EmailGV.Rows)
                         {
-                            $intSum  = $intSum + [int]($TGVRow.cells[$intColToSum].Value) 
-                        }
-                        If ($TotMlIB.Text -match $DecimalRegEx )
-                        {
-                            If  (
-                                    (   
-                                        ($TGVRow.cells[$intColToCal].Value -eq [System.DBNull]::Value -or 
-                                        $TGVRow.cells[$intColToCal].Value -eq 0) -And 
-                                        $TGVRow.cells[$intColToSum].Value -ne [System.DBNull]::Value  -and
-                                        $TGVRow.cells[$intColToSum].Value -ne $null          
-                                    )                                                                            -or
-                                    (
-                                        ($TGVRow.cells[$intColToSum].Value -ne [System.DBNull]::Value) -and
-                                        ($TGVRow.cells[$intColToCal].Value -ne [System.DBNull]::Value) -and
-                                        ($TGVRow.cells[$intColToCal].Value -ne 0)                      -and
-                                        ($TGVRow.cells[$intColToSum].Value -ne $null)                  -and                                    
-                                        ($TGVRow.cells[$intColToCal].Value -ne [math]::round(( ([int]($TotMlIB.Text)*[int]($TGVRow.cells[$intColToSum].Value))/100).ToString(),2))
-                                    )                                   
-                                )
+                        $TGVRow.HeaderCell.Value = ($TGVRow.Index +1).ToString()
+                            If ($TGVRow.cells[$intColToSum].Value -match '^\d*\.?\d+$') 
                             {
-                                $this.dataGridView1.CellValueChanged -= $this.dataGridView1_CellValueChanged
-                                Try
+                                $intSum  = $intSum + [int]($TGVRow.cells[$intColToSum].Value) 
+                            }
+                            If ($TotMlIB.Text -match $DecimalRegEx )
+                            {
+                                If  (
+                                        (   
+                                            ($TGVRow.cells[$intColToCal].Value -eq [System.DBNull]::Value -or 
+                                            $TGVRow.cells[$intColToCal].Value -eq 0) -And 
+                                            $TGVRow.cells[$intColToSum].Value -ne [System.DBNull]::Value  -and
+                                            $TGVRow.cells[$intColToSum].Value -ne $null          
+                                        )                                                                            -or
+                                        (
+                                            ($TGVRow.cells[$intColToSum].Value -ne [System.DBNull]::Value) -and
+                                            ($TGVRow.cells[$intColToCal].Value -ne [System.DBNull]::Value) -and
+                                            ($TGVRow.cells[$intColToCal].Value -ne 0)                      -and
+                                            ($TGVRow.cells[$intColToSum].Value -ne $null)                  -and                                    
+                                            ($TGVRow.cells[$intColToCal].Value -ne [math]::round(( ([int]($TotMlIB.Text)*[int]($TGVRow.cells[$intColToSum].Value))/100).ToString(),2))
+                                        )                                   
+                                    )
                                 {
                                     $TGVRow.cells[$intColToCal].Value = [math]::round(( ([int]($TotMlIB.Text)*[int]($TGVRow.cells[$intColToSum].Value))/100).ToString(),2)
                                 }
-                                Finally
-                                {
-                                    $this.dataGridView1.CellValueChanged += $this.dataGridView1_CellValueChanged    
-                                }
                             }
                         }
-                    }
-                    $TotPercentIB.text = $intSum
-            }
-            Else
-            {
-                If ($_.columnindex -eq $intColToCal)
-                {
-                    foreach ($TGVRow in $EmailGV.Rows)
-                    {
-                        If ($TGVRow.cells[$intColToCal].Value -match '^\d*\.?\d+$') 
-                        {
-                            If($TGVRow.cells[$intColToCal].Value -ne [System.DBNull]::Value)
-                            {
-                                $intCal  = $intCal + [Float]($TGVRow.cells[$intColToCal].Value) 
-                            }
-                        }
-                    }
-                        $TotMlIB.text = $intCal
-                    foreach ($TGVRow in $EmailGV.Rows)
-                    {
-                        If ($TGVRow.cells[$intColToCal].Value -match $DecimalRegEx -or $TGVRow.cells[$intColToCal].Value -eq [System.DBNull]::Value) 
-                        {
-                                $this.dataGridView1.CellValueChanged -= $this.dataGridView1_CellValueChanged
-                                Try
-                                {
-                                    If($TGVRow.cells[$intColToCal].Value -ne [System.DBNull]::Value -and $TGVRow.cells[$intColToCal].Value -ne 0)
-                                    {
-                                        $TGVRow.cells[$intColToSum].Value = [math]::round(( ([Float]($TGVRow.cells[$intColToCal].Value)/([Float]($TotMlIB.Text)))*100).ToString(),2)
-                                    }
-                                    Else
-                                    {
-                                        $TGVRow.cells[$intColToSum].Value = [System.DBNull]::Value
-                                    }
-                                }
-                                Finally
-                                {
-                                    $this.dataGridView1.CellValueChanged += $this.dataGridView1_CellValueChanged    
-                                }
-                        }
-                    }
-                    $intSum = 0
-                    foreach ($TGVRow in $EmailGV.Rows)
-                    {
-                        $TGVRow.HeaderCell.Value = ($TGVRow.Index +1).ToString()                            
-                        If ($TGVRow.cells[$intColToSum].Value -match '^\d*\.?\d+$') 
-                        {
-                            $intSum  = $intSum + [int]($TGVRow.cells[$intColToSum].Value) 
-                        }
-                    }
-                    $TotPercentIB.text = $intSum                           
+                        $TotPercentIB.text = $intSum
                 }
+                Else
+                {
+                    If ($_.columnindex -eq $intColToCal)
+                    {
+                        foreach ($TGVRow in $EmailGV.Rows)
+                        {
+                            If ($TGVRow.cells[$intColToCal].Value -match $DecimalRegEx) 
+                            {
+                                If($TGVRow.cells[$intColToCal].Value -ne [System.DBNull]::Value)
+                                {
+                                    $intCal  = $intCal + [Float]($TGVRow.cells[$intColToCal].Value) 
+                                }
+                            }
+                        }
+                            $TotMlIB.text = $intCal
+                        foreach ($TGVRow in $EmailGV.Rows)
+                        {
+                            If ($TGVRow.cells[$intColToCal].Value -match $DecimalRegEx -or $TGVRow.cells[$intColToCal].Value -eq [System.DBNull]::Value) 
+                            {
+                                If($TGVRow.cells[$intColToCal].Value -ne [System.DBNull]::Value -and $TGVRow.cells[$intColToCal].Value -ne 0)
+                                {
+                                    $TGVRow.cells[$intColToSum].Value = [math]::round(( ([Float]($TGVRow.cells[$intColToCal].Value)/([Float]($TotMlIB.Text)))*100).ToString(),2)
+                                }
+                                Else
+                                {
+                                    $TGVRow.cells[$intColToSum].Value = [System.DBNull]::Value
+                                }
+                            }
+                        }
+                        $intSum = 0
+                        foreach ($TGVRow in $EmailGV.Rows)
+                        {
+                            $TGVRow.HeaderCell.Value = ($TGVRow.Index +1).ToString()                            
+                            If ($TGVRow.cells[$intColToSum].Value -match '^\d*\.?\d+$') 
+                            {
+                                $intSum  = $intSum + [int]($TGVRow.cells[$intColToSum].Value) 
+                            }
+                        }
+                        $TotPercentIB.text = $intSum
+                                          
+                    }
+                }
+                $DGVCellValueChanging = $false       
             }
         }
         Catch
@@ -868,6 +858,42 @@
             select -last 1)-EmailGV.Add_CellValueChanged`t $_ `t$([Environment]::UserName)" | 
             Out-File $ErrLogPath -Append  
         }          
+    }
+
+    Function funUpdateEmailGV{
+
+        foreach ($TGVRow in $EmailGV.Rows)
+        {
+        $DGVCellValueChanging = $true
+        $TGVRow.HeaderCell.Value = ($TGVRow.Index +1).ToString()
+            If ($TGVRow.cells[$intColToSum].Value -match $DecimalRegEx) 
+            {
+                $intSum  = $intSum + [int]($TGVRow.cells[$intColToSum].Value) 
+            }
+            If ($TotMlIB.Text -match $DecimalRegEx )
+            {
+                If  (
+                        (   
+                            ($TGVRow.cells[$intColToCal].Value -eq [System.DBNull]::Value -or 
+                            $TGVRow.cells[$intColToCal].Value -eq 0) -And 
+                            $TGVRow.cells[$intColToSum].Value -ne [System.DBNull]::Value  -and
+                            $TGVRow.cells[$intColToSum].Value -ne $null          
+                        )                                                                            -or
+                        (
+                            ($TGVRow.cells[$intColToSum].Value -ne [System.DBNull]::Value) -and
+                            ($TGVRow.cells[$intColToCal].Value -ne [System.DBNull]::Value) -and
+                            ($TGVRow.cells[$intColToCal].Value -ne 0)                      -and
+                            ($TGVRow.cells[$intColToSum].Value -ne $null)                  -and                                    
+                            ($TGVRow.cells[$intColToCal].Value -ne [math]::round(( ([int]($TotMlIB.Text)*[int]($TGVRow.cells[$intColToSum].Value))/100).ToString(),2))
+                        )                                   
+                    )
+                {
+                    $TGVRow.cells[$intColToCal].Value = [math]::round(( ([int]($TotMlIB.Text)*[int]($TGVRow.cells[$intColToSum].Value))/100).ToString(),2)
+                }
+            }
+        }
+        $TotPercentIB.text = $intSum
+        $DGVCellValueChanging = $false
     }
 
     Function ProdLBDrawItem($s,$e){       
@@ -965,6 +991,7 @@
     $EmailGV.RowHeadersDefaultCellStyle.Alignment = [System.Drawing.ContentAlignment]::MiddleLeft
     $EmailGV.RowHeadersWidth = 50
     $EmailGV.Add_CellValueChanged{
+        param([System.Object]$s, [System.Windows.Forms.DataGridViewCellEventArgs]$e)
         EmailGVCellValueChanged
     }
     
@@ -1071,10 +1098,7 @@
     $TotMlIB.Add_KeyDown({      
         if ($_.KeyCode -eq [System.Windows.Forms.Keys]::Enter) {     
             $_.SuppressKeyPress = $True
-            If($Global:TotMlIBOldValue -ne $TotMlIB.Text)
-            {
-                $TotMlIB.Text = $Global:TotMlIBOldValue
-            }            
+            funUpdateEmailGV  
         }
         Else
         {
@@ -1085,14 +1109,16 @@
         }
     })
     $TotMlIB.Add_lostfocus({
-        If ($TotMlIB.Text -match '^\d*\.?\d+$'){$TotMlIB.BackColor = ''}Else{$TotMlIB.BackColor = 'red'}
-        If ($TotMlIB.Text -ne $Global:TotMlIBOldValue)
+        If ($TotMlIB.Text -match $DecimalRegEx)
         {
-            If($Global:TotMlIBOldValue -ne $TotMlIB.Text)
-            {
-                $TotMlIB.Text = $Global:TotMlIBOldValue
-            }  
+            $TotMlIB.BackColor = ''
+            funUpdateEmailGV
         }
+        Else
+        {
+            $TotMlIB.BackColor = 'red'
+        }
+        
     })
 
     $TotMlIB.Add_gotfocus({
