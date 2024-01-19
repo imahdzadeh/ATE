@@ -2,8 +2,9 @@
 # Decmeber 20 2023
 #
 # Below line temporary till we have AD and can sert env variable in login script
-$ComRoot = "D:\ATE"
-#
+#$ComRoot = "D:\ATE"                                                       <#1 modified by atena jan 14 24 for desktop.ps1#  be commented#>       
+$ComRoot = "C:\Users\Mahdza1\Documents\ATE"                                <#2 modified by atena jan 14 24 for desktop.ps1# be added#>        
+
 # ---------------->>>>>IMPORTANT<<<<<<<<<<<<----------------
 # This line retrieves all the types and high level variables from main config file
 # and must be included in all sub config files
@@ -12,7 +13,8 @@ $ComRoot = "D:\ATE"
 #
 # Define objects and variables customed to this script between the lines
 #///////////////////////////////////////////////////////////////////////////////////
-$depCode = "PR12"
+
+# $depCode = "PR12"                                                      <#3 modified by atena jan 14 24 for desktop.ps1#  be commented for line 112#>
 $scriptpath = "$MainRoot\$depCode\ProdAnalyst\PrdTestCreation.ps1"
 $persianCalendar = New-Object System.Globalization.PersianCalendar
 $gregorianDate = [System.TimeZoneInfo]::ConvertTimeBySystemTimeZoneId([DateTime]::Now,"Iran Standard Time")
@@ -90,6 +92,7 @@ foreach ($item in $Array) {
     Get-ChildItem $MainRoot -Directory | foreach{
         If (Test-Path "$($_.FullName)\$ConfigFolName\$($_.Name)$CSVFileExt" )
         {
+            $depcode = $_.Name
             $ScriptCSV = Import-Csv "$($_.FullName)\$ConfigFolName\$($_.Name)$CSVFileExt"
             Get-ChildItem $_.FullName -Directory | foreach{
                 $DepCodeFol = $_.Name

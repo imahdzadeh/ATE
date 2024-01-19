@@ -2,6 +2,7 @@
 # Jan 12 2024
 #
 # Below line temporary till we have AD and can insert env variable in login script
+#$ComRoot = "C:/Users/Mahdza1/Documents/ATE"
 $ComRoot = "D:\ATE"
 #
 # ---------------->>>>>IMPORTANT<<<<<<<<<<<<----------------
