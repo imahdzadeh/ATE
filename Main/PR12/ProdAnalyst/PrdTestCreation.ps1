@@ -433,7 +433,8 @@
                     } | Select-Object *, @{ n = "IntVal"; e = {[int]($Matches[2])}} | Sort-Object IntVal | Select-Object -Last 1
 
                 $ConfFileNo = $null
-                $ConfFileNo = gci "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)" -file -Recurse| Foreach{
+#                $ConfFileNo = gci "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)" -file -Recurse| Foreach{
+                $ConfFileNo = gci "$ProdRoot\$($PrjNameLB.SelectedItem)" -file -Recurse| Foreach{
                     $_ -match $RegExNoVar
                     } | Select-Object *, @{ n = "IntVal"; e = {[int]($Matches[4])}} | Sort-Object IntVal | Select-Object -Last 1
                 $NewFileNameLbl.Text = "$($ConFolPRF)$($ConfFileVer.IntVal)$($DepCode)$($ConfFileNo.IntVal+1)" 
@@ -527,7 +528,8 @@
             #$ShowMACDGV.AutoSizeRowsMode = $false
             $ShowMACDGV.ColumnHeadersHeightSizeMode = 1
             $objDTV = $null
-            gci "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$($MatCodeFol)" -file | Foreach{
+#            gci "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$($MatCodeFol)" -file | Foreach{
+            gci "$ProdRoot\$($PrjNameLB.SelectedItem)" -file -Recurse | Foreach{
                 If( $_.Name -match $RegExMAC)
                 {
                     
@@ -742,7 +744,8 @@
             $ShowMACbtn.Enabled = $true
             $ShowPRFbtn.Enabled = $true
             $DGVCBColumn.Rows.Clear()
-            gci "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$($MatCodeFol)" -file | Foreach{
+ #           gci "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$($MatCodeFol)" -file | Foreach{
+            gci "$ProdRoot\$($PrjNameLB.SelectedItem)" -file -Recurse| Foreach{
                        If( $_.Name -match $RegExMAC)
                        {
                             Get-Content $_.FullName | ConvertFrom-Csv  |Select -ExpandProperty $strCBPeopName | foreach {
