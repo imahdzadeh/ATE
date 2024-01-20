@@ -1,8 +1,8 @@
 ﻿# Created by Isar Mahdzadeh
 # Decmeber 12 2023
 #
-#Try
-#{
+Try
+{
  . "$(Split-Path $PSScriptRoot -Parent)\Config\$(($PSCommandPath.Split('\') | select -last 1) -replace (".ps1$","var.ps1"))"
 
     if($varDebugTrace -ne 0)
@@ -495,8 +495,8 @@
     }
 
     Function funShowMAC{
- #       Try
- #       {
+        Try
+        {
             $ShowMACfrm = New-Object System.Windows.Forms.Form
             $ShowMACfrm.Size = New-Object System.Drawing.Size(400,600)
             $ShowMACfrm.Text = "لیست مواد اولیه"
@@ -548,7 +548,7 @@
 
             $ShowMACfrm.Controls.Add($ShowMACDGV)
             $ShowMACfrm.Show()
-<#
+
         }
 
         Catch
@@ -564,7 +564,7 @@
                 throw $_
             } 
         }
-#>
+
     }
 
     Function funShowPRF{
@@ -864,39 +864,47 @@
     }
 
     Function funUpdateEmailGV{
-
-        foreach ($TGVRow in $EmailGV.Rows)
+        Try
         {
-        $DGVCellValueChanging = $true
-        $TGVRow.HeaderCell.Value = ($TGVRow.Index +1).ToString()
-            If ($TGVRow.cells[$intColToSum].Value -match $DecimalRegEx) 
+            foreach ($TGVRow in $EmailGV.Rows)
             {
-                $intSum  = $intSum + [int]($TGVRow.cells[$intColToSum].Value) 
-            }
-            If ($TotMlIB.Text -match $DecimalRegEx )
-            {
-                If  (
-                        (   
-                            ($TGVRow.cells[$intColToCal].Value -eq [System.DBNull]::Value -or 
-                            $TGVRow.cells[$intColToCal].Value -eq 0) -And 
-                            $TGVRow.cells[$intColToSum].Value -ne [System.DBNull]::Value  -and
-                            $TGVRow.cells[$intColToSum].Value -ne $null          
-                        )                                                                            -or
-                        (
-                            ($TGVRow.cells[$intColToSum].Value -ne [System.DBNull]::Value) -and
-                            ($TGVRow.cells[$intColToCal].Value -ne [System.DBNull]::Value) -and
-                            ($TGVRow.cells[$intColToCal].Value -ne 0)                      -and
-                            ($TGVRow.cells[$intColToSum].Value -ne $null)                  -and                                    
-                            ($TGVRow.cells[$intColToCal].Value -ne [math]::round(( ([int]($TotMlIB.Text)*[int]($TGVRow.cells[$intColToSum].Value))/100).ToString(),2))
-                        )                                   
-                    )
+            $DGVCellValueChanging = $true
+            $TGVRow.HeaderCell.Value = ($TGVRow.Index +1).ToString()
+                If ($TGVRow.cells[$intColToSum].Value -match $DecimalRegEx) 
                 {
-                    $TGVRow.cells[$intColToCal].Value = [math]::round(( ([int]($TotMlIB.Text)*[int]($TGVRow.cells[$intColToSum].Value))/100).ToString(),2)
+                    $intSum  = $intSum + [int]($TGVRow.cells[$intColToSum].Value) 
+                }
+                If ($TotMlIB.Text -match $DecimalRegEx )
+                {
+                    If  (
+                            (   
+                                ($TGVRow.cells[$intColToCal].Value -eq [System.DBNull]::Value -or 
+                                $TGVRow.cells[$intColToCal].Value -eq 0) -And 
+                                $TGVRow.cells[$intColToSum].Value -ne [System.DBNull]::Value  -and
+                                $TGVRow.cells[$intColToSum].Value -ne $null          
+                            )                                                                            -or
+                            (
+                                ($TGVRow.cells[$intColToSum].Value -ne [System.DBNull]::Value) -and
+                                ($TGVRow.cells[$intColToCal].Value -ne [System.DBNull]::Value) -and
+                                ($TGVRow.cells[$intColToCal].Value -ne 0)                      -and
+                                ($TGVRow.cells[$intColToSum].Value -ne $null)                  -and                                    
+                                ($TGVRow.cells[$intColToCal].Value -ne [math]::round(( ([int]($TotMlIB.Text)*[int]($TGVRow.cells[$intColToSum].Value))/100).ToString(),2))
+                            )                                   
+                        )
+                    {
+                        $TGVRow.cells[$intColToCal].Value = [math]::round(( ([int]($TotMlIB.Text)*[int]($TGVRow.cells[$intColToSum].Value))/100).ToString(),2)
+                    }
                 }
             }
-        }
-        $TotPercentIB.text = $intSum
-        $DGVCellValueChanging = $false
+            $TotPercentIB.text = $intSum
+            $DGVCellValueChanging = $false
+            }
+        Catch
+        {
+            "$((Get-Date).ToString('MM/dd/yyyy hh:mm tt'))`t $($PSCommandPath.Split('\') | 
+            select -last 1)-funUpdateEmailGV`t $_ `t$([Environment]::UserName)" | 
+            Out-File $ErrLogPath -Append  
+        } 
     }
 
     Function ProdLBDrawItem($s,$e){       
@@ -1324,7 +1332,7 @@
     $SecoForm.Controls.Add($DesktopGB)
 
     [void]$SecoForm.ShowDialog()
-<#
+
 }
 Catch
 { 
@@ -1332,4 +1340,3 @@ Catch
     select -last 1)-Main`t $_ `t$([Environment]::UserName)" | 
     Out-File $ErrLogPath -Append 
 }
-#>
