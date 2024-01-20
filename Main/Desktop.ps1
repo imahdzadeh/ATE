@@ -32,19 +32,40 @@ $Mainform = New-Object Windows.Forms.Form -Property @{
     Topmost       = $false
 }
 
-$Panel = New-Object System.Windows.Forms.TableLayoutPanel
-$panel.Dock = "Fill"
-#$panel.Anchor = 'right'
-#$panel.ColumnCount = 1
-$panel.BackColor=''
-#$panel.RowCount = 1
-$panel.CellBorderStyle = "single"
-$panel.AutoSize = $true
-#$panel.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent, 50)))
-#$panel.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 50)))
-#$panel.Margin.Top = 50
-#$panel.Margin.Right = 10
-#$panel.Padding = 10
+$MainTbl = New-Object System.Windows.Forms.TableLayoutPanel
+#$MainTbl.Anchor = 8
+#$MainTbl.Dock = "Fill"
+#$MainTbl.Anchor = 'right'
+$MainTbl.ColumnCount = 2
+#$MainTbl.BackColor=''
+#$MainTbl.RowCount = 1
+$MainTbl.CellBorderStyle = "single"
+$MainTbl.AutoSize = $true
+#$MainTbl.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent, 50)))
+#$MainTbl.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 50)))
+#$MainTbl.Margin.Top = 50
+#$MainTbl.Margin.Right = 10
+#$MainTbl.Padding = 10
+
+$ButtonsTbl = New-Object System.Windows.Forms.TableLayoutPanel
+#$ButtonsTbl.Anchor = 8
+#$ButtonsTbl.Dock = "Fill"
+#$ButtonsTbl.Anchor = 'right'
+#$ButtonsTbl.ColumnCount = 1
+#$ButtonsTbl.BackColor=''
+#$ButtonsTbl.RowCount = 1
+$ButtonsTbl.CellBorderStyle = "single"
+$ButtonsTbl.AutoSize = $true
+
+$CarTablbl = New-Object System.Windows.Forms.TableLayoutPanel
+#$CarTablbl.Anchor = 8
+#$CarTablbl.Dock = "Fill"
+#$CarTablbl.Anchor = 'right'
+#$CarTablbl.ColumnCount = 1
+#$CarTablbl.BackColor=''
+#$CarTablbl.RowCount = 1
+$CarTablbl.CellBorderStyle = "single"
+$CarTablbl.AutoSize = $true
 
 
 $ReturnBtn                   = New-Object system.Windows.Forms.Button
@@ -85,10 +106,10 @@ foreach ($item in $Array) {
   $thisButton.Add_Click({Write-Host $thisButton.Text}.GetNewClosure())
   #$thisButton.Add_Click({param($Sender,$EventArgs) Write-Host $Sender.Text})
 
-  $panel.Controls.Add($thisButton)
+  $MainTbl.Controls.Add($thisButton)
 }
 #>
-    $panel.Controls.Add($ReturnBtn)
+    
     Get-ChildItem $MainRoot -Directory | foreach{
         If (Test-Path "$($_.FullName)\$ConfigFolName\$($_.Name)$CSVFileExt" )
         {
@@ -113,7 +134,7 @@ foreach ($item in $Array) {
                                 $Mainform.Dispose()          
                                 & "$MainRoot\$depCode\$DepCodeFol\$ScriptName"   
                             }.GetNewClosure())
-                            $panel.Controls.Add($thisButton)    
+                            $ButtonsTbl.Controls.Add($thisButton)    
                         }
                     }
                 }     
@@ -124,18 +145,34 @@ foreach ($item in $Array) {
 
 #$Mainform.Controls.Add($Chatlabel)
 #$Mainform.Controls.Add($MainGB)
-#$panel.Controls.Add($MainGB)
-#$MainGB.Controls.Add($panel)
+#$MainTbl.Controls.Add($MainGB)
+#$MainGB.Controls.Add($MainTbl)
 <#
 $test = [System.Management.Automation.PSSerializer]::serialize($test)
 $AddPrinterBtn = [System.Management.Automation.PSSerializer]::deserialize($test)
 $AddPrinterBtn = New-Object $AddPrinterBtn
 #>
-#$panel.Controls.Add($EmailGV)
+#$MainTbl.Controls.Add($EmailGV)
 #$AddPrinterBtn.BackColor = 'red'
-#$panel.Controls.Add($AddPrinterBtn)
-#$panel.Controls.Add($Settings)
-$Mainform.Controls.Add($panel)
+#$MainTbl.Controls.Add($AddPrinterBtn)
+#$MainTbl.Controls.Add($Settings)
+
+$CarTablbl = New-Object Panel
+#$CarTablbl.BackColor = 'green'
+#$CarTablbl.Location = New-Object Size(120,50)
+$CarTablbl.Size = New-Object Size(500,400)
+$CarTablbl.Dock = [DockStyle]::Fill
+#$CarTablbl.AutoSize = $true
+$CarTablbl.name = "Main"
+$CarTablbl.BorderStyle = 1
+
+$CarTablbl.Controls.Add()
+$MainTbl.Controls.Add($ReturnBtn,0,0)
+$MainTbl.Controls.Add($ButtonsTbl,1,0)
+$MainTbl.SetRowSpan($ButtonsTbl,2)
+$MainTbl.Controls.Add($CarTablbl,0,1)
+#$MainTbl.SetRowSpan($CarTablbl,2)
+$Mainform.Controls.Add($MainTbl)
 
 #$Mainform.Controls.Add($EmailGVNew)
 [void]$Mainform.ShowDialog()
