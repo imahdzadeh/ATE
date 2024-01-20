@@ -39,7 +39,7 @@ $MainTbl = New-Object System.Windows.Forms.TableLayoutPanel
 $MainTbl.ColumnCount = 2
 #$MainTbl.BackColor=''
 #$MainTbl.RowCount = 1
-$MainTbl.CellBorderStyle = "single"
+#$MainTbl.CellBorderStyle = "single"
 $MainTbl.AutoSize = $true
 #$MainTbl.ColumnStyles.Add((new-object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent, 50)))
 #$MainTbl.RowStyles.Add((new-object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 50)))
@@ -164,11 +164,10 @@ $CarTablbl.Size = New-Object Size(500,400)
 $CarTablbl.Dock = [DockStyle]::Fill
 #$CarTablbl.AutoSize = $true
 $CarTablbl.name = "Main"
-$CarTablbl.BorderStyle = 1
+$CarTablbl.BorderStyle = 0
 
-$CarTablbl.Controls.Add()
 $MainTbl.Controls.Add($ReturnBtn,0,0)
-$MainTbl.Controls.Add($ButtonsTbl,1,0)
+$MainTbl.Controls.Add($ButtonsTbl,1,1)
 $MainTbl.SetRowSpan($ButtonsTbl,2)
 $MainTbl.Controls.Add($CarTablbl,0,1)
 #$MainTbl.SetRowSpan($CarTablbl,2)
