@@ -3,7 +3,7 @@
 #
 # Below line temporary till we have AD and can sert env variable in login script
 #$ComRoot = "D:\ATE"                                                       <#1 modified by atena jan 14 24 for desktop.ps1#  be commented#>       
-$ComRoot = "C:\Users\Mahdza1\Documents\ATE"                                <#2 modified by atena jan 14 24 for desktop.ps1# be added#>        
+$ComRoot = "d:\ATE"                                <#2 modified by atena jan 14 24 for desktop.ps1# be added#>        
 
 # ---------------->>>>>IMPORTANT<<<<<<<<<<<<----------------
 # This line retrieves all the types and high level variables from main config file
