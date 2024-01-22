@@ -6,7 +6,7 @@
 # $ComRoot = "d:\ATE" 
                                <#2 modified by atena jan 14 24 for desktop.ps1# be added#>                              
 
-$ComRoot = Import-Csv "$((Get-Item $PSScriptRoot).Parent.Parent.parent.FullName)\Config\Users\UsersProfile.csv" | `
+$ComRoot = Import-Csv "$((Get-Item $PSScriptRoot).Parent.FullName)\Config\Users\UsersProfile.csv" | `
 Where-Object {$_.UserID -match $([Environment]::UserName)} | % {$_.mainpath}
 # ---------------->>>>>IMPORTANT<<<<<<<<<<<<----------------
 # This line retrieves all the types and high level variables from main config file

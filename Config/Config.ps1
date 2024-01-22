@@ -10,7 +10,7 @@ Add-Type -AssemblyName PresentationCore,PresentationFramework
 #$ComRoot= "D:\ATE"                        <#modified by atena jan 14 24 for desktop.ps1#  be commented#>
 #$ComRoot="C:\Users\Mahdza1\Documents\ATE" <#modified by atena jan 14 24 for desktop.ps1# be added#>
 
-$ComRoot = Import-Csv "$((Get-Item $PSScriptRoot).Parent.Parent.parent.FullName)\Config\Users\UsersProfile.csv" | `
+$ComRoot = Import-Csv "$((Get-Item $PSScriptRoot).Parent.FullName)\Config\Users\UsersProfile.csv" | `
 Where-Object {$_.UserID -match $([Environment]::UserName)} | % {$_.mainpath}
 
 $ArchFolder = "Archive"
