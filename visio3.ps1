@@ -1080,7 +1080,7 @@ $DataObj.Add_click({
 $MainTbl = New-Object TableLayoutPanel
 #$MainTbl.Location = New-Object System.Drawing.Size(2,50) 
 $MainTbl.AutoSize = $true
-$MainTbl.CellBorderStyle = 0
+$MainTbl.CellBorderStyle = 1
 #$MainTbl.BackColor = "#d2d4d6"
 $MainTbl.ColumnCount = 2
 $MainTbl.RowCount = 5

@@ -21,7 +21,7 @@
 #>
 #MainTableکنترل 
 $MainTable = New-Object System.Windows.Forms.TableLayoutPanel
-$MainTable.Dock = "fill"
+#$MainTable.Dock = "fill"
 $MainTable.BackColor= ' '
 $MainTable.CellBorderStyle = "Single"
 $MainTable.AutoSize = $true
