@@ -11,7 +11,7 @@ Where-Object {$_.UserID -match $([Environment]::UserName)} | % {$_.mainpath}
 # ---------------->>>>>IMPORTANT<<<<<<<<<<<<----------------
 # This line retrieves all the types and high level variables from main config file
 # and must be included in all sub config files
-# <#-----------------#>. "$($ComRoot)\IT\Root\Config\Config.ps1" <#-----------------#>
+ <#-----------------#>. "$($ComRoot)\IT\Root\Config\Config.ps1" <#-----------------#>
 
 #
 #
