@@ -2,7 +2,10 @@
 # Decmeber 12 2023
 #
 # Below line temporary till we have AD and can insert env variable in login script
-$ComRoot = "D:\ATE"
+# below 2 Lines find the mainpth of curren authenticated user
+$comroot = Import-Csv "$((Get-Item $PSScriptRoot).Parent.Parent.parent.FullName)\Config\Users\UsersProfile.csv" | `
+Where-Object {$_.UserID -match $([Environment]::UserName)} | select mainpath
+#$ComRoot = "D:\ATE"
 #
 # ---------------->>>>>IMPORTANT<<<<<<<<<<<<----------------
 # This line retrieves all the types and high level variables from main config file
