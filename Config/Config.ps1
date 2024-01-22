@@ -9,8 +9,10 @@ Add-Type -AssemblyName System.Drawing
 Add-Type -AssemblyName PresentationCore,PresentationFramework
 #$ComRoot= "D:\ATE"                        <#modified by atena jan 14 24 for desktop.ps1#  be commented#>
 #$ComRoot="C:\Users\Mahdza1\Documents\ATE" <#modified by atena jan 14 24 for desktop.ps1# be added#>
-$comroot = Import-Csv "$((Get-Item $PSScriptRoot).Parent.FullName)\Config\Users\UsersProfile.csv" | `
-Where-Object {$_.UserID -match $([Environment]::UserName)} | select mainpath
+
+$ComRoot = Import-Csv "$((Get-Item $PSScriptRoot).Parent.Parent.parent.FullName)\Config\Users\UsersProfile.csv" | `
+Where-Object {$_.UserID -match $([Environment]::UserName)} | % {$_.mainpath}
+
 $ArchFolder = "Archive"
 $PSFileExten = ".ps1"
 $VarFileCont = "Var"
