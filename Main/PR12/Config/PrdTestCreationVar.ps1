@@ -3,8 +3,8 @@
 #
 # Below line temporary till we have AD and can insert env variable in login script
 # below 2 Lines find the mainpth of curren authenticated user
-$comroot = Import-Csv "$((Get-Item $PSScriptRoot).Parent.Parent.parent.FullName)\Config\Users\UsersProfile.csv" | `
-Where-Object {$_.UserID -match $([Environment]::UserName)} | select mainpath
+$ComRoot = Import-Csv "$((Get-Item $PSScriptRoot).Parent.Parent.parent.FullName)\Config\Users\UsersProfile.csv" | `
+Where-Object {$_.UserID -match $([Environment]::UserName)} | % {$_.mainpath}
 #$ComRoot = "D:\ATE"
 #
 # ---------------->>>>>IMPORTANT<<<<<<<<<<<<----------------
