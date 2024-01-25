@@ -501,7 +501,7 @@ $DesktopPan.Add_paint({
 #                $e.Graphics.DrawImage($avatar,$arrItem.P2.x,$arrItem.P2.y)
                 $e.Graphics.SetClip($arrItem.Mainregion,4)
             }
-            write-host $arrItem.ConnArr.Count
+            
             for($c = 0; $c -lt $arrItem.ConnArr.Count; $c++)
             {
                 $arrConnItem = $arrItem.ConnArr[$c]
@@ -579,7 +579,7 @@ $DesktopPan.add_MouseDown({
                             }
                             Else
                             {
-                                write-host "should clean"
+                                
                             }
                         }
                         ElseIf(($Global:objShape -ne $null) -and ($Global:objShape -eq $arrItem))

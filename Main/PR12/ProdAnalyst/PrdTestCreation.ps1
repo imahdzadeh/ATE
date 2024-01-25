@@ -355,12 +355,14 @@ Try
             $EmailGV.Enabled = $false 
             $NewFileNameLbl.Text = ""
             $NewNameLbl.Visible = $false 
+<#
             $PRFFiles = Get-ChildItem -Path "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$FolderNameTests" -File | 
             ForEach-Object{$_.Name.TrimEnd($CSVFileExt)}
             If ($PRFFiles -ne $null)
             {
                 $ProdLB.Items.AddRange($PRFFiles)
             }
+#>
         }
         Catch
         {
@@ -465,7 +467,7 @@ Try
                         $intCal  = $intCal + [single]($TGVRow.cells[$intColToCal].Value) 
                     }
                 }
-                $TotPercentIB.Text = $intSum
+                $TotPercentIB.Text = [int]$intSum
                 $TotMlIB.Text = [math]::round($intCal,2)
                 If(Test-Path "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$imgFolder\$($NewFileNameLbl.Text)$($ImageExt)")
                     {
@@ -753,6 +755,13 @@ Try
                             }
                        }
             }
+            $ProdLB.Items.Clear()
+            $PRFFiles = Get-ChildItem -Path "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$FolderNameTests" -File | 
+            ForEach-Object{$_.Name.TrimEnd($CSVFileExt)}
+            If ($PRFFiles -ne $null)
+            {
+                $ProdLB.Items.AddRange($PRFFiles)
+            }
         }
         Catch
         {
@@ -808,7 +817,7 @@ Try
                                 }
                             }
                         }
-                        $TotPercentIB.text = $intSum
+                        $TotPercentIB.text = [int]$intSum
                 }
                 Else
                 {
@@ -848,7 +857,7 @@ Try
                                 $intSum  = $intSum + [int]($TGVRow.cells[$intColToSum].Value) 
                             }
                         }
-                        $TotPercentIB.text = $intSum
+                        $TotPercentIB.text = [int]$intSum
                                           
                     }
                 }
@@ -896,7 +905,7 @@ Try
                     }
                 }
             }
-            $TotPercentIB.text = $intSum
+            $TotPercentIB.text = [int]$intSum
             $DGVCellValueChanging = $false
             }
         Catch
@@ -1008,10 +1017,12 @@ Try
     
     $EmailGV.Add_CellBeginEdit{
         param([System.Object]$s, [System.Windows.Forms.DataGridViewCellCancelEventArgs]$e)
+<#
         If($EmailGV.Rows[$e.RowIndex].Cells[$e.ColumnIndex].Value -ne [System.DBNull]::Value)
         {
            $global:floCellOldValue = [Float]$EmailGV.Rows[$e.RowIndex].Cells[$e.ColumnIndex].Value 
-        }       
+        } 
+ #>             
     }
 
     foreach ($datagridviewcolumn in $EmailGV.columns) {
@@ -1332,7 +1343,6 @@ Try
     $SecoForm.Controls.Add($DesktopGB)
 
     [void]$SecoForm.ShowDialog()
-
 }
 Catch
 { 
