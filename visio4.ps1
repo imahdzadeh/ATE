@@ -139,7 +139,7 @@ $squareSize = 150
 $squareSizeY = 100
 $DimondSize = 50
 $StartCircleSize = 40
-$InterCircleSize = 50
+$InterCircleSize = 40
 $DataObjSize = 50
 $DataObjSizeX = $DataObjSize - ($DataObjSize /3)
 $adjustPixel = 10
@@ -167,155 +167,62 @@ $DesktopPan.Add_paint({
     
 #    $point.X = $point.X - $adjustPixel
 #    $point.Y = $point.Y - $adjustPixel
+    $MainPath = New-Object Drawing2D.GraphicsPath
+    $ShadowPath = New-Object Drawing2D.GraphicsPath
+    $pTopPath = New-Object Drawing2D.GraphicsPath
+    $pRightPath = New-Object Drawing2D.GraphicsPath
+    $pBottomPath = New-Object Drawing2D.GraphicsPath
+    $pLeftPath = New-Object Drawing2D.GraphicsPath
     switch ($strSwitch)
     {
         'StartCircle' { 
             $point.X = $point.X - ($StartCircleSize / $intDevideBy2)
-            $point.Y = $point.Y - ($StartCircleSize / $intDevideBy2)            
+            $point.Y = $point.Y - ($StartCircleSize / $intDevideBy2)
+            $sizeDevidedBy2 = $StartCircleSize / $intDevideBy2            
             $TopPointGB = New-Object Point ($point.X) , ($point.Y - $adjustPixel)
             $BottomPointGB = New-Object Point ($point.X) , (($point.Y + $StartCircleSize) + $adjustPixel)
-            $pCenter = New-Object Point ($point.X + ($StartCircleSize / $intDevideBy2)) , ($point.Y +($StartCircleSize / $intDevideBy2))
-            $pTop = New-Object Point (($point.X + ($StartCircleSize / $intDevideBy2))-($ConnPSize / $intDevideBy2)), (($point.Y))
-            $pRight = New-Object Point (($point.X + ($StartCircleSize / $intDevideBy2)) + ($StartCircleSize / $intDevideBy2)-($ConnPSize)) , (($point.Y +($StartCircleSize / $intDevideBy2)) - ($ConnPSize / $intDevideBy2))
-            $pBottom = New-Object Point (($point.X + ($StartCircleSize / $intDevideBy2))-($ConnPSize / $intDevideBy2)) , ((($point.Y+($StartCircleSize / $intDevideBy2))+($StartCircleSize / $intDevideBy2)) - ($ConnPSize))
-            $pLeft = New-Object Point (($point.X + ($StartCircleSize / $intDevideBy2)) - ($StartCircleSize / $intDevideBy2)) , (($point.Y +($StartCircleSize / $intDevideBy2)) - ($ConnPSize / $intDevideBy2))                               
-            $MainPath = New-Object Drawing2D.GraphicsPath
-            $ShadowPath = New-Object Drawing2D.GraphicsPath
-            $pTopPath = New-Object Drawing2D.GraphicsPath
-            $pRightPath = New-Object Drawing2D.GraphicsPath
-            $pBottomPath = New-Object Drawing2D.GraphicsPath
-            $pLeftPath = New-Object Drawing2D.GraphicsPath
+            $pCenter = New-Object Point ($point.X + ($sizeDevidedBy2)) , ($point.Y + $sizeDevidedBy2)
+            $pTop = New-Object Point ($point.X + $sizeDevidedBy2), $point.Y
+            $pRight = New-Object Point (($point.X + $sizeDevidedBy2) + ($sizeDevidedBy2)) , ($point.Y + $sizeDevidedBy2)
+            $pBottom = New-Object Point ($point.X + $sizeDevidedBy2) , (($point.Y + $sizeDevidedBy2) + ($sizeDevidedBy2))
+            $pLeft = New-Object Point (($point.X + $sizeDevidedBy2) - $sizeDevidedBy2) , ($point.Y + $sizeDevidedBy2)                               
             $MainPath.AddEllipse($point.X,$point.Y,$StartCircleSize,$StartCircleSize)
-            $pTopPath.AddEllipse($pTop.X,$pTop.Y,$ConnPSize,$ConnPSize)
-            $pRightPath.AddEllipse($pRight.X,$pRight.Y,$ConnPSize,$ConnPSize)
-            $pLeftPath.AddEllipse($pLeft.X,$pLeft.Y,$ConnPSize,$ConnPSize)
-            $pBottomPath.AddEllipse($pBottom.X,$pBottom.Y,$ConnPSize,$ConnPSize)
+            $pTopPath.AddEllipse($pTop.X-($ConnPSize / $intDevideBy2),$pTop.Y,$ConnPSize,$ConnPSize)
+            $pRightPath.AddEllipse($pRight.X - ($ConnPSize), $pRight.Y - ($ConnPSize / $intDevideBy2),$ConnPSize,$ConnPSize)
+            $pLeftPath.AddEllipse($pLeft.X,($pLeft.Y - ($ConnPSize / $intDevideBy2)),$ConnPSize,$ConnPSize)
+            $pBottomPath.AddEllipse($pBottom.X - ($ConnPSize / $intDevideBy2),($pBottom.Y - ($ConnPSize)),$ConnPSize,$ConnPSize)
             $ShadowPath.AddEllipse(($point.X)-$ShadowSize,($point.Y)-$ShadowSize,$StartCircleSize+($ShadowSize*$intMultiplyBy2),$StartCircleSize+($ShadowSize*$intMultiplyBy2))
-            $ptopRegion = new-object Region $pTopPath
-            $pRightRegion = new-object Region $pRightPath
-            $pBottomRegion = new-object Region $pBottomPath
-            $pLeftRegion = new-object Region $pLeftPath
-            $ShadowRegion = new-object Region $ShadowPath
             $fillColor = [color]::lightgreen                  
             $maxConn = 1
             $bolInput = $false
-            If(($Global:bolMouseMove -eq $false) -or ($Global:bolMouseDown -eq $faslse) -or ($global:objShape -eq $null))
-            {
-                $Global:intIterate ++
-                New-Variable -Force -Name "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate" -Value (new-object Region  $MainPath) 
-                $MainRegion = Get-Variable -ValueOnly -Include "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate"
-                $strMess = 'test'
-                $objPSNewShape = [pscustomobject]@{
-                    name = "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate"
-                    type = $strSwitch
-                    Location = $location
-                    Mainregion = $MainRegion
-                    Shadowregion = $ShadowRegion
-                    pTopRegion = $ptopRegion
-                    pRightRegion = $pRightRegion
-                    pBottomRegion = $pBottomRegion 
-                    pLeftRegion = $pLeftRegion
-                    TopPointGB = $TopPointGB
-                    BottomPointGB = $BottomPointGB
-                    pCenter = $pCenter
-                    pTop = $pTop
-                    pRight = $pRight
-                    pBottom = $pBottom 
-                    pLeft = $pLeft
-                    MainPath = $MainPath
-                    ShadowPath = $ShadowPath
-                    pTopPath = $pTopPath
-                    pRightPath = $pRightPath
-                    pBottomPath = $pBottomPath
-                    pLeftPath = $pLeftPath
-                    PointPen = $PointPen
-                    MainPen = $MainPen
-                    ConnArr = [ArrayList]@()
-                    fillColor = $fillColor                 
-                    maxConn = $maxConn
-                    bolInput = $bolInput
-                }
-                [void]$arrRegions.Add($objPSNewShape)
-                funDisAllShapes $null
-                $global:objShape = $objPSNewShape
-            }
-            Else
-            {
-                $global:objShape.MainPath = $MainPath
-                $global:objShape.ShadowPath = $ShadowPath
-                $global:objShape.pTopPath = $pTopPath
-                $global:objShape.pRightPath = $pRightPath
-                $global:objShape.pBottomPath = $pBottomPath
-                $global:objShape.pLeftPath = $pLeftPath
-                $global:objShape.Mainregion = new-object Region $MainPath
-                $global:objShape.Shadowregion = $ShadowRegion
-                $global:objShape.pTopRegion = $ptopRegion
-                $global:objShape.pRightRegion = $pRightRegion
-                $global:objShape.pBottomRegion = $pBottomRegion 
-                $global:objShape.pLeftRegion = $pLeftRegion
-                $global:objShape.TopPointGB = $TopPointGB
-                $global:objShape.BottomPointGB = $BottomPointGB
-                $global:objShape.PCenter = $pCenter
-                $global:objShape.pTop = $pTop
-                $global:objShape.pRight = $pRight
-                $global:objShape.pBottom = $pBottom
-                $global:objShape.pLeft = $pLeft
-            }
         }
         'InterCircle' {
-            $point.X = $point.X + 25
-            $point.Y = $point.Y + 25            
-            $myPath = New-Object Drawing2D.GraphicsPath
-            $myPath2 = New-Object Drawing2D.GraphicsPath
-            $myPath.AddEllipse($point.X,$point.Y,$InterCircleSize-4,$InterCircleSize-4)                
-            $myPath2.AddEllipse(($point.X)-($ShadowSize*2),($point.Y)-($ShadowSize*2),$InterCircleSize+($ShadowSize*2),$InterCircleSize+($ShadowSize*2))
-            $myregion2 = new-object Region  $myPath2
-            If(($Global:bolMouseMove -eq $false) -or ($Global:bolMouseDown -eq $faslse) -or ($global:objShape -eq $null))
-            {
-                $Global:intIterate ++
-                New-Variable -Force -Name "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate" -Value (new-object Region  $myPath) 
-                $myregion = Get-Variable -ValueOnly -Include "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate"
-                $strMess = 'test'
-                $objPSInterCircle = [pscustomobject]@{
-                    name = "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate"
-                    type = $strSwitch
-                    Location = $location
-                    myregion = $myregion
-                    myregion2 = $myregion2
-                    P1 = New-Object Point ($point.X) , ($point.Y -10)
-                    P2 = New-Object Point ($point.X) , (($point.Y + $InterCircleSize)+10)
-                    PCenter = New-Object Point ($point.X + 25) , ($point.Y +25)
-                    myPath = $myPath
-                    myPath2 = $myPath2
-                    myPen1 = $mypen3
-                    fillColor = [color]::BurlyWood
-                    str = $strMess
-                    ConnArr = [ArrayList]@()
-                }
-                [void]$arrRegions.Add($objPSInterCircle) 
-                funDisAllShapes $null
-            }
-            Else
-            {
-               $global:objShape.myPath = $myPath
-               $global:objShape.myPath2 = $myPath2
-               $global:objShape.myregion = new-object Region  $myPath
-               $global:objShape.myregion2 = $myregion2
-               $global:objShape.p1 = New-Object Point ($point.X) , ($point.Y -10)
-               $global:objShape.p2 = New-Object Point ($point.X) , (($point.Y + $InterCircleSize)+10)  
-               $global:objShape.PCenter = New-Object Point ($point.X + 25) , ($point.Y +25)                
-            }
-<#                             
-                If(($Global:bolMouseDown) -and ($global:objShape -ne $null))
-                {
-                $global:objShape = $objPSInterCircle
-                }
+            $point.X = $point.X - ($InterCircleSize / $intDevideBy2)
+            $point.Y = $point.Y - ($InterCircleSize / $intDevideBy2)
+            $sizeDevidedBy2 = $InterCircleSize / $intDevideBy2            
+            $TopPointGB = New-Object Point ($point.X) , ($point.Y - $adjustPixel)
+            $BottomPointGB = New-Object Point ($point.X) , (($point.Y + $InterCircleSize) + $adjustPixel)
+            $pCenter = New-Object Point ($point.X + ($sizeDevidedBy2)) , ($point.Y + $sizeDevidedBy2)
+            $pTop = New-Object Point ($point.X + $sizeDevidedBy2), $point.Y
+            $pRight = New-Object Point (($point.X + $sizeDevidedBy2) + ($sizeDevidedBy2)) , ($point.Y + $sizeDevidedBy2)
+            $pBottom = New-Object Point ($point.X + $sizeDevidedBy2) , (($point.Y + $sizeDevidedBy2) + ($sizeDevidedBy2))
+            $pLeft = New-Object Point (($point.X + $sizeDevidedBy2) - $sizeDevidedBy2) , ($point.Y + $sizeDevidedBy2)                               
+            $MainPath.AddEllipse($point.X,$point.Y,$InterCircleSize,$InterCircleSize)
+            $pTopPath.AddEllipse($pTop.X-($ConnPSize / $intDevideBy2),$pTop.Y,$ConnPSize,$ConnPSize)
+            $pRightPath.AddEllipse($pRight.X - ($ConnPSize), $pRight.Y - ($ConnPSize / $intDevideBy2),$ConnPSize,$ConnPSize)
+            $pLeftPath.AddEllipse($pLeft.X,($pLeft.Y - ($ConnPSize / $intDevideBy2)),$ConnPSize,$ConnPSize)
+            $pBottomPath.AddEllipse($pBottom.X - ($ConnPSize / $intDevideBy2),($pBottom.Y - ($ConnPSize)),$ConnPSize,$ConnPSize)
+            $ShadowPath.AddEllipse(($point.X)-$ShadowSize,($point.Y)-$ShadowSize,$InterCircleSize+($ShadowSize*$intMultiplyBy2),$InterCircleSize+($ShadowSize*$intMultiplyBy2))
 
-#>
+            $fillColor = [color]::BurlyWood
+            $maxConn = 12
+            $bolInput = $false
         }
-        'dimond' {
-            $point.X = $point.X + 25
-            $point.Y = $point.Y + 25
+        'dimond' {           
+            $point.X = $point.X - ($DimondSize / $intDevideBy2)
+            $point.Y = $point.Y - ($DimondSize / $intDevideBy2)
+            $sizeDevidedBy2 = $DimondSize / $intDevideBy2
+<#
             $pp1 = New-Object Point ($point.X) , ($point.Y+25)
             $pp2 = New-Object Point ($point.X+25 ), ($point.Y)
             $pp3 = New-Object Point ($point.X+$DimondSize ), ($point.Y+25)
@@ -327,27 +234,47 @@ $DesktopPan.Add_paint({
             $sp3 = New-Object Point ($pp3.X+$ShadowSize) , ($pp3.Y)
             $sp4 = New-Object Point ($pp4.X ), ($pp4.Y+$ShadowSize)
             $points2 = @($sp1,$sp2,$sp3,$sp4)
-
-                
-               
-
+#>
+<#                                      
             $myPath = New-Object Drawing2D.GraphicsPath
             $myPath2 = New-Object Drawing2D.GraphicsPath
-
             $myPath.AddArc($pp2.x,$pp2.Y,$arcSize,$arcSize,225,90)
             $myPath.AddArc($pp3.x,$pp3.Y,$arcSize,$arcSize,-45,90)
             $myPath.AddArc($pp4.x,$pp4.Y,$arcSize,$arcSize,45,90)
             $myPath.AddArc($pp1.x,$pp1.Y,$arcSize,$arcSize,135,90)
             $myPath.CloseAllFigures()
-#                $myPath.AddPolygon($points)
-#                $myPath2.AddPolygon($points2)
             $myPath2.AddArc($sp2.x,$sp2.Y,$arcSize,$arcSize,225,90)
             $myPath2.AddArc($sp3.x,$sp3.Y,$arcSize,$arcSize,-45,90)
             $myPath2.AddArc($sp4.x,$sp4.Y,$arcSize,$arcSize,45,90)
             $myPath2.AddArc($sp1.x,$sp1.Y,$arcSize,$arcSize,135,90)
             $myPath2.CloseAllFigures()
-
+#>
+            $TopPointGB = New-Object Point ($point.X) , ($point.Y - $adjustPixel)
+            $BottomPointGB = New-Object Point ($point.X) , (($point.Y + $DimondSize) + $adjustPixel)
+            $pCenter = New-Object Point ($point.X + ($sizeDevidedBy2)) , ($point.Y + $sizeDevidedBy2)
+            $pTop = New-Object Point (($point.X + $sizeDevidedBy2)+($ConnPSize / $intDevideBy2)), $point.Y
+            $pRight = New-Object Point (($point.X + $DimondSize)+ $ConnPSize), (($point.Y + $sizeDevidedBy2)+ ($ConnPSize / $intDevideBy2))
+            $pBottom = New-Object Point (($point.X + $sizeDevidedBy2)+($ConnPSize / $intDevideBy2)) , (($point.Y + $DimondSize)+$ConnPSize)
+            $pLeft = New-Object Point $point.X , (($point.Y + $sizeDevidedBy2)+($ConnPSize / $intDevideBy2))
+            $MainPath.AddArc(($pTop.x - ($ConnPSize / $intDevideBy2)),$pTop.Y,$arcSize,$arcSize,225,90)
+            $MainPath.AddArc(($pRight.x - ($ConnPSize)),($pRight.Y-($ConnPSize / $intDevideBy2)),$arcSize,$arcSize,-45,90)
+            $MainPath.AddArc(($pBottom.x - ($ConnPSize / $intDevideBy2)),($pBottom.Y -$ConnPSize),$arcSize,$arcSize,45,90)
+            $MainPath.AddArc($pLeft.x,($pLeft.Y- ($ConnPSize / $intDevideBy2)),$arcSize,$arcSize,135,90)
+            $MainPath.CloseAllFigures() 
+            $ShadowPath.AddArc(($pTop.x-($ConnPSize / $intDevideBy2)), ($pTop.Y-$ShadowSize),$arcSize,$arcSize,225,90)
+            $ShadowPath.AddArc((($pRight.x+$ShadowSize)- ($ConnPSize)),($pRight.Y-($ConnPSize / $intDevideBy2)),$arcSize,$arcSize,-45,90)
+            $ShadowPath.AddArc(($pBottom.x - ($ConnPSize / $intDevideBy2)),(($pBottom.Y+$ShadowSize)-$ConnPSize),$arcSize,$arcSize,45,90)
+            $ShadowPath.AddArc(($pLeft.x-$ShadowSize),($pLeft.Y -($ConnPSize / $intDevideBy2)),$arcSize,$arcSize,135,90)
+            $ShadowPath.CloseAllFigures()                                         
+            $pTopPath.AddEllipse(($pTop.X - ($ConnPSize / $intDevideBy2)),$pTop.Y,$ConnPSize,$ConnPSize)
+            $pRightPath.AddEllipse((($pRight.X)- ($ConnPSize)), ($pRight.Y-($ConnPSize / $intDevideBy2)),$ConnPSize,$ConnPSize)
+            $pBottomPath.AddEllipse($pBottom.X - ($ConnPSize / $intDevideBy2),($pBottom.Y - ($ConnPSize)),$ConnPSize,$ConnPSize)
+            $pLeftPath.AddEllipse($pLeft.X,($pLeft.Y - ($ConnPSize / $intDevideBy2)),$ConnPSize,$ConnPSize)
             $myregion2 = new-object Region $myPath2
+            $fillColor = [color]::FromArgb(216, 191, 216)
+            $maxConn = 12
+            $bolInput = $false
+<#
             If(($Global:bolMouseMove -eq $false) -or ($Global:bolMouseDown -eq $faslse) -or ($global:objShape -eq $null))
             {
                 $Global:intIterate ++
@@ -371,12 +298,6 @@ $DesktopPan.Add_paint({
                     }
                 [void]$arrRegions.Add($objPSDimond)
                 funDisAllShapes $null
-<#                                  
-                    If(($Global:bolMouseDown) -and ($global:objShape -ne $null))
-                    {
-                    $global:objShape = $objPSDimond
-                    }
-#>
                 
             }
             Else
@@ -388,7 +309,8 @@ $DesktopPan.Add_paint({
                 $global:objShape.p1 = New-Object Point ($point.X) , ($point.Y -10)
                 $global:objShape.p2 = New-Object Point ($point.X) , (($point.Y + $DimondSize)+10)
                 $global:objShape.pCenter = New-Object Point ($point.X + 25) , ($point.Y + 25)
-            }              
+            } 
+#>                         
         }
         'Square' {
 
@@ -396,15 +318,12 @@ $DesktopPan.Add_paint({
             $pp2 = New-Object Point ($point.X+ $squareSize ), ($point.Y)
             $pp3 = New-Object Point ($point.X+ $squareSize) , ($point.Y+100)
             $pp4 = New-Object Point ($point.X -$adjustPixel), ($point.Y+100)
-#               $points = @($pp1,$pp2,$pp3,$pp4)
-#               $pp2.x = 400
-#                $pp2.Y  = 400
+
             $sp1 = New-Object Point ($pp1.X-$ShadowSize ), ($pp1.Y-$ShadowSize)
             $sp2 = New-Object Point ($pp2.X+$ShadowSize ), ($pp2.Y-$ShadowSize)
             $sp3 = New-Object Point ($pp3.X+$ShadowSize) , ($pp3.Y+$ShadowSize)
             $sp4 = New-Object Point ($pp4.X-$ShadowSize ), ($pp4.Y+$ShadowSize)
-#               $points2 = @($sp1,$sp2,$sp3,$sp4)
-#               $hrgn = $Win32Helpers::CreateRoundRectRgn($point.X-25,$point.Y+15,$point.X+125, $point.Y+85, 10,10)
+
             $myPath = New-Object Drawing2D.GraphicsPath
             $myPath2 = New-Object Drawing2D.GraphicsPath
 
@@ -420,169 +339,120 @@ $DesktopPan.Add_paint({
             $myPath2.AddArc($sp1.x,$sp1.Y,$arcSize,$arcSize,180,90)
             $myPath2.CloseAllFigures()
 
-            $myregion2 = new-object Region $myPath2
-            If(($Global:bolMouseMove -eq $false) -or ($Global:bolMouseDown -eq $faslse) -or ($global:objShape -eq $null))
-            {
-                $Global:intIterate ++
-                New-Variable -Force -Name "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate" -Value (new-object Region  $myPath) 
-    #                New-Variable -Force -Name "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate" -Value ([region]::FromHrgn($hrgn)) 
-                $myregion = Get-Variable -ValueOnly -Include "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate"
-                $objPSSquare = [pscustomobject]@{
-                    name = "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate"
-                    type = $strSwitch
-                    Location = $location
-                    myregion = $myregion
-                    myregion2 = $myregion2
-                    P1 = New-Object Point ($point.X) , ($point.Y -$arcSize)
-                    P2 = New-Object Point ($point.X) , (($point.Y + $squareSizeY)+$arcSize)
-                    Pcenter = New-Object Point ($point.X + 50) , ($point.Y + 50)
-                    myPath = $myPath
-                    myPath2 = $myPath2
-                    myPen1 = $MainPen
-                    fillColor = [color]::lightblue
-                    str = $strMess
-                    ConnArr = [ArrayList]@()
-                }
-                [void]$arrRegions.Add($objPSSquare)
-                funDisAllShapes $null  
-            }
-            Else
-            {
-                $global:objShape.myPath = $myPath
-                $global:objShape.myPath2 = $myPath2
-                $global:objShape.myregion = new-object Region  $myPath
-                $global:objShape.myregion2 = $myregion2
-                $global:objShape.p1 = New-Object Point ($point.X) , ($point.Y -$arcSize)
-                $global:objShape.p2 = New-Object Point ($point.X) , (($point.Y + $squareSizeY)+$arcSize)  
-                $global:objShape.Pcenter = New-Object Point ($point.X + 50) , ($point.Y + 50)         
-            }
-<#                           
-            If(($Global:bolMouseDown) -and ($global:objShape -ne $null))
-            {
-                $global:objShape = $objPSSquare
-            }
-#>                        
+            $fillColor = [color]::lightblue                 
+            $maxConn = 1
+            $bolInput = $false                               
         }
         'DataObject' {
             $point.X = $point.X - ($DataObjSize / $intDevideBy2)
             $point.Y = $point.Y - ($DataObjSize / $intDevideBy2)
             $pp1 = New-Object Point ($point.X) , ($point.Y)
-            $pp2 = New-Object Point ($point.X +$DataObjSizeX), ($point.Y)
-            $pp3 = New-Object Point (($point.X +$DataObjSizeX) + $adjustPixel) , ($point.Y+$DataObjSize)
+            $pp2 = New-Object Point ($point.X + $DataObjSizeX), ($point.Y)
+            $pp3 = New-Object Point (($point.X + $DataObjSizeX) + $adjustPixel) , ($point.Y + $DataObjSize)
             $pp4 = New-Object Point ($point.X ), ($point.Y + $DataObjSize)
-            $pp5 = New-Object Point ($point.X +$DataObjSizeX), ($point.Y  + $adjustPixel)
-            $pp6 = New-Object Point (($point.X +$DataObjSizeX) + $adjustPixel), (($point.Y) + $adjustPixel)
-            $sp1 = New-Object Point ($point.X - $ShadowSize) , (($point.Y)-$ShadowSize)
-            $sp2 = New-Object Point (($point.X +$DataObjSizeX)), ($point.Y -$ShadowSize)
-            $sp3 = New-Object Point ((($point.X +$DataObjSizeX) + $adjustPixel)+$ShadowSize) , (($point.Y+$DataObjSize)+$ShadowSize)
-            $sp4 = New-Object Point (($point.X)-$ShadowSize), (($point.Y + $DataObjSize)+$ShadowSize)
-            $sp5 = New-Object Point (($point.X +$DataObjSizeX)-$ShadowSize), ($point.Y  + $adjustPixel)
-            $sp6 = New-Object Point ((($point.X +$DataObjSizeX) + $adjustPixel) + $ShadowSize), (($point.Y) + $adjustPixel)
+            $pp5 = New-Object Point ($point.X + $DataObjSizeX), ($point.Y  + $adjustPixel)
+            $pp6 = New-Object Point (($point.X + $DataObjSizeX) + $adjustPixel), (($point.Y) + $adjustPixel)
+            $sp1 = New-Object Point ($point.X - $ShadowSize) , ($point.Y-$ShadowSize)
+            $sp2 = New-Object Point (($point.X + $DataObjSizeX)), ($point.Y -$ShadowSize)
+            $sp3 = New-Object Point ((($point.X + $DataObjSizeX) + $adjustPixel) + $ShadowSize) , (($point.Y + $DataObjSize) + $ShadowSize)
+            $sp4 = New-Object Point (($point.X) - $ShadowSize), (($point.Y + $DataObjSize) + $ShadowSize)
+            $sp5 = New-Object Point (($point.X + $DataObjSizeX) - $ShadowSize), ($point.Y  + $adjustPixel)
+            $sp6 = New-Object Point ((($point.X + $DataObjSizeX) + $adjustPixel) + $ShadowSize), (($point.Y) + $adjustPixel)
             $TopPointGB = New-Object Point ($point.X) , ($point.Y - $DataObjSize)
             $BottomPointGB = New-Object Point ($point.X) , ($point.Y + $DataObjSize)
             $pCenter = New-Object Point ($point.X + ($DataObjSize / $intDevideBy2)) , ($point.Y + ($DataObjSize / $intDevideBy2))
-            $pTop = New-Object Point (($point.X + ($DataObjSize / $intDevideBy2))-($ConnPSize / $intDevideBy2)), (($point.Y))
-            $pRight = New-Object Point (($point.X + ($DataObjSizex / $intDevideBy2)) + ($DataObjSize / $intDevideBy2)-($ConnPSize)) , (($point.Y +($DataObjSize / $intDevideBy2)) - ($ConnPSize / $intDevideBy2))
-            $pBottom = New-Object Point (($point.X + ($DataObjSize / $intDevideBy2))-($ConnPSize / $intDevideBy2)) , ((($point.Y+($DataObjSize / $intDevideBy2))+($DataObjSize / $intDevideBy2)) - ($ConnPSize))
-            $pLeft = New-Object Point (($point.X + ($DataObjSize / $intDevideBy2)) - ($DataObjSizex / $intDevideBy2)) , (($point.Y +($DataObjSize / $intDevideBy2)) - ($ConnPSize / $intDevideBy2)) 
-            $MainPath = New-Object Drawing2D.GraphicsPath
-            $ShadowPath = New-Object Drawing2D.GraphicsPath       
-            $pTopPath = New-Object Drawing2D.GraphicsPath
-            $pRightPath = New-Object Drawing2D.GraphicsPath
-            $pBottomPath = New-Object Drawing2D.GraphicsPath
-            $pLeftPath = New-Object Drawing2D.GraphicsPath                   
-            $MainPath.AddLine($pp2,$pp5)
-            $MainPath.AddLine($pp5,$pp6)
-            $MainPath.AddArc($pp3.x-$adjustPixel,$pp3.y-$adjustPixel,$arcSize,$arcSize,0,90)
-            $MainPath.AddArc($pp4.x+$adjustPixel,$pp4.y-$adjustPixel,$arcSize,$arcSize,90,90)
-            $MainPath.AddArc($pp1.x+$adjustPixel,$pp1.Y,$arcSize,$arcSize,180,90)
+            $pTop = New-Object Point ($point.X + ($DataObjSize / $intDevideBy2)), $point.Y
+            $pRight = New-Object Point (($point.X + ($DataObjSizex / $intDevideBy2)) + ($DataObjSize / $intDevideBy2)) , ($point.Y + ($DataObjSize / $intDevideBy2))
+            $pBottom = New-Object Point (($point.X + ($DataObjSize / $intDevideBy2)) ) , (($point.Y + ($DataObjSize / $intDevideBy2)) + ($DataObjSize / $intDevideBy2))
+            $pLeft = New-Object Point (($point.X + ($DataObjSize / $intDevideBy2)) - ($DataObjSizex / $intDevideBy2)) , ($point.Y + ($DataObjSize / $intDevideBy2))                  
+            $MainPath.AddLine($pp2, $pp5)
+            $MainPath.AddLine($pp5, $pp6)
+            $MainPath.AddArc($pp3.x - $adjustPixel, $pp3.y-$adjustPixel, $arcSize, $arcSize, 0, 90)
+            $MainPath.AddArc($pp4.x + $adjustPixel, $pp4.y-$adjustPixel, $arcSize, $arcSize, 90, 90)
+            $MainPath.AddArc($pp1.x + $adjustPixel, $pp1.Y, $arcSize, $arcSize, 180, 90)
             $MainPath.AddLine($pp2,$pp6)
-            $pTopPath.AddEllipse($pTop.X,$pTop.Y,$ConnPSize,$ConnPSize)
-            $pRightPath.AddEllipse($pRight.X,$pRight.Y,$ConnPSize,$ConnPSize)
-            $pLeftPath.AddEllipse($pLeft.X,$pLeft.Y,$ConnPSize,$ConnPSize)
-            $pBottomPath.AddEllipse($pBottom.X,$pBottom.Y,$ConnPSize,$ConnPSize)                           
-            $ShadowPath.AddArc($sp3.x-$adjustPixel,$sp3.y-$adjustPixel,$arcSize,$arcSize,0,90)
-            $ShadowPath.AddArc($sp4.x+$adjustPixel,$sp4.y-$adjustPixel,$arcSize,$arcSize,90,90)
-            $ShadowPath.AddArc($sp1.x+$adjustPixel,$sp1.Y,$arcSize,$arcSize,180,90)
-            $ShadowPath.AddLine($sp2,$sp6)
+            $pTopPath.AddEllipse($pTop.X-($ConnPSize / $intDevideBy2), $pTop.Y, $ConnPSize, $ConnPSize)
+            $pRightPath.AddEllipse($pRight.X - ($ConnPSize), $pRight.Y - ($ConnPSize / $intDevideBy2), $ConnPSize, $ConnPSize)
+            $pLeftPath.AddEllipse($pLeft.X, $pLeft.Y - ($ConnPSize / $intDevideBy2), $ConnPSize, $ConnPSize)
+            $pBottomPath.AddEllipse($pBottom.X - ($ConnPSize / $intDevideBy2), $pBottom.Y - ($ConnPSize), $ConnPSize, $ConnPSize)                           
+            $ShadowPath.AddArc($sp3.x - $adjustPixel, $sp3.y - $adjustPixel, $arcSize, $arcSize, 0, 90)
+            $ShadowPath.AddArc($sp4.x + $adjustPixel, $sp4.y - $adjustPixel, $arcSize, $arcSize, 90, 90)
+            $ShadowPath.AddArc($sp1.x + $adjustPixel, $sp1.Y , $arcSize, $arcSize, 180, 90)
+            $ShadowPath.AddLine($sp2, $sp6)
             $ShadowPath.CloseFigure()
-            $Shadowregion = new-object Region $ShadowPath
-            $ptopRegion = new-object Region $pTopPath
-            $pRightRegion = new-object Region $pRightPath
-            $pBottomRegion = new-object Region $pBottomPath
-            $pLeftRegion = new-object Region $pLeftPath
             $fillColor = [color]::FromArgb(211,211,211)                    
             $maxConn = 12
             $bolInput = $True
-            If(($Global:bolMouseMove -eq $false) -or ($Global:bolMouseDown -eq $faslse) -or ($global:objShape -eq $null))
-            {
-                $Global:intIterate ++
-                New-Variable -Force -Name "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate" -Value (new-object Region  $MainPath) 
-#                New-Variable -Force -Name "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate" -Value ([region]::FromHrgn($hrgn)) 
-                $Mainregion = Get-Variable -ValueOnly -Include "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate"
-                $objPSNewShape = [pscustomobject]@{
-                    name = "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate"
-                    type = $strSwitch
-                    Location = $location
-                    Mainregion = $MainRegion
-                    Shadowregion = $ShadowRegion
-                    pTopRegion = $ptopRegion
-                    pRightRegion = $pRightRegion
-                    pBottomRegion = $pBottomRegion 
-                    pLeftRegion = $pLeftRegion
-                    TopPointGB = $TopPointGB
-                    BottomPointGB = $BottomPointGB
-                    pCenter = $pCenter
-                    pTop = $pTop
-                    pRight = $pRight
-                    pBottom = $pBottom 
-                    pLeft = $pLeft
-                    MainPath = $MainPath
-                    ShadowPath = $ShadowPath
-                    pTopPath = $pTopPath
-                    pRightPath = $pRightPath
-                    pBottomPath = $pBottomPath
-                    pLeftPath = $pLeftPath
-                    PointPen = $PointPen
-                    MainPen = $MainPen
-                    ConnArr = [ArrayList]@()
-                    fillColor = $fillColor                 
-                    maxConn = $maxConn
-                    bolInput = $bolInput
-                }
-                [void]$arrRegions.Add($objPSNewShape)
-                funDisAllShapes $null
-                $global:objShape = $objPSNewShape
+        }
+    }
+    If($strSwitch -ne "")
+    {
+        $ptopRegion = new-object Region $pTopPath
+        $pRightRegion = new-object Region $pRightPath
+        $pBottomRegion = new-object Region $pBottomPath
+        $pLeftRegion = new-object Region $pLeftPath
+        $ShadowRegion = new-object Region $ShadowPath
+        If(($Global:bolMouseMove -eq $false) -or ($Global:bolMouseDown -eq $faslse) -or ($global:objShape -eq $null))
+        {
+            $Global:intIterate ++
+            New-Variable -Force -Name "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate" -Value (new-object Region  $MainPath) 
+            $MainRegion = Get-Variable -ValueOnly -Include "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate"
+            $strMess = 'test'
+            $objPSNewShape = [pscustomobject]@{
+                name = "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate"
+                type = $strSwitch
+                Location = $location
+                Mainregion = $MainRegion
+                Shadowregion = $ShadowRegion
+                pTopRegion = $ptopRegion
+                pRightRegion = $pRightRegion
+                pBottomRegion = $pBottomRegion 
+                pLeftRegion = $pLeftRegion
+                TopPointGB = $TopPointGB
+                BottomPointGB = $BottomPointGB
+                pCenter = $pCenter
+                pTop = $pTop
+                pRight = $pRight
+                pBottom = $pBottom 
+                pLeft = $pLeft
+                MainPath = $MainPath
+                ShadowPath = $ShadowPath
+                pTopPath = $pTopPath
+                pRightPath = $pRightPath
+                pBottomPath = $pBottomPath
+                pLeftPath = $pLeftPath
+                PointPen = $PointPen
+                MainPen = $MainPen
+                ConnArr = [ArrayList]@()
+                fillColor = $fillColor                 
+                maxConn = $maxConn
+                bolInput = $bolInput
             }
-            Else
-            {
-                $global:objShape.MainPath = $MainPath
-                $global:objShape.ShadowPath = $ShadowPath
-                $global:objShape.pTopPath = $pTopPath
-                $global:objShape.pRightPath = $pRightPath
-                $global:objShape.pBottomPath = $pBottomPath
-                $global:objShape.pLeftPath = $pLeftPath
-                $global:objShape.Mainregion = new-object Region $MainPath
-                $global:objShape.Shadowregion = $ShadowRegion
-                $global:objShape.pTopRegion = $ptopRegion
-                $global:objShape.pRightRegion = $pRightRegion
-                $global:objShape.pBottomRegion = $pBottomRegion 
-                $global:objShape.pLeftRegion = $pLeftRegion
-                $global:objShape.pTopRegion = $pTopPath
-                $global:objShape.TopPointGB = $TopPointGB
-                $global:objShape.BottomPointGB = $BottomPointGB
-                $global:objShape.PCenter = $pCenter
-                $global:objShape.pTop = $pTop
-                $global:objShape.pRight = $pRight
-                $global:objShape.pBottom = $pBottom
-                $global:objShape.pLeft = $pLeft          
-            }
-<#                             
-            If(($Global:bolMouseDown) -and ($global:objShape -ne $null))
-            {
-                $global:objShape = $objPSSquare
-            }
-#>
+            [void]$arrRegions.Add($objPSNewShape)
+            funDisAllShapes $null
+            $global:objShape = $objPSNewShape
+        }
+        Else
+        {
+            $global:objShape.MainPath = $MainPath
+            $global:objShape.ShadowPath = $ShadowPath
+            $global:objShape.pTopPath = $pTopPath
+            $global:objShape.pRightPath = $pRightPath
+            $global:objShape.pBottomPath = $pBottomPath
+            $global:objShape.pLeftPath = $pLeftPath
+            $global:objShape.Mainregion = new-object Region $MainPath
+            $global:objShape.Shadowregion = $ShadowRegion
+            $global:objShape.pTopRegion = $ptopRegion
+            $global:objShape.pRightRegion = $pRightRegion
+            $global:objShape.pBottomRegion = $pBottomRegion 
+            $global:objShape.pLeftRegion = $pLeftRegion
+            $global:objShape.TopPointGB = $TopPointGB
+            $global:objShape.BottomPointGB = $BottomPointGB
+            $global:objShape.PCenter = $pCenter
+            $global:objShape.pTop = $pTop
+            $global:objShape.pRight = $pRight
+            $global:objShape.pBottom = $pBottom
+            $global:objShape.pLeft = $pLeft
         }
     }
     If ($arrRegions.count -gt 0)
@@ -607,7 +477,7 @@ $DesktopPan.Add_paint({
                 $e.Graphics.DrawPath($arrItem.PointPen, $arrItem.pLeftPath)
                 If($Global:objShapePoint -ne $null -and $arrItem -eq $Global:objShape)
                 {
-                   $e.Graphics.DrawPath($MainPen, $Global:objShapePoint) 
+                   $e.Graphics.DrawPath($MainPen, $arrItem."$($Global:objShapePoint)Path") 
                 }
 <#
                 $e.Graphics.DrawEllipse($arrItem.PointPen,$arrItem.pright.x,$arrItem.pright.Y,$ConnPSize,$ConnPSize)    
@@ -637,24 +507,27 @@ $DesktopPan.Add_paint({
                 $arrConnItem = $arrItem.ConnArr[$c]
                 $arrConnItem.StartPoint.x
                 $arrConnItem.connobj.PCenter.y
+                $arrConnItem.ConnPoint
+                $arrConnItem.ConnType
                 $MainPath = New-Object Drawing2D.GraphicsPath
-                If(($arrConnItem.StartPoint.y -gt $arrItem.ptop.y) -And ($arrConnItem.StartPoint.X -gt $arrItem.Ptop.X))
-                {
-                    $Ptemp  = new-object Point ($arrItem.PCenter.x , $arrConnItem.PCenterL.y)
-                    $MainPath.AddLine($arrItem.PCenter,$Ptemp)                  
-                    $MainPath.AddLine($Ptemp,$arrConnItem.PCenterL)
+#                If(($arrConnItem.StartPoint.y -gt $arrItem.ptop.y) -And ($arrConnItem.StartPoint.X -gt $arrItem.Ptop.X))
+#                {
+                    $Ptemp  = new-object Point ($arrItem."$($arrConnItem.StartPoint)".x , $arrItem."$($arrConnItem.StartPoint)".Y)
+#                    $MainPath.AddLine($arrItem.PCenter,$Ptemp)                  
+                    $MainPath.AddLine($Ptemp,$arrConnItem.connobj."$($arrConnItem.connPoint)")
+<#
                 }
                     ElseIf(($arrConnItem.connobj.PCenter.y -Lt $arrItem.PCenter.y) -And ($arrConnItem.connobj.PCenter.X -gt $arrItem.PCenter.X))
                     {
                         $Ptemp  = new-object Point ($arrItem.PCenter.x , $arrConnItem.connobj.PCenter.y)
                         $MainPath.AddLine($arrItem.PCenter,$Ptemp)                  
                         $MainPath.AddLine($Ptemp,$arrConnItem.connobj.PCenter)
+                        $e.Graphics.DrawImage($avatar,$arrItem."$($arrConnItem.ConnPoint)".X,$arrItem."$($arrConnItem.ConnPoint)".Y,50,50)
                     }
                 Else
                 {
-#                    $MainPath.AddLine($arrItem.PCenter,$arrConnItem.PCenterL)
                 }                               
-                
+ #>               
                 $e.Graphics.DrawPath($mypenCap, $MainPath)
  #               $e.Graphics.DrawPath($mypen, $MainPath)
  #               $e.Graphics.DrawLine(p, 20, 20, 100, 100);
@@ -688,16 +561,20 @@ $DesktopPan.add_MouseDown({
 #                            $Global:objShape | Add-Member -MemberType NoteProperty -Name "test" -Value "Quincy"
                                 If(!$Global:objShape.ConnArr.Contains($arrItem) -and (!$arrItem.ConnArr.Contains($Global:objShape)))
                                 {
-                                   
+                                    If($arrItem.pTopRegion.isVisible($point)){$TempPoint = "pTop"}
+                                    If($arrItem.pRightRegion.isVisible($point)){$TempPoint = "pRight"}
+                                    If($arrItem.pBottomRegion.isVisible($point)){$TempPoint = "pBottom"}
+                                    If($arrItem.pLeftRegion.isVisible($point)){$TempPoint = "pLeft"}
                                     $objConn = [pscustomobject]@{
- #                                       name = "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate"
+#                                        name = "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate"
                                         ConnObj = $arrItem
                                         ConnType = "Out"
-                                        StartPoint = $Global:objShape.pTop
-                                        Endpoint = $arrItem.pTop
+                                        StartPoint = $Global:objShapePoint
+                                        ConnPoint = $TempPoint
                                     }
-                                     $Global:objShape.ConnArr.Add($objConn)
-                                    write-host "$($Global:objShape.name)"
+                                    $Global:objShape.ConnArr.Add($objConn)
+                                    $Global:objShapePoint = $null
+                                    $Global:objShape = $null
                                 }
                             }
                             Else
@@ -707,22 +584,21 @@ $DesktopPan.add_MouseDown({
                         }
                         ElseIf(($Global:objShape -ne $null) -and ($Global:objShape -eq $arrItem))
                         {
-
                             If($arrItem.ptopRegion.isVisible($point))
                             {
-                                $Global:objShapePoint = $arrItem.pTopPath
+                                $Global:objShapePoint = "pTop"
                             }
                                 ElseIf($arrItem.pRightRegion.isVisible($point))
                                 {
-                                   $Global:objShapePoint = $arrItem.pRightPath 
+                                   $Global:objShapePoint = "pRight"
                                 }
                                     ElseIf($arrItem.pBottomRegion.isVisible($point))
                                     {
-                                        $Global:objShapePoint = $arrItem.pBottomPath 
+                                        $Global:objShapePoint = "pBottom"
                                     }
                                         ElseIf($arrItem.pLeftRegion.isVisible($point))
                                         {
-                                             $Global:objShapePoint = $arrItem.pLeftPath 
+                                             $Global:objShapePoint = "pLeft"
                                         }
                                 
                             
