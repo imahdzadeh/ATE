@@ -18,6 +18,8 @@ Where-Object {$_.UserID -match $([Environment]::UserName)} | % {$_.mainpath}
 $varDebugTrace = 0
 #اسم دکمه برگشت به صفحه اصلی
 $retunBtnName = "Main"
+$PreSupplierName = 'SUI1PR'
+$FirstSupplierCode = '121'
 # فرم جاری
 $Mainform = New-Object Windows.Forms.Form -Property @{
     StartPosition = [Windows.Forms.FormStartPosition]::CenterScreen

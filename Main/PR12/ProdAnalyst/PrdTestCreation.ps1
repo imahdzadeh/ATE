@@ -317,7 +317,7 @@ Try
             $bolReturn = $true
             $seen = @()
             $EmailGV.Rows | Select-Object -SkipLast 1 | % {
-                If($seen -contains $_.Cells[$EmailGV.Columns.Item($strCBPeopName).index].value)
+            If($seen -contains $_.Cells[$EmailGV.Columns.Item($strCBPeopName).index].value)
                 {
                     $bolReturn = $false
                 }

@@ -83,7 +83,7 @@ $CancelBtn.ForeColor = "#000"
 & "$MainRoot\desktop.ps1"
 }.GetNewClosure())
 
-#کنترل دکمه ذخیره به صفحه اصلی
+#کنترل دکمه برگشت به صفحه اصلی
 $saveBtn = New-Object system.Windows.Forms.Button
 $saveBtn.Name = $retunBtnName
 $saveBtn.BackColor = "#d2d4d6"
@@ -92,6 +92,86 @@ $saveBtn.width = 100
 $saveBtn.height = 35
 $saveBtn.Font = 'Microsoft Sans Serif,10'
 $saveBtn.ForeColor = "#000"
+$SaveBtn.Add_Click({saveBtnClick})
+
+#کنترل دکمه جدید
+$NewBtn = New-Object system.Windows.Forms.Button
+$NewBtn.Name = $NewForm
+$NewBtn.BackColor = "#d2d4d6"
+$NewBtn.text = "فرم خالی"
+$NewBtn.width = 100
+$NewBtn.height = 35
+$NewBtn.Font = 'Microsoft Sans Serif,10'
+$NewBtn.ForeColor = "#000"
+$NewBtn.Add_Click({})
+
+#New Supplier definisions
+$supplierinfoPath = 'C:\Users\Mahdza1\Documents\ATE\Officers\Supplier Info\Supplier code'
+#$supplierinfoPath = '$comroot\Officers\Supplier Info\Supplier code'
+$supplierinfofile = 'SUI1PR*.csv'
+$firstSName = $PreSupplierName + $FirstSupplierCode + $CSVFileExt
+$isExistSupplier = Get-ChildItem -Path $supplierinfoPath -Filter $supplierinfofile -Recurse | Sort-Object CreationTime  | Select-Object -Last 1 |  %{$_.BaseName}
+
+
+$Header = "SupplierCode,Name,Telephone,Fax,Mobile,Contact,Position,Department,WebSite,Country1,City1,Address1,Zip/Postal Code1,Comment1,Country2,City2,Address2,Zip/Postal Code2,Comment2,Comment"
+
+
+function saveBtnClick {
+#Function to Checke exist or not Supplier file
+if($isExistSupplier  )
+{
+
+    $lastsuppliercode = $isExistSupplier.Substring(6,$isExistSupplier.Length-6)
+    $newlastScode = [int] $lastsuppliercode + 1
+    $newname = $PreSupplierName + [String] $newlastScode + $CSVFileExt
+    New-Item $supplierinfoPath\$newname
+    #Write-Output $newname
+    #Write-Output $lastsuppliercode
+    #Write-Output $lastScode
+    #Write-Output 'true'   
+    
+    $Data = Get-Content -Path $supplierinfoPath\$newname
+    Set-Content $supplierinfoPath\$newname -Value $Header
+    Add-Content -Path $supplierinfoPath\$newname -Value $Data
+
+    #Add Values of Field in CSV file
+    $newRow = Get-Content $nametxtbox.TEXT,Get-Content $codetxtbox.TEXT
+    $newRow |  Add-Content $supplierinfoPath\$newname -Append
+    #$csvColumnNames is using for catch column headers of supplier 
+    #$csvColumnNames = (Get-Content $supplierinfoPath\$firstSName | Select-Object -First 1).Split(",")
+    [System.Windows.MessageBox]::Show('اطلاعات با موفقیت ذخیره شد')
+    #Write-Output $firsttime
+    $saveBtn.Enabled = $false
+} 
+else
+{
+   # $csvColumnNames = (Get-Content $supplierinfoPath\$firstSName | Select-Object -First 1).Split(",")
+    #Write-Output $firstSName
+    #Write-Output $supplierinfoPath\$PreSupplierName + $FirstSupplierCode
+    New-Item $supplierinfoPath\$firstSName -ItemType File
+    #$Header = "Username,Login email,Identifier,First name,Last name"
+    $Data = Get-Content -Path $supplierinfoPath\$firstSName
+    Set-Content $supplierinfoPath\$firstSName -Value $Header
+    Add-Content -Path $supplierinfoPath\$firstSName -Value $Data
+    
+
+    #Add Values of Field in CSV file
+    $newRow = $nametxtbox.Text,$codetxtbox.Text
+    Write-Output $newRow
+    $Data = Get-Content -Path $supplierinfoPath\$firstSName
+    Set-Content $supplierinfoPath\$firstSName -Value $newRow
+    Add-Content -Path $supplierinfoPath\$firstSName -Value $Data
+    [System.Windows.MessageBox]::Show('.اطلاعات با موفقیت ذخیره شد')
+    $saveBtn.Enabled = $false
+}
+}
+
+
+
+function findsupplier{
+$supplierinfoPath = "$comroot\Officers\Supplier Info\Supplier code"
+
+}
 
 #MainGroupboxControl                       -Created by atena jan 14 24 
 $DesktopGB = New-Object system.Windows.Forms.Groupbox
@@ -375,6 +455,7 @@ $SupplyInfoTable.Controls.Add($SupplyCommenttxtbox)
 $SupplyInfoTable.Controls.Add($SupplyCommentlbl)
 $SupplyInfoTable.Controls.Add($CancelBtn)
 $SupplyInfoTable.Controls.Add($saveBtn)
+$SupplyInfoTable.Controls.Add($NewBtn)
 
 
 
