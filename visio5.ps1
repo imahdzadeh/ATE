@@ -258,22 +258,22 @@ $DesktopPan.Add_paint({
             $BottomPointGB = New-Object Point ($point.X) , (($point.Y + $squareSizeY) + $adjustPixel)
             $pCenter = New-Object Point ($point.X + ($squareSize /$intDevideBy2)) , ($point.Y + ($squareSizeY / $intDevideBy2))
             $pTop = New-Object Point (($point.X +($squareSize /$intDevideBy2))), $point.Y
-            $pRight = New-Object Point (($point.X + $squareSize)), (($point.Y +($squareSizeY / $intDevideBy2)))
-            $pBottom = New-Object Point (($point.X + ($squareSize /$intDevideBy2) )) , (($point.Y + ($squareSizeY)))
+            $pRight = New-Object Point (($point.X + $squareSize)+ $arcSize) , (($point.Y +($squareSizeY / $intDevideBy2)))
+            $pBottom = New-Object Point (($point.X + ($squareSize /$intDevideBy2) )) , (($point.Y + ($squareSizeY))+ $arcSize)
             $pLeft = New-Object Point ($point.X ), (($point.Y + ($squareSizeY / $intDevideBy2)))
             $MainPath.AddArc(($pTop.x -($squareSize /$intDevideBy2)),$pTop.Y,$arcSize,$arcSize,180,90)
-            $MainPath.AddArc(($pRight.x ),($pRight.Y-($squareSizeY / $intDevideBy2)),$arcSize,$arcSize,270,90)
-            $MainPath.AddArc(($pBottom.x +($squareSize /$intDevideBy2)),($pBottom.Y ),$arcSize,$arcSize,0,90)
+            $MainPath.AddArc(($pRight.x - $arcSize),($pRight.Y-($squareSizeY / $intDevideBy2)),$arcSize,$arcSize,270,90)
+            $MainPath.AddArc(($pBottom.x +($squareSize /$intDevideBy2)),($pBottom.Y - $arcSize),$arcSize,$arcSize,0,90)
             $MainPath.AddArc($pLeft.x,($pLeft.Y+($squareSizeY / $intDevideBy2)),$arcSize,$arcSize,90,90)
             $MainPath.CloseAllFigures() 
             $ShadowPath.AddArc(($pTop.x-$ShadowSize)-($squareSize /$intDevideBy2), ($pTop.Y-$ShadowSize),$arcSize,$arcSize,180,90)
-            $ShadowPath.AddArc((($pRight.x+$ShadowSize)),($pRight.Y-$ShadowSize)-($squareSizeY / $intDevideBy2),$arcSize,$arcSize,270,90)
-            $ShadowPath.AddArc(($pBottom.x +$ShadowSize)+($squareSize /$intDevideBy2),(($pBottom.Y+$ShadowSize)),$arcSize,$arcSize,0,90)
+            $ShadowPath.AddArc((($pRight.x+$ShadowSize)- $arcSize),($pRight.Y-$ShadowSize)-($squareSizeY / $intDevideBy2),$arcSize,$arcSize,270,90)
+            $ShadowPath.AddArc(($pBottom.x +$ShadowSize)+($squareSize /$intDevideBy2),(($pBottom.Y+$ShadowSize)- $arcSize),$arcSize,$arcSize,0,90)
             $ShadowPath.AddArc(($pLeft.x-$ShadowSize),($pLeft.Y+$ShadowSize )+($squareSizeY / $intDevideBy2),$arcSize,$arcSize,90,90)
             $ShadowPath.CloseAllFigures()                                         
             $pTopPath.AddEllipse(($pTop.X - ($ConnPSize / $intDevideBy2)),$pTop.Y,$ConnPSize,$ConnPSize)
-            $pRightPath.AddEllipse((($pRight.X)), ($pRight.Y-($ConnPSize / $intDevideBy2)),$ConnPSize,$ConnPSize)
-            $pBottomPath.AddEllipse($pBottom.X - ($ConnPSize / $intDevideBy2),($pBottom.Y ),$ConnPSize,$ConnPSize)
+            $pRightPath.AddEllipse((($pRight.X)- $arcSize), ($pRight.Y-($ConnPSize / $intDevideBy2)),$ConnPSize,$ConnPSize)
+            $pBottomPath.AddEllipse($pBottom.X - ($ConnPSize / $intDevideBy2),($pBottom.Y - $arcSize),$ConnPSize,$ConnPSize)
             $pLeftPath.AddEllipse($pLeft.X,($pLeft.Y - ($ConnPSize / $intDevideBy2)),$ConnPSize,$ConnPSize)     
             $fillColor = [color]::lightblue                 
             $maxConn = 1
@@ -393,7 +393,7 @@ $DesktopPan.Add_paint({
     }
     If ($arrRegions.count -gt 0)
     {        
-         for($i = 0; $i -lt $arrRegions.Count; $i++)
+        for($i = 0; $i -lt $arrRegions.Count; $i++)
         {
             $arrItem = $arrRegions[$i]           
             If (
@@ -442,68 +442,90 @@ $DesktopPan.Add_paint({
             for($c = 0; $c -lt $arrItem.ConnArr.Count; $c++)
             {
                 $arrConnItem = $arrItem.ConnArr[$c]
-#                If($arrConnItem.Points.Count -gt 1)
-#                { 
-    #                write-host $arrConnItem.StartPoint
-        #               write-host $arrConnItem.ConnPoint
-                    $arrConnItem.connobj.PCenter.y
-                    $arrConnItem.ConnPoint
-                    $arrConnItem.ConnType
-                    $intFirstLineSize
-                    $MainPath = New-Object Drawing2D.GraphicsPath
-                    If($arrConnItem.Points.Count -gt 0)
+                $arrConnItem.connobj.PCenter.y
+                $arrConnItem.ConnPoint
+                $arrConnItem.ConnType
+                $intFirstLineSize
+                New-Variable -Force -Name "$($arrItem.Name)$c" -Value (New-Object Drawing2D.GraphicsPath) 
+                $MainPath = Get-Variable -ValueOnly -Include "$($arrItem.Name)$c"
+#                $MainPath = New-Object Drawing2D.GraphicsPath
+                If($arrConnItem.Points.Count -gt 0)
+                {
+                    for($p = 0; $p -lt $arrConnItem.Points.Count; $p++)
                     {
-                        for($p = 0; $p -lt $arrConnItem.Points.Count; $p++)
+                        If($p -eq 0)
                         {
-                            If($p -eq 0)
-                            {
-                                $Point1 = $arrItem."$($arrConnItem.StartPoint)"
-                            }
-                            Else
-                            {
-                                $Point1 = $arrConnItem.Points[$p-1]
-                            }
-                        
-                            $Point2 = $arrConnItem.Points[$p]
-                            If($arrConnItem.StartPoint -eq "pTop" -or $arrConnItem.StartPoint -eq "pBottom")
-                            {
-                                $Ptemp  = new-object Point ($Point1.X , $Point2.Y)
-                                $MainPath.AddLine($Point1,$Ptemp)
-                                $MainPath.AddLine($Ptemp,$Point2)
-                            }
-                            Else
-                            {
-                                $Ptemp  = new-object Point ($Point2.X , $Point1.Y)
-                                $MainPath.AddLine($Point1,$Ptemp)
-                                $MainPath.AddLine($Ptemp,$Point2)
-                            }
-                        
-    #                            Write-Host "point:$($ppoint.x),$($ppoint.Y) added"
-                        }
-                    }
-                    Else
-                    {
-                        $Point2 = $arrConnItem.ConnObj."$($arrConnItem.ConnPoint)"
-                    }
-                    If($arrConnItem.ConnPoint -ne $null)
-                    {
-                        If($arrConnItem.ConnPoint -eq "pTop" -or $arrConnItem.ConnPoint -eq "pBottom")
-                        {
-                            $Ptemp  = new-object Point ($arrConnItem.ConnObj."$($arrConnItem.ConnPoint)".X, $point2.Y)
-                            $MainPath.AddLine($Point2,$Ptemp)
-                            $MainPath.AddLine($Ptemp,$arrConnItem.ConnObj."$($arrConnItem.ConnPoint)")
+                            $Point1 = $arrItem."$($arrConnItem.StartPoint)"
                         }
                         Else
                         {
-                            $Ptemp  = new-object Point ($point2.X, $arrConnItem.ConnObj."$($arrConnItem.ConnPoint)".Y)
-                            $MainPath.AddLine($Point2,$Ptemp)
-                            $MainPath.AddLine($Ptemp,$arrConnItem.ConnObj."$($arrConnItem.ConnPoint)")   
+                            $Point1 = $arrConnItem.Points[$p-1]
                         }
-
+                        
+                        $Point2 = $arrConnItem.Points[$p]
+                        If($arrConnItem.StartPoint -eq "pTop" -or $arrConnItem.StartPoint -eq "pBottom")
+                        {
+                            $Ptemp  = new-object Point ($Point1.X , $Point2.Y)
+                            $MainPath.AddLine($Point1,$Ptemp)
+                            $MainPath.AddLine($Ptemp,$Point2)
+                        }
+                        Else
+                        {
+                            $Ptemp  = new-object Point ($Point2.X , $Point1.Y)
+                            $MainPath.AddLine($Point1,$Ptemp)
+                            $MainPath.AddLine($Ptemp,$Point2)
+                        }
                     }
- #               }
+                }
+                Else
+                {
+                    $Point2 = $arrItem."$($arrConnItem.StartPoint)"
+                }
+                If($arrConnItem.ConnPoint -ne $null)
+                {
+                    If($arrConnItem.StartPoint -eq "pTop" -or $arrConnItem.StartPoint -eq "pBottom")
+                    {
+                        $Ptemp  = new-object Point ($Point2.X, $arrConnItem.ConnObj."$($arrConnItem.ConnPoint)".Y)
+                        $MainPath.AddLine($Point2,$Ptemp)
+                        $MainPath.AddLine($Ptemp,$arrConnItem.ConnObj."$($arrConnItem.ConnPoint)")
+ #                       Write-Host "pTop"
+                    }
+                    Else
+                    {
+                        $Ptemp  = new-object Point ($arrConnItem.ConnObj."$($arrConnItem.ConnPoint)".X, $Point2.Y)
+                        $MainPath.AddLine($Point2,$Ptemp)
+                        $MainPath.AddLine($Ptemp,$arrConnItem.ConnObj."$($arrConnItem.ConnPoint)") 
+#                         Write-Host "other"  
+                    }
+                }
+<#
+
+ #>               
+  
+#                $arrItem.Mainregion.intersect($MainPath)                    
+<#
+                If($arrConnItem.ConnObj -ne $null)
+                {
+                    $arrConnItem.ConnObj.Mainregion.intersect($MainPath)
+                }
+#>              
+                $arrItem.Mainregion.intersect($MainPath)   
+                $arrLinePaths.Add($MainPath)               
+                $e.Graphics.DrawPath($mypenCap, $MainPath)
             }
-            $e.Graphics.DrawPath($mypenCap, $MainPath)
+            
+        }
+<#
+        for($r = 0; $r -lt $arrLinePaths.Count; $r++)
+        {
+            $arrPath = $arrLinePaths[$r]
+            for($h = 0; $h -lt $arrRegions.Count; $h++)
+            {                
+                $arrItemInter = $arrRegions[$h]
+                $arrItemInter.Mainregion.intersect($arrPath)
+            }            
+        }
+#>
 
 #                $Ptemp  = new-object Point ($arrItem."$($arrConnItem.StartPoint)".x , $arrItem."$($arrConnItem.StartPoint)".Y)
 #                If(($arrConnItem.StartPoint.y -gt $arrItem.ptop.y) -And ($arrConnItem.StartPoint.X -gt $arrItem.Ptop.X))
@@ -594,7 +616,7 @@ $DesktopPan.Add_paint({
  #               $e.Graphics.DrawLine(p, 20, 20, 100, 100);
 #                write-host $arrConnItem.Name
 #            }   
-        }  
+#        }  
     }       
 })
 
@@ -639,7 +661,7 @@ $DesktopPan.add_MouseDown({
                                         {
                                             $connArrItem.ConnPoint = $TempPoint
                                             $connArrItem.ConnObj = $arrItem
-                                            Write-Host "point:$($point.x),$($point.Y) added"
+                                            
                                             funDisAllShapes $null
                                         }
                                     }                                    
@@ -679,6 +701,7 @@ $DesktopPan.add_MouseDown({
                                 }
 #                                $objConn.points.add($Global:objShape.PTop)
                                 $Global:objShape.ConnArr.Add($objConn)
+#                                Write-Host $Global:objShape.ConnArr.count
                             }                           
                             Else
                             {
@@ -730,7 +753,7 @@ $DesktopPan.add_MouseDown({
                             If($connArrItem.StartPoint -eq $Global:objShapePoint)
                             {
                                $connArrItem.Points.add($point) 
-                                Write-Host "point:$($point.x),$($point.Y) added"
+#                                Write-Host "point:$($point.x),$($point.Y) added"
                             }
                         }
 #                       $Global:objShape.objConn.Points.add($point) 
@@ -739,8 +762,8 @@ $DesktopPan.add_MouseDown({
                     Else
                     {
 
-                        Write-Host $Global:objShapePoint
-                        Write-Host $Global:objShape.name 
+#                        Write-Host $Global:objShapePoint
+#                        Write-Host $Global:objShape.name 
                         $Global:objShape = $null
                         $Global:objShapePoint = $null                   
                     }
