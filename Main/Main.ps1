@@ -1,14 +1,21 @@
 ﻿# Created by Isar Mahdzadeh
 # Decmeber 12 2023
 #
+
+$ComRoot = Import-Csv "$((Get-Item $PSScriptRoot).Parent.FullName)\Config\Users\UsersProfile.csv" | `
+Where-Object {$_.UserID -match $([Environment]::UserName)} | % {$_.mainpath}
+
+$test = "$(Split-Path $PSScriptRoot -Parent)\config\$(($PSCommandPath.Split('\') | select -last 1) -replace ('.ps1$','Conf.ps1'))"
+
 . "$(Split-Path $PSScriptRoot -Parent)\config\$(($PSCommandPath.Split('\') | select -last 1) -replace ('.ps1$','Conf.ps1'))"
 
-Add-Type -Name Window -Namespace Console -MemberDefinition '
+#Add-Type -Name Window -Namespace Console -MemberDefinition '
+Add-Type -Name Window -Namespace Console -MemberDefinition @"
 [DllImport("Kernel32.dll")]
 public static extern IntPtr GetConsoleWindow();
 [DllImport("user32.dll")]
 public static extern bool ShowWindow(IntPtr hWnd, Int32 nCmdShow);
-'
+"@
 function Show-Console
 {
     $consolePtr = [Console.Window]::GetConsoleWindow()

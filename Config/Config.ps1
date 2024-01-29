@@ -1,12 +1,14 @@
 ﻿using namespace System.IO
+using namespace System.Collections
 using namespace System.Drawing
 using namespace System.Drawing.Imaging
 using namespace System.Windows.Forms
-#using assembly System.Windows.Forms
+using assembly System.Windows.Forms
 
-Add-Type -AssemblyName System.Windows.Forms
-Add-Type -AssemblyName System.Drawing
-Add-Type -AssemblyName PresentationCore,PresentationFramework
+#Add-Type -AssemblyName System.Windows.Forms
+#Add-Type -AssemblyName System.Drawing
+#Add-Type -AssemblyName PresentationCore,PresentationFramework
+
 #$ComRoot= "D:\ATE"                        <#modified by atena jan 14 24 for desktop.ps1#  be commented#>
 #$ComRoot="C:\Users\Mahdza1\Documents\ATE" <#modified by atena jan 14 24 for desktop.ps1# be added#>
 
