@@ -308,16 +308,19 @@ $DesktopPan.Add_paint({
         $pBottomRegion = new-object Region $pBottomPath
         $pLeftRegion = new-object Region $pLeftPath
         $ShadowRegion = new-object Region $ShadowPath
+        $MainRegion = new-object Region  $MainPath
         If(($Global:bolMouseMove -eq $false) -or ($Global:bolMouseDown -eq $faslse) -or ($global:objShape -eq $null))
         {
             $Global:intIterate ++
-            New-Variable -Force -Name "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate" -Value (new-object Region  $MainPath) 
-            $MainRegion = Get-Variable -ValueOnly -Include "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate"
-            $strMess = 'test'
+            $name = "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate"
+#            New-Variable -Force -Name $name -Value (new-object Region  $MainPath) 
+#            $MainRegion = Get-Variable -ValueOnly -Include $name
             $objPSNewShape = [pscustomobject]@{
-                name = "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate"
+                name = $name
                 type = $strSwitch
+                Point = $point
                 Location = $location
+                intIterate = $Global:intIterate
                 Mainregion = $MainRegion
                 Shadowregion = $ShadowRegion
                 pTopRegion = $ptopRegion
@@ -350,13 +353,15 @@ $DesktopPan.Add_paint({
         }
         Else
         {
+            $global:objShape.Point = $point
             $global:objShape.MainPath = $MainPath
             $global:objShape.ShadowPath = $ShadowPath
             $global:objShape.pTopPath = $pTopPath
             $global:objShape.pRightPath = $pRightPath
             $global:objShape.pBottomPath = $pBottomPath
             $global:objShape.pLeftPath = $pLeftPath
-            $global:objShape.Mainregion = new-object Region $MainPath
+#            $global:objShape.Mainregion = new-object Region $MainPath
+            $global:objShape.Mainregion = $MainRegion
             $global:objShape.Shadowregion = $ShadowRegion
             $global:objShape.pTopRegion = $ptopRegion
             $global:objShape.pRightRegion = $pRightRegion
