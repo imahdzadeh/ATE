@@ -15,6 +15,7 @@ Where-Object {$_.UserID -match $([Environment]::UserName)} | % {$_.mainpath}
 #
 # Define objects and variables customed to this script between the lines
 #///////////////////////////////////////////////////////////////////////////////////
+$Global:strFileName = $null
 $varDebugTrace = 0
 $Logging = $True
 $ImageExt = ".png"
@@ -38,6 +39,7 @@ $intDevideBy2 = 2
 $intMultiplyBy2 = 2 
 $intArrowSize = 5
 $intFirstLineSize = 20
+$arrMain = [ArrayList]@()
 $arrRegions = [ArrayList]@()
 $arrLinePaths = [ArrayList]@()
 $myBrush = new-object Drawing.SolidBrush black
@@ -58,6 +60,14 @@ $avatar = [System.Drawing.Image]::Fromfile('D:\ate\IT\Root\images\circle.png')
 $fonty = New-Object Font 'arial',16
 $UserLogPath ="$MainRoot\$depCode\$LogFolName\$UserFolName\$((Get-Date).ToString('MMMyy'))$LogFileExt" 
 $ErrLogPath ="$MainRoot\$depCode\$LogFolName\$ErrFolName\$((Get-Date).ToString('MMMyy'))$LogFileExt" 
+$subIconButSize = 30
+$ShapesSize = 50
+$code = @"
+[System.Runtime.InteropServices.DllImport("gdi32.dll")]
+public static extern IntPtr CreateRoundRectRgn(int nLeftRect, int nTopRect,
+    int nRightRect, int nBottomRect, int nWidthEllipse, int nHeightEllipse);
+"@
+$Win32Helpers = Add-Type -MemberDefinition $code -Name "Win32Helpers" -PassThru
 $Secoform = New-Object Windows.Forms.Form -Property @{
     StartPosition = [Windows.Forms.FormStartPosition]::CenterScreen
     Size          = New-Object Drawing.Size 1300, 800

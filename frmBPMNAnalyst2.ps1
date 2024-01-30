@@ -41,57 +41,33 @@ Function imgStreamer($imgPath){
 }
 
 Function funSaveBtn{
-
-    If($Global:strFileName -eq $Null)
-    {
-        $dialog = [System.Windows.Forms.SaveFileDialog]::new()
-        $dialog.RestoreDirectory = $true
-        $result = $dialog.ShowDialog()
-        if($result -eq [System.Windows.Forms.DialogResult]::OK){
-            $Global:strFileName = "$($dialog.FileName).mpa"
-            $arrRegions | Export-Clixml "$($dialog.FileName).mpa" -Depth 1
-            $namelbl.Text = (Get-Item $dialog.FileName).Name
-        }
-    }
-    Else
-    {
-        $arrRegions | Export-Clixml $Global:strFileName -Depth 1
-    }   
+    $arrRegions | Export-Clixml "D:\ATE\PPM\BPM\Processes\test.csv" -Depth 1
+ #   $arrRegions[0].ConnArr | export-csv "D:\ATE\PPM\BPM\Processes\test.csv"    
 }
 
+
 Function funLoadBtn{
-    $dialog = [System.Windows.Forms.OpenFileDialog]::new()
-    $dialog.RestoreDirectory = $true
-    $result = $dialog.ShowDialog()
-    if($result -eq [System.Windows.Forms.DialogResult]::OK){
-        funClearAll
-        $Global:Loading = $true
-        $global:serializedObj = $null
-        $global:SerializedP = New-Object Point
-        $objPSNewShape = Import-Clixml $dialog.FileName
-        foreach($objLoad in $objPSNewShape)
-        {
-            $global:serializedObj = $objLoad.Type
-            $Global:intIterate = $objLoad.intIterate
-            $global:SerializedP.X = $objLoad.Point.X
-            $global:SerializedP.Y = $objLoad.Point.Y
-            $DesktopPan.Invalidate() 
-            $DesktopPan.Update()        
-        }
-        $Global:Loading = $false
-    }
+
+    
+#    $objPSNewShape = Import-Csv "D:\ATE\PPM\BPM\Processes\test.csv" 
+
+           $objPSNewShape = Import-Clixml "D:\ATE\PPM\BPM\Processes\test.csv" 
+
+
+  
+ write-host          $objPSNewShape.connarr[0].connobj.Name
+# write-host $objPSNewShape.mainpath.PathData.Points
+    
 }
 
 Function funSaveAsBtn{
-    $dialog = [System.Windows.Forms.SaveFileDialog]::new()
-    $dialog.RestoreDirectory = $true
-    $result = $dialog.ShowDialog()
-    if($result -eq [System.Windows.Forms.DialogResult]::OK){
-        $Global:strFileName = "$($dialog.FileName).mpa"
-        $arrRegions | Export-Clixml "$($dialog.FileName).mpa" -Depth 1
-        $namelbl.Text = (Get-Item $dialog.FileName).Name
-    }   
+    for($i = 0; $i -lt $arrRegions.Count; $i++)
+    {
+        $arrItem = $arrRegions[$i]
+    } 
 }
+
+
 
 
 $DesktopPan = New-Object Panel
@@ -150,32 +126,7 @@ function Set-DoubleBuffer {
     $propInfo.SetValue($grid, $Enabled)
 }
 
-$DesktopPan.Add_paint({
-    param([System.Object]$s, [PaintEventArgs]$e)
-#    $e.Graphics.InterpolationMode = 2
-    $e.Graphics.SmoothingMode = 4
-    $mouse = [Cursor]::Position
-    $point = $DesktopPan.PointToClient($mouse)
-    $Orgpoint = $point
-    $strSwitch = ""
- #   If($global:objShape -eq $null)
- #   {
-    If ($StartCircle.Checked -or $Dimond.Checked -or $Square.Checked -Or $InterCircle.Checked -Or $DataObj.Checked)
-    {
-        $strSwitch = ($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name
-    }
-    If($Global:bolMouseMove -And $Global:bolMouseDown -And $global:objShape -ne $null)
-    {
-        $strSwitch = $global:objShape.type  
-    }
-    If($Global:Loading)
-    {
-        $point = $Global:SerializedP
-        $strSwitch = $global:serializedObj
-    }
-    
-#    $point.X = $point.X - $adjustPixel
-#    $point.Y = $point.Y - $adjustPixel
+Function funUIShapes($strSwitch,$point,$bolSeriObj){
     $MainPath = New-Object Drawing2D.GraphicsPath
     $ShadowPath = New-Object Drawing2D.GraphicsPath
     $pTopPath = New-Object Drawing2D.GraphicsPath
@@ -183,7 +134,7 @@ $DesktopPan.Add_paint({
     $pBottomPath = New-Object Drawing2D.GraphicsPath
     $pLeftPath = New-Object Drawing2D.GraphicsPath
     switch ($strSwitch)
-    {
+    {        
         'StartCircle' { 
             $point.X = $point.X - ($StartCircleSize / $intDevideBy2)
             $point.Y = $point.Y - ($StartCircleSize / $intDevideBy2)
@@ -333,16 +284,14 @@ $DesktopPan.Add_paint({
         $pLeftRegion = new-object Region $pLeftPath
         $ShadowRegion = new-object Region $ShadowPath
         $MainRegion = new-object Region  $MainPath
-        If((($Global:bolMouseMove -eq $false) -or ($Global:bolMouseDown -eq $faslse) -or ($global:objShape -eq $null)) -or ($Global:Loading))
+        If(($Global:bolMouseMove -eq $false) -or ($Global:bolMouseDown -eq $faslse) -or ($global:objShape -eq $null))
         {
             $Global:intIterate ++
             $name = "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate"
-#            New-Variable -Force -Name $name -Value (new-object Region  $MainPath) 
-#            $MainRegion = Get-Variable -ValueOnly -Include $name
             $objPSNewShape = [pscustomobject]@{
                 name = $name
                 type = $strSwitch
-                Point = $Orgpoint
+                Point = $point
                 Location = $location
                 intIterate = $Global:intIterate
                 Mainregion = $MainRegion
@@ -377,14 +326,13 @@ $DesktopPan.Add_paint({
         }
         Else
         {
-            $global:objShape.Point = $Orgpoint
+            $global:objShape.Point = $point
             $global:objShape.MainPath = $MainPath
             $global:objShape.ShadowPath = $ShadowPath
             $global:objShape.pTopPath = $pTopPath
             $global:objShape.pRightPath = $pRightPath
             $global:objShape.pBottomPath = $pBottomPath
             $global:objShape.pLeftPath = $pLeftPath
-#            $global:objShape.Mainregion = new-object Region $MainPath
             $global:objShape.Mainregion = $MainRegion
             $global:objShape.Shadowregion = $ShadowRegion
             $global:objShape.pTopRegion = $ptopRegion
@@ -400,6 +348,28 @@ $DesktopPan.Add_paint({
             $global:objShape.pLeft = $pLeft
         }
     }
+}
+
+$DesktopPan.Add_paint({
+    param([System.Object]$s, [PaintEventArgs]$e)
+#    $e.Graphics.InterpolationMode = 2
+    $e.Graphics.SmoothingMode = 4
+    $mouse = [Cursor]::Position
+    $point = $DesktopPan.PointToClient($mouse)
+
+#    $strSwitch = ""
+ #   If($global:objShape -eq $null)
+ #   {
+<#
+    $MainPath = New-Object Drawing2D.GraphicsPath
+    $ShadowPath = New-Object Drawing2D.GraphicsPath
+    $pTopPath = New-Object Drawing2D.GraphicsPath
+    $pRightPath = New-Object Drawing2D.GraphicsPath
+    $pBottomPath = New-Object Drawing2D.GraphicsPath
+    $pLeftPath = New-Object Drawing2D.GraphicsPath
+#>
+
+
     If ($arrRegions.count -gt 0)
     {        
         for($i = 0; $i -lt $arrRegions.Count; $i++)
@@ -626,7 +596,7 @@ $DesktopPan.Add_paint({
 #                write-host $arrConnItem.Name
 #            }   
 #        }  
-    }          
+    }       
 })
 
 $DesktopPan.add_MouseDown({
@@ -634,6 +604,7 @@ $DesktopPan.add_MouseDown({
     $BolCont = $false
     $mouse = [Cursor]::Position
     $point = $DesktopPan.PointToClient($mouse)
+    $strSwitch = ""
  #   If ($Global:objShape -eq $null )
  #   {
  #       $Global:objShape = $null
@@ -782,7 +753,15 @@ $DesktopPan.add_MouseDown({
 
         }               
     }
-
+    If ($StartCircle.Checked -or $Dimond.Checked -or $Square.Checked -Or $InterCircle.Checked -Or $DataObj.Checked)
+    {
+        $strSwitch = ($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name
+    }
+    If($Global:bolMouseMove -And $Global:bolMouseDown -And $global:objShape -ne $null)
+    {
+        $strSwitch = $global:objShape.type  
+    }
+    funUIShapes $strSwitch $point $false
  #   }
  #   Else
  #   {
@@ -824,6 +803,11 @@ $DesktopPan.add_MouseMove({
                 $arrRegions.Remove($global:objShape)         
                 write-host "$($global:objShape.name) removed"
                 #>
+                If($Global:bolMouseMove -And $Global:bolMouseDown -And $global:objShape -ne $null)
+                {
+                    $strSwitch = $global:objShape.type  
+                }
+                funUIShapes $strSwitch $point $false
                 $DesktopPan.Invalidate()
                 
             }
@@ -840,13 +824,6 @@ $DesktopPan.add_MouseMove({
     
 })
 
-function funClearAll{
-    If($arrRegions.Count -gt 0)
-    {  
-        Write-host ($arrRegions.Count)
-        $arrRegions.Clear()
-    }   
-} 
 
 $ShowPRFbtn = New-Object Button
 #$ShowPRFbtn.Location = New-Object System.Drawing.Size(1000,38) 
@@ -857,8 +834,15 @@ $ShowPRFbtn.height = 25
 $ShowPRFbtn.Font = 'Microsoft Sans Serif,10'
 $ShowPRFbtn.ForeColor = "#000"
 $ShowPRFbtn.Add_Click({
-    funDisAllShapes $ShapesTbl
-    funClearAll  
+    funDisAllShapes $ShapesTbl    
+    If($arrRegions.Count -gt 0)
+    {  
+        Write-host ($arrRegions.Count)
+        $arrRegions.Clear()
+    }
+    Else
+    {
+    }
     $DesktopPan.Invalidate()         
 })
 
@@ -1327,18 +1311,6 @@ $RedoBtn.TabIndex = 1
 $RedoBtn.Add_Click({
  })
 
-$namelbl = New-Object Label
-$namelbl.Text = ""
-$namelbl.height = 30
-$namelbl.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 12)
-$namelbl.TextAlign = 256
-
-$Filenamelbl = New-Object Label
-$Filenamelbl.Text = ":نام فایل"
-$Filenamelbl.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 12)
-$Filenamelbl.height = 30
-$Filenamelbl.width = 50
-$Filenamelbl.TextAlign = 512
 
 $ShapesTbl = New-Object TableLayoutPanel
 $ShapesTbl.BackColor = ''
@@ -1392,7 +1364,7 @@ $TopMenuTbl =  New-Object TableLayoutPanel
 $TopMenuTbl.BackColor = ''
 #$TopMenuTbl.Controls.Add($ReturnBtn)
 $TopMenuTbl.RowCount = 1
-$TopMenuTbl.ColumnCount = 7
+$TopMenuTbl.ColumnCount = 5
 $TopMenuTbl.AutoSize = $true
 $TopMenuTbl.CellBorderStyle = 1
 #$TopMenuTbl.Height = 30
@@ -1406,14 +1378,11 @@ $ShapesTbl.Controls.Add($Square,1,0)
 $ShapesTbl.Controls.Add($DataObj,1,0)
 #>
 
-
-$TopMenuTbl.Controls.Add($namelbl)
-$TopMenuTbl.Controls.Add($Filenamelbl)
 $TopMenuTbl.Controls.Add($SaveBtn)
 $TopMenuTbl.Controls.Add($SaveAsBtn)
 $TopMenuTbl.Controls.Add($LoadBtn)
 $TopMenuTbl.Controls.Add($UndoBtn)
-$TopMenuTbl.Controls.Add($RedoBtn)
+#$TopMenuTbl.Controls.Add($RedoBtn)
 
 $ShapesTbl.Controls.Add($StartCircle)
 $ShapesTbl.Controls.Add($InterCircle)
