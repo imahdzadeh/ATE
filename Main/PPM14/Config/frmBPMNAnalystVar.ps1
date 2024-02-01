@@ -16,6 +16,9 @@ Where-Object {$_.UserID -match $([Environment]::UserName)} | % {$_.mainpath}
 # Define objects and variables customed to this script between the lines
 #///////////////////////////////////////////////////////////////////////////////////
 $Global:strFileName = $null
+$TextSize = 14
+$BoldFont = 1
+$RegularFont = 0
 $varDebugTrace = 0
 $Logging = $True
 $ImageExt = ".png"
@@ -46,16 +49,20 @@ $arrRegions = [ArrayList]@()
 $arrLinePaths = [ArrayList]@()
 $arrTexts = [ArrayList]@()
 $myBrush = new-object Drawing.SolidBrush black
+$SelTextBrush = new-object Drawing.SolidBrush Gray
+$TextBrush = new-object Drawing.SolidBrush Black
 $BigPen = new-object Drawing.Pen black,$intBigPenSize
 $RegPen = new-object Drawing.Pen gray,$intRegPenSize
 $SelPen = new-object Drawing.Pen Black,$intSelPenSize
+$TextPen = new-object Drawing.Pen Black,$intRegPenSize
 $mypen2 = new-object Drawing.Pen gray, 4
 $mypen3 = new-object Drawing.Pen black, 4
 $mypen2.Color = [System.Drawing.Color]::FromArgb(180,180,180)
 $bigarrow = New-Object Drawing2D.AdjustableArrowCap $intArrowSize, $intArrowSize
 $mypenCap = new-object Drawing.Pen black,2
-$mypenCap.color = "black"
 $mypenCap.CustomEndCap = $bigarrow
+$BigpenCap = new-object Drawing.Pen gray,3
+$BigpenCap.CustomEndCap = $bigarrow
 $brushBg = [System.Drawing.Brushes]::gray
 $brushBg.Color = [System.Drawing.Color]::FromArgb(200,200,200)
 $ClearbrushBg = [System.Drawing.Brushes]::white

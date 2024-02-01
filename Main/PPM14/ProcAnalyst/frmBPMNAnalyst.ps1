@@ -23,9 +23,44 @@ Else
 }
 
 Function funFormKeyDown{
-    if ($_.KeyCode -eq [Keys]::Delete) 
-    {     
-        funDelShape
+    If($Global:typing -eq $null)
+    {
+        if ($_.KeyCode -eq [Keys]::Delete) 
+        {     
+            funDelShape
+        }
+    }
+    Else
+    {
+        If($_.Keycode -eq [Keys]::Return)
+        {
+            $Global:typing.Text = "$($Global:typing.Text)`n"
+        }
+            ElseIf($_.Keydata -match "Shift" -and $_.Keycode -ne "ShiftKey")
+            {
+                $Global:typing.Text = "$($Global:typing.Text)$($_.Keycode)"
+#               [Console]::beep(500, 600)
+            }
+                ElseIf($_.Keycode -eq [Keys]::Back)
+                {
+                    If($Global:typing.Text.Length -gt 0)
+                    {
+                        $Global:typing.Text = $Global:typing.Text.Substring(0,($Global:typing.Text.Length-1))
+                    }   
+                }
+                    ElseIf($_.Keycode -eq [Keys]::Space)
+                    {
+                        $Global:typing.Text = "$($Global:typing.Text) "
+                    }
+        Else
+        {
+            If([char]$_.Keyvalue -match "\w")
+            {
+                $char = "$([char]$_.Keyvalue)".ToLower()
+                $Global:typing.Text = "$($Global:typing.Text)$char"
+            }
+        }
+        $desktopPan.Invalidate()
     }
 }
 
@@ -34,6 +69,24 @@ Function funDelShape{
     {
         $arrRegions.Remove($global:objShape)
         $Global:objShape = $null       
+    }
+    Else
+    {
+        If($Global:SelPath -ne $Null)
+        {
+            for($i = 0; $i -lt $arrRegions.Count; $i++)
+            {
+                for($q = 0; $q -lt $arrRegions[$i].ConnArr.Count; $q++)
+                {
+                    If($arrRegions[$i].ConnArr[$q] -eq $Global:SelPath)
+                    {
+                        $arrRegions[$i].ConnArr.Remove($Global:SelPath)
+                        $Global:SelPath = $Null
+                        Break
+                    }
+                }
+            }
+        }
     }
     $DesktopPan.Invalidate()     
 }
@@ -50,196 +103,158 @@ Function funDPanMouseDown{
     $BolCont = $false
     $mouse = [Cursor]::Position
     $point = $DesktopPan.PointToClient($mouse)
-    If ($arrRegions.Count -gt 0)
+    $Global:SelPath = $Null
+    $Global:SelText = $Null
+#    If(!$TextIcon.Checked)
+#    {
+    for($i = 0; $i -lt $arrRegions.Count; $i++)
     {
-        for($i = 0; $i -lt $arrRegions.Count; $i++)
+        $arrItem = $arrRegions[$i]
+        $Global:typing = $null
+        If ($arrItem.ShadowRegion.isVisible($point))
         {
-            $arrItem = $arrRegions[$i]
-
-            If ($arrItem.ShadowRegion.isVisible($point))
+            $BolCont = $True
+            If(
+                $arrItem.pTopRegion.isVisible($point) -or 
+                $arrItem.pRightRegion.isVisible($point) -or 
+                $arrItem.pBottomRegion.isVisible($point) -or 
+                $arrItem.pLeftRegion.isVisible($point)
+                )
             {
-                $BolCont = $True
                 If (($Global:objShape -ne $null) -and ($Global:objShape -ne $arrItem))
-                {
-                    If(
-                        $arrItem.pTopRegion.isVisible($point) -or 
-                        $arrItem.pRightRegion.isVisible($point) -or 
-                        $arrItem.pBottomRegion.isVisible($point) -or 
-                        $arrItem.pLeftRegion.isVisible($point)
-                        )
-                    {   
-#                            $Global:objShape | Add-Member -MemberType NoteProperty -Name "test" -Value "Quincy"
-                        If(!$Global:objShape.ConnArr.Contains($arrItem) -and (!$arrItem.ConnArr.Contains($Global:objShape)))
-                        {
-
-                            If($arrItem.pTopRegion.isVisible($point)){$TempPoint = "pTop"}
-                            If($arrItem.pRightRegion.isVisible($point)){$TempPoint = "pRight"}
-                            If($arrItem.pBottomRegion.isVisible($point)){$TempPoint = "pBottom"}
-                            If($arrItem.pLeftRegion.isVisible($point)){$TempPoint = "pLeft"}
-                            for($j = 0; $j -lt $Global:objShape.ConnArr.Count; $j++)
-                            {
-#                                $connArrItem = $Global:objShape.ConnArr[$j]
- #                               If($connArrItem.StartPoint -eq $Global:objShapePoint)
-                                If($Global:objShape.ConnArr[$j].StartPoint -eq $Global:objShapePoint)
-                                {
-#                                    $Global:objShape.ConnArr[$j].ConnPoint = $TempPoint
-                                    $Global:objShape.ConnArr[$j].ConnPoint = $TempPoint
-                                    $Global:objShape.ConnArr[$j].ConnObj = $arrItem
-                                            
-                                    funDisAllShapes $null
-                                }
-                            }                                    
-                                    
-                            $Global:objShape.ConnArr
-                            $Global:objShapePoint = $null
-                            $Global:objShape = $null
-                        }
-                    }
-                    Else
+                { 
+                    If(!$Global:objShape.ConnArr.Contains($arrItem) -and (!$arrItem.ConnArr.Contains($Global:objShape)))
                     {
-                                
-                    }
+                        If($arrItem.pTopRegion.isVisible($point)){$TempPoint = "pTop"}
+                        If($arrItem.pRightRegion.isVisible($point)){$TempPoint = "pRight"}
+                        If($arrItem.pBottomRegion.isVisible($point)){$TempPoint = "pBottom"}
+                        If($arrItem.pLeftRegion.isVisible($point)){$TempPoint = "pLeft"}
+                        for($j = 0; $j -lt $Global:objShape.ConnArr.Count; $j++)
+                        {
+                            If($Global:objShape.ConnArr[$j].StartPoint -eq $Global:objShapePoint)
+                            {
+                                $Global:objShape.ConnArr[$j].ConnPoint = $TempPoint
+                                $Global:objShape.ConnArr[$j].ConnObj = $arrItem
+                                            
+                                funDisAllShapes $null
+                            }
+                        }                                                                       
+                        $Global:objShape.ConnArr
+                        $Global:objShapePoint = $null
+                        $Global:objShape = $null
+                    }                        
                 }
-                ElseIf(($Global:objShape -ne $null) -and ($Global:objShape -eq $arrItem) -and ($SolidLine.Checked -Or $DashedLine.Checked -Or $DottedLine.Checked))
-                {
-                    If(
-                        $arrItem.pTopRegion.isVisible($point) -or 
-                        $arrItem.pRightRegion.isVisible($point) -or 
-                        $arrItem.pBottomRegion.isVisible($point) -or 
-                        $arrItem.pLeftRegion.isVisible($point)
-                        )
+                    ElseIf(($Global:objShape -ne $null) -and ($Global:objShape -eq $arrItem) -and ($SolidLine.Checked -Or $DashedLine.Checked -Or $DottedLine.Checked))
                     {
                         If($arrItem.pTopRegion.isVisible($point)){$Global:objShapePoint = "pTop"}
                         If($arrItem.pRightRegion.isVisible($point)){$Global:objShapePoint = "pRight"}
                         If($arrItem.pBottomRegion.isVisible($point)){$Global:objShapePoint = "pBottom"}
                         If($arrItem.pLeftRegion.isVisible($point)){$Global:objShapePoint = "pLeft"}
                         $objConn = [pscustomobject]@{
-#                                        name = "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate"
                             Points = [ArrayList]@()
                             ConnObj = $Null
+                            Name = $arrItem.Name
                             ConnType = "Out"
                             StartPoint = $Global:objShapePoint
                             ConnPoint = $null 
                             Path = $null
+                            Text = ""
+                            pTextX = 0
+                            pTextY = 0
                             LineStyle = ($LinesTbl.Controls | Where-Object -FilterScript {$_.Checked}).Tag
                         }
-#                                $objConn.points.add($Global:objShape.PTop)
-                        $Global:objShape.ConnArr.Add($objConn)
-#                                Write-Host $Global:objShape.ConnArr.count
-                    }                           
-                    Else
-                    {
-                        $Global:objShapePoint = $null
-
+                        $Global:objShape.ConnArr.Add($objConn)                                                                                
                     }
-                }
-                        
-                       
-                        
-<# 
-                $StartCircle.Checked = $false
-                $StartCircle.Refresh()
-                $InterCircle.Checked = $false
-                $InterCircle.Refresh()
-                $Dimond.Checked = $false
-                $Dimond.Refresh()
-                $Square.checked = $false
-                $Square.Refresh()
-                $DataObj.checked = $false
-                $DataObj.Refresh()
-#>
-                If($SolidLine.Checked) 
-                {
-                    funDisAllShapes $SolidLine  
-                }
-                    ElseIf($DashedLine.Checked)
-                    {
-                        funDisAllShapes $DashedLine
-                    }
-                        ElseIf($DottedLine.Checked)
-                        {
-                            funDisAllShapes $DottedLine
-                        }
                 Else
                 {
-                        funDisAllShapes $null
-                        $Global:objShape = $null
+                    $Global:objShapePoint = $null
                 }
-                                              
-                $global:objShape = $arrItem
-                        
-            }             
-        }
-        If(!$BolCont)
-        {
-            If(($SolidLine.Checked -or $DashedLine.Checked -or $dottedLine.Checked) -and ($Global:objShapePoint -ne $null) -and ($Global:objShape -ne $null))
-            {
-#                    (New-Object Point ($point.X + ($DataObjSize / $intDevideBy2)), $point.Y)
-                for($g = 0; $g -lt $Global:objShape.ConnArr.Count; $g++)
-                {
-                    $connArrItem = $Global:objShape.ConnArr[$g]
-                    If($connArrItem.StartPoint -eq $Global:objShapePoint)
-                    {
-                        $connArrItem.Points.add($point) 
-#                                Write-Host "point:$($point.x),$($point.Y) added"
-                    }
-                }
-#                       $Global:objShape.objConn.Points.add($point) 
-                      
             }
             Else
             {
-
-#                        Write-Host $Global:objShapePoint
-#                        Write-Host $Global:objShape.name 
-                $Global:objShape = $null
-                $Global:objShapePoint = $null                   
+                If(($SubIconTbl.Controls | Where-Object -FilterScript {$_.Checked}))
+                {
+                    If($TextIcon.Checked)
+                    {
+                        $Global:typing = $arrItem
+                    }
+                }
+                Else
+                {
+                    If($arrItem.TextPath -ne $Null)
+                    {
+                        If($arrItem.TextPath.isvisible($point))
+                        {
+                            $Global:SelText = $arrItem
+                        }
+                    }
+                }
             }
-
-        }               
-    }
-
- #   }
- #   Else
- #   {
-
-#    }
-    $DesktopPan.Invalidate() 
-}
-
-Function funDPanMouseUp{
-    $Global:bolMouseMove = $false
-    $Global:bolMouseDown = $false
-    If ($Global:objShape -ne $null)
-    {
-        foreach($cont in $ShapesTbl.Controls)
-        {
-            $cont.checked = $false
-        }
-    }   
-}
-
-Function funDPanMouseMove{
-    If(($Global:bolMouseDown) -and ($global:objShape -ne $null) -and !$SolidLine.Checked -and !$DashedLine.Checked -and !$dottedline.Checked)
-    {
-        $Global:bolMouseMove = $true
-        $mouse = [Cursor]::Position
-        $point = $DesktopPan.PointToClient($mouse)
-        If(($point.X  -gt 50) -and ($point.Y -gt 50))
-        {
-            If(($point.X + 50  -lt $DesktopPan.Size.Width) -and ($point.Y + 50  -lt $DesktopPan.Size.Height))
+            If($SolidLine.Checked) 
             {
-                $DesktopPan.Invalidate()                
+                funDisAllShapes $SolidLine  
             }
-        }         
+                ElseIf($DashedLine.Checked)
+                {
+                    funDisAllShapes $DashedLine
+                }
+                    ElseIf($DottedLine.Checked)
+                    {
+                        funDisAllShapes $DottedLine
+                    }
+            Else
+            {
+                    funDisAllShapes $null
+                    $Global:objShape = $null
+            }                                             
+            $global:objShape = $arrItem                           
+        }
+        Else
+        {
+            for($q = 0; $q -lt $arrItem.ConnArr.Count; $q++)
+            {
+                If($arrItem.ConnArr[$q].Path.isVisible($point))
+                {
+                    $Global:SelPath = $arrItem.ConnArr[$q]  
+                } 
+            }
+        }             
+    }
+    If(!$BolCont)
+    {
+        If(($SolidLine.Checked -or $DashedLine.Checked -or $dottedLine.Checked) -and ($Global:objShapePoint -ne $null) -and ($Global:objShape -ne $null))
+        {
+            for($g = 0; $g -lt $Global:objShape.ConnArr.Count; $g++)
+            {
+                $connArrItem = $Global:objShape.ConnArr[$g]
+                If($connArrItem.StartPoint -eq $Global:objShapePoint)
+                {
+                    $connArrItem.Points.add($point) 
+                }
+            }                      
+        }
+        Else
+        {
+            $Global:objShape = $null
+            $Global:objShapePoint = $null                   
+        }
+    }               
+<#
     }
     Else
     {
-        If( $Global:objShapePoint -ne $null) 
-        {
-           $DesktopPan.Invalidate()
-        } 
-    }    
+        $Global:typing = $true
+        $textObj = [pscustomobject]@{
+                    Name = "Text$($arrTexts.Count)"
+                    Point = $point
+                    Bounded = $false
+                    BoundedObj = $Null
+                    Text = "test"
+                }
+        $arrTexts.Add($textObj)
+    }
+ #>       
+    $DesktopPan.Invalidate() 
 }
 
 Function funDPanAddpaint($s,$e){
@@ -252,9 +267,17 @@ Function funDPanAddpaint($s,$e){
     {
         $strSwitch = ($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name
     }
-    If($Global:bolMouseMove -And $Global:bolMouseDown -And $global:objShape -ne $null)
+    If($Global:SelText -eq $Null)
     {
-        $strSwitch = $global:objShape.type  
+        If($Global:bolMouseMove -And $Global:bolMouseDown -And $global:objShape -ne $null)
+        {
+            $strSwitch = $global:objShape.type  
+        }
+    }
+    Else
+    {
+        $Global:SelText.pTXDiffer = $Global:SelText.pCenter.x - $point.x
+        $Global:SelText.pTYDiffer = $Global:SelText.pCenter.Y - $point.Y
     }
     If($Global:Loading)
     {
@@ -462,6 +485,10 @@ Function funDPanAddpaint($s,$e){
                 PointPen = $RegPen
                 MainPen = $MainPen
                 ConnArr = [ArrayList]@()
+                Text = ""
+                TextPath = $Null
+                pTXDiffer = 0
+                pTYDiffer = 0
                 fillColor = $fillColor                 
                 maxConn = $maxConn
                 bolInput = $bolInput
@@ -524,7 +551,6 @@ Function funDPanAddpaint($s,$e){
                 $e.Graphics.DrawEllipse($arrItem.PointPen,$arrItem.pBottom.x,$arrItem.pBottom.Y,$ConnPSize,$ConnPSize)         
                 $e.Graphics.DrawEllipse($arrItem.PointPen,$arrItem.pLeft.x,$arrItem.pLeft.Y,$ConnPSize,$ConnPSize) 
 #>                        
-                $e.Graphics.DrawString("test dfghdfg dfg `ndfg dfg dfg `ndfg dfg dfg ", $fonty , $myBrush, $arrItem.pcenter.X,$arrItem.pcenter.y, [StringFormat]::GenericDefault)
 #                $e.Graphics.DrawImage($avatar,$arrItem.p.X+50,$arrItem.p.y+55,10,10)
 #                $e.Graphics.SetClip($arrItem.Mainregion,4)
             }
@@ -540,6 +566,24 @@ Function funDPanAddpaint($s,$e){
  #               $e.Graphics.DrawImage($avatar,$arrItem.P1.x,$arrItem.P1.y)
 #                $e.Graphics.DrawImage($avatar,$arrItem.P2.x,$arrItem.P2.y)
 #                $e.Graphics.SetClip($arrItem.Mainregion,4)
+            }
+            If($arrItem.Text -ne "")
+            {
+                New-Variable -Force -Name "$($arrItem.Name)$cTPath" -Value (New-Object Drawing2D.GraphicsPath) 
+                $TextPath = Get-Variable -ValueOnly -Include "$($arrItem.Name)$cTPath"
+                $pTemp = $pp1 = New-Object Point ($arrItem.Pcenter.X - $arrItem.pTXDiffer) , ($arrItem.Pcenter.Y - $arrItem.pTYDiffer)
+                If($Global:SelText -eq $arrItem)
+                {
+                    $TextPath.AddString($arrItem.Text, $fonty.FontFamily , $BoldFont, $TextSize ,$pTemp, [StringFormat]::GenericDefault) 
+                    $e.Graphics.FillPath($SelTextBrush,$TextPath)            
+                }
+                Else
+                {
+                    $TextPath.AddString($arrItem.Text, $fonty.FontFamily , $RegularFont, $TextSize ,$pTemp, [StringFormat]::GenericDefault) 
+                    $e.Graphics.FillPath($TextBrush,$TextPath)
+                } 
+                $arrItem.TextPath = $TextPath               
+#                $e.Graphics.DrawString($arrItem.Text, $fonty , $myBrush, $arrItem.Pcenter.X,$arrItem.pCenter.y, [StringFormat]::GenericDefault)  
             }
 
             for($c = 0; $c -lt $arrItem.ConnArr.Count; $c++)
@@ -601,11 +645,53 @@ Function funDPanAddpaint($s,$e){
                 } 
                 $mypenCap.DashStyle = $arrConnItem.LineStyle
 #                $arrItem.Mainregion.intersect($MainPath)   
-                $arrLinePaths.Add($MainPath)               
-                $e.Graphics.DrawPath($mypenCap, $MainPath)
+                $arrConnItem.Path = $MainPath
+                If($Global:SelPath.Name -eq $arrItem.ConnArr[$c].Name -and $Global:SelPath.Startpoint -eq $arrConnItem.StartPoint)
+                {
+                    $e.Graphics.DrawPath($BigpenCap, $MainPath)
+                }
+                Else
+                {               
+                    $e.Graphics.DrawPath($mypenCap, $MainPath)
+                }
             }            
         }
-    }      
+    }           
+}
+
+Function funDPanMouseUp{
+    $Global:bolMouseMove = $false
+    $Global:bolMouseDown = $false
+    If ($Global:objShape -ne $null)
+    {
+        foreach($cont in $ShapesTbl.Controls)
+        {
+            $cont.checked = $false
+        }
+    }   
+}
+
+Function funDPanMouseMove{
+    If(($Global:bolMouseDown) -and ($global:objShape -ne $null) -and !$SolidLine.Checked -and !$DashedLine.Checked -and !$dottedline.Checked)
+    {
+        $Global:bolMouseMove = $true
+        $mouse = [Cursor]::Position
+        $point = $DesktopPan.PointToClient($mouse)
+        If(($point.X  -gt 50) -and ($point.Y -gt 50))
+        {
+            If(($point.X + 50  -lt $DesktopPan.Size.Width) -and ($point.Y + 50  -lt $DesktopPan.Size.Height))
+            {
+                $DesktopPan.Invalidate()                
+            }
+        }         
+    }
+    Else
+    {
+        If( $Global:objShapePoint -ne $null) 
+        {
+           $DesktopPan.Invalidate()
+        } 
+    }    
 }
 
 Function funLoadBtn{
@@ -631,11 +717,13 @@ Function funLoadBtn{
         for($i = 0; $i -lt $arrRegions.Count; $i++)
         {
             $arrItem = $arrRegions[$i]
-            $test= $arrRegions | where name -eq "startcircle1"
             foreach($objLoad in $objPSNewShape)
             {
                 If($objLoad.Name -eq $arrRegions[$i].Name)
                 {
+                    $arrRegions[$i].Text = $objLoad.Text
+                    $arrRegions[$i].pTXDiffer = $objLoad.pTXDiffer
+                    $arrRegions[$i].pTYDiffer = $objLoad.pTYDiffer                
                     for($c = 0; $c -lt $objLoad.ConnArr.Count; $c++)
                     {
                         $points = [ArrayList]@()
@@ -647,10 +735,14 @@ Function funLoadBtn{
                         $connObj = [pscustomobject]@{
                             Points = $points
                             ConnObj = $arrRegions | where name -eq $objLoad.ConnArr[$c].ConnObj.Name
+                            Name = $objLoad.ConnArr[$c].Name
                             ConnType = $objLoad.ConnArr[$c].ConnType
                             StartPoint = $objLoad.ConnArr[$c].StartPoint
                             ConnPoint = $objLoad.ConnArr[$c].ConnPoint
                             Path = $objLoad.ConnArr[$c].Path
+                            Text = $objLoad.ConnArr[$c].Text
+                            pTextX = $objLoad.ConnArr[$c].TextX
+                            pTextY = $objLoad.ConnArr[$c].TextY
                             LineStyle = $objLoad.ConnArr[$c].LineStyle
                         } 
                         $arrRegions[$i].ConnArr.Add($connObj)
@@ -694,7 +786,7 @@ Function funSaveBtn{
     }   
 }
 
-Function funDisAllShapes($O) {
+Function funDisAllShapes($O) {  
     foreach($obj in $ShapesTbl.Controls)
     {
         If($obj -ne $O)
@@ -723,6 +815,14 @@ Function funDisAllShapes($O) {
             $obj.checked = $false   
         }  
     } 
+    If(
+        !($LinesTbl.Controls | Where-Object -FilterScript {$_.Checked}) -and 
+        !($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked})
+      )
+    {
+        $Global:objShapePoint = $Null
+        $desktopPan.Invalidate()
+    }  
 }
 
 function Set-DoubleBuffer {
@@ -737,9 +837,7 @@ function Set-DoubleBuffer {
 function funClearAll{
     If($arrRegions.Count -gt 0)
     {  
-        Write-host ($arrRegions.Count)
         $arrRegions.Clear()
-         Write-host ($arrRegions.Count)
     }   
 } 
 
@@ -967,7 +1065,7 @@ $TextIcon.Appearance = 1
 $TextIcon.FlatStyle = 2
 $TextIcon.Add_click({
     If(!$This.Checked){$DesktopPan.Focus()}
-    funDisAllShapes $EscaEndSubIcon
+    funDisAllShapes $TextIcon
 })
 
 $ArrowSubIcon = New-Object CheckBox
@@ -1409,7 +1507,7 @@ $Secoform.Controls.Add($MainTbl)
 $Secoform.Add_Shown({$Secoform.Activate(); $DesktopPan.Focus()})
 
 $Secoform.KeyPreview = $true
-$Secoform.Add_KeyDown({fundelShape})
+$Secoform.Add_KeyDown({funFormKeyDown})
 
 
 $Secoform.Add_Closing{
