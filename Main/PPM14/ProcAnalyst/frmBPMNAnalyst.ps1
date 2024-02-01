@@ -22,6 +22,11 @@ Else
     Set-PSDebug -Trace $varDebugTrace  
 }
 
+$MainObject = [pscustomobject]@{
+                arrRegions = [ArrayList]@()
+                arrGroups = [ArrayList]@()
+              } 
+
 Function funFormKeyDown{
     If($Global:typing -eq $null)
     {
@@ -65,22 +70,22 @@ Function funFormKeyDown{
 }
 
 Function funDelShape{
-    If ($arrRegions.Count -gt 0 -and $global:objShape -ne $null)
+    If ($MainObject.arrRegions.Count -gt 0 -and $global:objShape -ne $null)
     {
-        $arrRegions.Remove($global:objShape)
+        $MainObject.arrRegions.Remove($global:objShape)
         $Global:objShape = $null       
     }
     Else
     {
         If($Global:SelPath -ne $Null)
         {
-            for($i = 0; $i -lt $arrRegions.Count; $i++)
+            for($i = 0; $i -lt $MainObject.arrRegions.Count; $i++)
             {
-                for($q = 0; $q -lt $arrRegions[$i].ConnArr.Count; $q++)
+                for($q = 0; $q -lt $MainObject.arrRegions[$i].ConnArr.Count; $q++)
                 {
-                    If($arrRegions[$i].ConnArr[$q] -eq $Global:SelPath)
+                    If($MainObject.arrRegions[$i].ConnArr[$q] -eq $Global:SelPath)
                     {
-                        $arrRegions[$i].ConnArr.Remove($Global:SelPath)
+                        $MainObject.arrRegions[$i].ConnArr.Remove($Global:SelPath)
                         $Global:SelPath = $Null
                         Break
                     }
@@ -107,9 +112,9 @@ Function funDPanMouseDown{
     $Global:SelText = $Null
 #    If(!$TextIcon.Checked)
 #    {
-    for($i = 0; $i -lt $arrRegions.Count; $i++)
+    for($i = 0; $i -lt $MainObject.arrRegions.Count; $i++)
     {
-        $arrItem = $arrRegions[$i]
+        $arrItem = $MainObject.arrRegions[$i]
         $Global:typing = $null
         If ($arrItem.ShadowRegion.isVisible($point))
         {
@@ -493,7 +498,7 @@ Function funDPanAddpaint($s,$e){
                 maxConn = $maxConn
                 bolInput = $bolInput
             }
-            [void]$arrRegions.Add($objPSNewShape)
+            $MainObject.arrRegions.Add($objPSNewShape)
             funDisAllShapes $null
             $global:objShape = $objPSNewShape
         }
@@ -521,11 +526,11 @@ Function funDPanAddpaint($s,$e){
             $global:objShape.pLeft = $pLeft
         }
     }
-    If ($arrRegions.count -gt 0)
+    If ($MainObject.arrRegions.count -gt 0)
     {        
-        for($i = 0; $i -lt $arrRegions.Count; $i++)
+        for($i = 0; $i -lt $MainObject.arrRegions.Count; $i++)
         {
-            $arrItem = $arrRegions[$i]           
+            $arrItem = $MainObject.arrRegions[$i]           
             If (
                 $arrItem.Mainregion.isVisible($DesktopPan.PointToClient([Cursor]::Position)) `
                 -or ($arrItem -eq $Global:objShape)                                                                                                       
@@ -705,7 +710,7 @@ Function funLoadBtn{
         $global:SerializedP = New-Object Point
         $objPSNewShape = Import-Clixml $dialog.FileName
         $namelbl.Text = ((Get-Item $dialog.FileName).Name).Replace(".ate",'')
-        foreach($objLoad in $objPSNewShape)
+        foreach($objLoad in $objPSNewShape.arrRegions)
         {
             $global:serializedObj = $objLoad.Type
             $Global:intIterate = $objLoad.intIterate
@@ -714,16 +719,16 @@ Function funLoadBtn{
             $DesktopPan.Invalidate() 
             $DesktopPan.Update()        
         }
-        for($i = 0; $i -lt $arrRegions.Count; $i++)
+        for($i = 0; $i -lt $MainObject.arrRegions.Count; $i++)
         {
-            $arrItem = $arrRegions[$i]
-            foreach($objLoad in $objPSNewShape)
+            $arrItem = $MainObject.arrRegions[$i]
+            foreach($objLoad in $objPSNewShape.arrRegions)
             {
-                If($objLoad.Name -eq $arrRegions[$i].Name)
+                If($objLoad.Name -eq $MainObject.arrRegions[$i].Name)
                 {
-                    $arrRegions[$i].Text = $objLoad.Text
-                    $arrRegions[$i].pTXDiffer = $objLoad.pTXDiffer
-                    $arrRegions[$i].pTYDiffer = $objLoad.pTYDiffer                
+                    $MainObject.arrRegions[$i].Text = $objLoad.Text
+                    $MainObject.arrRegions[$i].pTXDiffer = $objLoad.pTXDiffer
+                    $MainObject.arrRegions[$i].pTYDiffer = $objLoad.pTYDiffer                
                     for($c = 0; $c -lt $objLoad.ConnArr.Count; $c++)
                     {
                         $points = [ArrayList]@()
@@ -734,7 +739,7 @@ Function funLoadBtn{
                         }
                         $connObj = [pscustomobject]@{
                             Points = $points
-                            ConnObj = $arrRegions | where name -eq $objLoad.ConnArr[$c].ConnObj.Name
+                            ConnObj = $MainObject.arrRegions | where name -eq $objLoad.ConnArr[$c].ConnObj.Name
                             Name = $objLoad.ConnArr[$c].Name
                             ConnType = $objLoad.ConnArr[$c].ConnType
                             StartPoint = $objLoad.ConnArr[$c].StartPoint
@@ -745,7 +750,7 @@ Function funLoadBtn{
                             pTextY = $objLoad.ConnArr[$c].TextY
                             LineStyle = $objLoad.ConnArr[$c].LineStyle
                         } 
-                        $arrRegions[$i].ConnArr.Add($connObj)
+                        $MainObject.arrRegions[$i].ConnArr.Add($connObj)
                     }
                 }
             }
@@ -762,7 +767,7 @@ Function funSaveAsBtn{
     $result = $dialog.ShowDialog()
     if($result -eq [System.Windows.Forms.DialogResult]::OK){
         $Global:strFileName = "$($dialog.FileName).ate"
-        $arrRegions | Export-Clixml "$($dialog.FileName).ate" -Depth 1
+        $MainObject | Export-Clixml "$($dialog.FileName).ate" -Depth 1
         $namelbl.Text = ((Get-Item "$($dialog.FileName).ate").Name).Replace(".ate",'')
     }   
 }
@@ -776,13 +781,13 @@ Function funSaveBtn{
         $result = $dialog.ShowDialog()
         if($result -eq [System.Windows.Forms.DialogResult]::OK){
             $Global:strFileName = "$($dialog.FileName).ate"
-            $arrRegions | Export-Clixml "$($dialog.FileName).ate" -Depth 1
+            $MainObject | Export-Clixml "$($dialog.FileName).ate" -Depth 1
             $namelbl.Text = (Get-Item "$($dialog.FileName).ate").Name
         }
     }
     Else
     {
-        $arrRegions | Export-Clixml $Global:strFileName -Depth 1
+        $MainObject | Export-Clixml $Global:strFileName -Depth 1
     }   
 }
 
@@ -815,6 +820,17 @@ Function funDisAllShapes($O) {
             $obj.checked = $false   
         }  
     } 
+    foreach($obj in  $Groups.Controls)
+    {
+        If($obj -ne $O)
+        {
+            $obj.checked = $false   
+        }  
+    }
+    If($O -ne $Annotation)
+    {
+        $Annotation.Checked = $false
+    } 
     If(
         !($LinesTbl.Controls | Where-Object -FilterScript {$_.Checked}) -and 
         !($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked})
@@ -835,9 +851,9 @@ function Set-DoubleBuffer {
 }
 
 function funClearAll{
-    If($arrRegions.Count -gt 0)
+    If($MainObject.arrRegions.Count -gt 0)
     {  
-        $arrRegions.Clear()
+        $MainObject.arrRegions.Clear()
     }   
 } 
 
@@ -862,7 +878,7 @@ $ShowPRFbtn = New-Object Button
 $ShowPRFbtn.BackColor = "#d2d4d6"
 $ShowPRFbtn.text = "پاک کردن همه شکلها"
 $ShowPRFbtn.width = 110
-$ShowPRFbtn.height = 25
+$ShowPRFbtn.height = 30
 $ShowPRFbtn.Font = 'Microsoft Sans Serif,10'
 $ShowPRFbtn.ForeColor = "#000"
 $ShowPRFbtn.Add_Click({
@@ -876,7 +892,7 @@ $DelShape.Location = New-Object Size(2,50)
 $DelShape.BackColor = "#d2d4d6"
 $DelShape.text = "حذف شکل"
 $DelShape.width = 110
-$DelShape.height = 25
+$DelShape.height = 30
 $DelShape.Font = 'Microsoft Sans Serif,10'
 $DelShape.ForeColor = "#000"
 $DelShape.TabIndex = 1
@@ -1258,6 +1274,58 @@ $DataObj.Add_click({
     funDisAllShapes $DataObj
 })
 
+$Pool = New-Object CheckBox
+$Pool.Size = New-Object Size($GroupSizeX,$GroupSizeY)
+$Pool.name = 'Pool'
+$Pool.Image = imgStreamer "D:\ATE\IT\Root\images\Pool.png"
+$Pool.ImageAlign = 'MiddleCenter'
+$Pool.Appearance = 1
+$Pool.FlatStyle = 2
+$Pool.Padding = 5
+$Pool.Add_click({
+    If(!$This.Checked){$DesktopPan.Focus()}
+    funDisAllShapes $Pool
+})
+
+$Lane = New-Object CheckBox
+$Lane.Size = New-Object Size($GroupSizeX,$GroupSizeY)
+$Lane.name = 'Pool'
+$Lane.Image = imgStreamer "D:\ATE\IT\Root\images\Lane.png"
+$Lane.ImageAlign = 'MiddleCenter'
+$Lane.Appearance = 1
+$Lane.FlatStyle = 2
+$Lane.Padding = 5
+$Lane.Add_click({
+    If(!$This.Checked){$DesktopPan.Focus()}
+    funDisAllShapes $Lane
+})
+
+$Group = New-Object CheckBox
+$Group.Size = New-Object Size($GroupSizeX,$GroupSizeY)
+$Group.name = 'Group'
+$Group.Image = imgStreamer "D:\ATE\IT\Root\images\Group.png"
+$Group.ImageAlign = 'MiddleCenter'
+$Group.Appearance = 1
+$Group.FlatStyle = 2
+$Group.Padding = 5
+$Group.Add_click({
+    If(!$This.Checked){$DesktopPan.Focus()}
+    funDisAllShapes $Pool
+})
+
+$Annotation = New-Object CheckBox
+$Annotation.Size = New-Object Size($GroupSizeX,$subIconButSize)
+$Annotation.name = 'Annotation'
+$Annotation.Image = imgStreamer "D:\ATE\IT\Root\images\Annotation.png"
+$Annotation.ImageAlign = 'MiddleCenter'
+$Annotation.Appearance = 1
+$Annotation.FlatStyle = 2
+$Annotation.Padding = 5
+$Annotation.Add_click({
+    If(!$This.Checked){$DesktopPan.Focus()}
+    funDisAllShapes $Annotation
+})
+
 $MainTbl = New-Object TableLayoutPanel
 #$MainTbl.Location = New-Object System.Drawing.Size(2,50) 
 $MainTbl.AutoSize = $true
@@ -1268,8 +1336,8 @@ $MainTbl.RowCount = 5
 
 $butsTbl =  New-Object TableLayoutPanel
 $butsTbl.BackColor = ''
-$butsTbl.Controls.Add($ShowPRFbtn)
-$butsTbl.Controls.Add($DelShape)
+#$butsTbl.Controls.Add($ShowPRFbtn)
+#$butsTbl.Controls.Add($DelShape)
 $butsTbl.AutoSize = $true
 
 
@@ -1318,7 +1386,6 @@ $SaveAsBtn.Add_Click({
 })
 
 $LoadBtn = New-Object Button
-
 $LoadBtn.Location = New-Object Size(2,50) 
 $LoadBtn.name = "Load"
 $LoadBtn.BackColor = "#d2d4d6"
@@ -1329,6 +1396,20 @@ $LoadBtn.Font = 'Microsoft Sans Serif,10'
 $LoadBtn.ForeColor = "#000"
 $LoadBtn.TabIndex = 1
 $LoadBtn.Add_Click({
+    funLoadBtn
+ })
+
+$NewBtn = New-Object Button
+$NewBtn.Location = New-Object Size(2,50) 
+$NewBtn.name = "New"
+$NewBtn.BackColor = "#d2d4d6"
+$NewBtn.text = "جدید"
+$NewBtn.width = 80
+$NewBtn.height = 30
+$NewBtn.Font = 'Microsoft Sans Serif,10'
+$NewBtn.ForeColor = "#000"
+$NewBtn.TabIndex = 1
+$NewBtn.Add_Click({
     funLoadBtn
  })
 
@@ -1414,6 +1495,14 @@ $MagnifierTbl.AutoSize = $true
 $MagnifierTbl.ColumnCount = 3
 #$LaunchTbl.CellBorderStyle = 2
 
+$Groups = New-Object TableLayoutPanel
+$Groups.BackColor = ''
+#$MagnifierTbl.Size = New-Object System.Drawing.Size(100,700)
+#$MagnifierTbl.Location = New-Object System.Drawing.size(2,100)
+#$MagnifierTbl.Dock = [System.Windows.Forms.DockStyle]::Fill
+$Groups.AutoSize = $true
+$Groups.ColumnCount = 1
+#$LaunchTbl.CellBorderStyle = 2
 
 $LinesTbl = New-Object TableLayoutPanel
 $LinesTbl.BackColor = ''
@@ -1428,7 +1517,7 @@ $TopMenuTbl =  New-Object TableLayoutPanel
 $TopMenuTbl.BackColor = ''
 #$TopMenuTbl.Controls.Add($ReturnBtn)
 $TopMenuTbl.RowCount = 1
-$TopMenuTbl.ColumnCount = 7
+$TopMenuTbl.ColumnCount = 12
 $TopMenuTbl.AutoSize = $true
 $TopMenuTbl.CellBorderStyle = 1
 #$TopMenuTbl.Height = 30
@@ -1442,14 +1531,6 @@ $ShapesTbl.Controls.Add($Square,1,0)
 $ShapesTbl.Controls.Add($DataObj,1,0)
 #>
 
-
-$TopMenuTbl.Controls.Add($namelbl)
-$TopMenuTbl.Controls.Add($Filenamelbl)
-$TopMenuTbl.Controls.Add($SaveBtn)
-$TopMenuTbl.Controls.Add($SaveAsBtn)
-$TopMenuTbl.Controls.Add($LoadBtn)
-$TopMenuTbl.Controls.Add($UndoBtn)
-$TopMenuTbl.Controls.Add($RedoBtn)
 
 $ShapesTbl.Controls.Add($StartCircle)
 $ShapesTbl.Controls.Add($InterCircle)
@@ -1490,6 +1571,24 @@ $MagnifierTbl.Controls.Add($ZoomOut)
 $MagnifierTbl.Controls.Add($Magnifier)
 $MagnifierTbl.Controls.Add($ZoomIn)
 
+$Groups.Controls.Add($pool)
+$Groups.Controls.Add($Lane)
+$Groups.Controls.Add($Group)
+
+$TopMenuTbl.Controls.Add($namelbl)
+$TopMenuTbl.Controls.Add($Filenamelbl)
+$TopMenuTbl.Controls.Add($NewBtn)
+$TopMenuTbl.Controls.Add($SaveBtn)
+$TopMenuTbl.Controls.Add($SaveAsBtn)
+$TopMenuTbl.Controls.Add($LoadBtn)
+$TopMenuTbl.Controls.Add($UndoBtn)
+$TopMenuTbl.Controls.Add($RedoBtn)
+$TopMenuTbl.Controls.Add($LaunchTbl)
+$TopMenuTbl.Controls.Add($MagnifierTbl)
+$TopMenuTbl.Controls.Add($ShowPRFbtn)
+$TopMenuTbl.Controls.Add($DelShape)
+
+
 $MainTbl.Controls.Add($ReturnBtn,0,0)
 $MainTbl.Controls.Add($ReturnBtn,0,0)
 $MainTbl.Controls.Add($TopMenuTbl,1,0)
@@ -1498,9 +1597,9 @@ $MainTbl.Controls.Add($ShapesTbl,0,1)
 $MainTbl.Controls.Add($SubIconTbl,0,2)
 $MainTbl.Controls.Add($LinesTbl,0,3)
 $MainTbl.Controls.Add($butsTbl,0,4)
-$MainTbl.Controls.Add($LaunchTbl,0,5)
-$MainTbl.Controls.Add($MagnifierTbl,0,6)
-$MainTbl.SetRowSpan($DesktopPan,7)
+$MainTbl.Controls.Add($Groups,0,5)
+$MainTbl.Controls.Add($Annotation,0,6)
+$MainTbl.SetRowSpan($DesktopPan,6)
 
 
 $Secoform.Controls.Add($MainTbl)

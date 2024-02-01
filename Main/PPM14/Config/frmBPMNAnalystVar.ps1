@@ -44,10 +44,7 @@ $intDevideBy2 = 2
 $intMultiplyBy2 = 2 
 $intArrowSize = 5
 $intFirstLineSize = 20
-$arrMain = [ArrayList]@()
-$arrRegions = [ArrayList]@()
-$arrLinePaths = [ArrayList]@()
-$arrTexts = [ArrayList]@()
+$MainObject = $Null
 $myBrush = new-object Drawing.SolidBrush black
 $SelTextBrush = new-object Drawing.SolidBrush Gray
 $TextBrush = new-object Drawing.SolidBrush Black
@@ -73,6 +70,8 @@ $UserLogPath ="$MainRoot\$depCode\$LogFolName\$UserFolName\$((Get-Date).ToString
 $ErrLogPath ="$MainRoot\$depCode\$LogFolName\$ErrFolName\$((Get-Date).ToString('MMMyy'))$LogFileExt" 
 $subIconButSize = 30
 $ShapesSize = 50
+$GroupSizeX = 100
+$GroupSizey = 60
 $code = @"
 [System.Runtime.InteropServices.DllImport("gdi32.dll")]
 public static extern IntPtr CreateRoundRectRgn(int nLeftRect, int nTopRect,
