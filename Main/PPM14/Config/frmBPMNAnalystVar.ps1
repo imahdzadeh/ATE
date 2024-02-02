@@ -15,7 +15,10 @@ Where-Object {$_.UserID -match $([Environment]::UserName)} | % {$_.mainpath}
 #
 # Define objects and variables customed to this script between the lines
 #///////////////////////////////////////////////////////////////////////////////////
+$RegionsClass = "Region"
+$GroupsClass = "Groups"
 $Global:strFileName = $null
+$Global:SelText = $Null
 $TextSize = 14
 $BoldFont = 1
 $RegularFont = 0
@@ -23,16 +26,21 @@ $varDebugTrace = 0
 $Logging = $True
 $ImageExt = ".png"
 $depCode = "PPM14"
+$PoolSize = 200
+$LaneSize = 300
+$GroupSize = 400
+$PoolTAreaSize = 50
 $intIterate = 0
 $intRegPenSize = 2
 $intSelPenSize = 2
+$intGroPenSize = 4
 $intBigPenSize = 7
 $bolMouseDown = $false
 $objShape = $null
 $arcSize = 10
 $ShadowSize = 2
-$squareSize = 150
-$squareSizeY = 100
+$squareSize = 120
+$squareSizeY = 80
 $DimondSize = 50
 $StartCircleSize = 40
 $InterCircleSize = 40
@@ -51,6 +59,7 @@ $TextBrush = new-object Drawing.SolidBrush Black
 $BigPen = new-object Drawing.Pen black,$intBigPenSize
 $RegPen = new-object Drawing.Pen gray,$intRegPenSize
 $SelPen = new-object Drawing.Pen Black,$intSelPenSize
+$GroupPen = new-object Drawing.Pen Black,$intGroPenSize
 $TextPen = new-object Drawing.Pen Black,$intRegPenSize
 $mypen2 = new-object Drawing.Pen gray, 4
 $mypen3 = new-object Drawing.Pen black, 4

@@ -25,7 +25,27 @@ Else
 $MainObject = [pscustomobject]@{
                 arrRegions = [ArrayList]@()
                 arrGroups = [ArrayList]@()
-              } 
+              }
+Function funTextIconClick{
+    
+    If($TextIcon.Checked)
+    {
+        If($global:objShape -ne $null)
+        { 
+            $Global:typing = $global:objShape
+            $Global:SelText = $global:objShape
+        }
+            ElseIf($Global:SelPath -ne $Null)
+            {
+                $Global:typing = $Global:SelPath
+
+            }
+    }
+    Else
+    {
+       
+    }   
+}               
 
 Function funFormKeyDown{
     If($Global:typing -eq $null)
@@ -96,11 +116,17 @@ Function funDelShape{
     $DesktopPan.Invalidate()     
 }
 
-Function imgStreamer($imgPath){
+Function funImgStreamer($imgPath){
 
     $inStream = ([FileInfo]$imgPath).Open([FileMode]::Open, [FileAccess]::ReadWrite)
     [Image]::FromStream($inStream)
     $inStream.Dispose()
+}
+
+Function funAddGroups($point, $intIterate, $name){
+
+          
+   
 }
 
 Function funDPanMouseDown{
@@ -108,157 +134,163 @@ Function funDPanMouseDown{
     $BolCont = $false
     $mouse = [Cursor]::Position
     $point = $DesktopPan.PointToClient($mouse)
-    $Global:SelPath = $Null
-    $Global:SelText = $Null
-#    If(!$TextIcon.Checked)
-#    {
-    for($i = 0; $i -lt $MainObject.arrRegions.Count; $i++)
+    If(!$TextIcon.Checked)
     {
-        $arrItem = $MainObject.arrRegions[$i]
-        $Global:typing = $null
-        If ($arrItem.ShadowRegion.isVisible($point))
+        $Global:SelPath = $Null
+        for($i = 0; $i -lt $MainObject.arrRegions.Count; $i++)
         {
-            $BolCont = $True
-            If(
-                $arrItem.pTopRegion.isVisible($point) -or 
-                $arrItem.pRightRegion.isVisible($point) -or 
-                $arrItem.pBottomRegion.isVisible($point) -or 
-                $arrItem.pLeftRegion.isVisible($point)
-                )
+            $arrItem = $MainObject.arrRegions[$i]
+            $Global:typing = $null
+            If ($arrItem.ShadowRegion.isVisible($point))
             {
-                If (($Global:objShape -ne $null) -and ($Global:objShape -ne $arrItem))
-                { 
-                    If(!$Global:objShape.ConnArr.Contains($arrItem) -and (!$arrItem.ConnArr.Contains($Global:objShape)))
-                    {
-                        If($arrItem.pTopRegion.isVisible($point)){$TempPoint = "pTop"}
-                        If($arrItem.pRightRegion.isVisible($point)){$TempPoint = "pRight"}
-                        If($arrItem.pBottomRegion.isVisible($point)){$TempPoint = "pBottom"}
-                        If($arrItem.pLeftRegion.isVisible($point)){$TempPoint = "pLeft"}
-                        for($j = 0; $j -lt $Global:objShape.ConnArr.Count; $j++)
+                $SubProcess.Checked
+                $BolCont = $True
+                If(
+                    $arrItem.pTopRegion.isVisible($point) -or 
+                    $arrItem.pRightRegion.isVisible($point) -or 
+                    $arrItem.pBottomRegion.isVisible($point) -or 
+                    $arrItem.pLeftRegion.isVisible($point)
+                    )
+                {
+                    If (($Global:objShape -ne $null) -and ($Global:objShape -ne $arrItem))
+                    { 
+                        If(!$Global:objShape.ConnArr.Contains($arrItem) -and (!$arrItem.ConnArr.Contains($Global:objShape)))
                         {
-                            If($Global:objShape.ConnArr[$j].StartPoint -eq $Global:objShapePoint)
+                            If($arrItem.pTopRegion.isVisible($point)){$TempPoint = "pTop"}
+                            If($arrItem.pRightRegion.isVisible($point)){$TempPoint = "pRight"}
+                            If($arrItem.pBottomRegion.isVisible($point)){$TempPoint = "pBottom"}
+                            If($arrItem.pLeftRegion.isVisible($point)){$TempPoint = "pLeft"}
+                            for($j = 0; $j -lt $Global:objShape.ConnArr.Count; $j++)
                             {
-                                $Global:objShape.ConnArr[$j].ConnPoint = $TempPoint
-                                $Global:objShape.ConnArr[$j].ConnObj = $arrItem
+                                If($Global:objShape.ConnArr[$j].StartPoint -eq $Global:objShapePoint)
+                                {
+                                    $Global:objShape.ConnArr[$j].ConnPoint = $TempPoint
+                                    $Global:objShape.ConnArr[$j].ConnObj = $arrItem
                                             
-                                funDisAllShapes $null
-                            }
-                        }                                                                       
-                        $Global:objShape.ConnArr
-                        $Global:objShapePoint = $null
-                        $Global:objShape = $null
-                    }                        
-                }
-                    ElseIf(($Global:objShape -ne $null) -and ($Global:objShape -eq $arrItem) -and ($SolidLine.Checked -Or $DashedLine.Checked -Or $DottedLine.Checked))
-                    {
-                        If($arrItem.pTopRegion.isVisible($point)){$Global:objShapePoint = "pTop"}
-                        If($arrItem.pRightRegion.isVisible($point)){$Global:objShapePoint = "pRight"}
-                        If($arrItem.pBottomRegion.isVisible($point)){$Global:objShapePoint = "pBottom"}
-                        If($arrItem.pLeftRegion.isVisible($point)){$Global:objShapePoint = "pLeft"}
-                        $objConn = [pscustomobject]@{
-                            Points = [ArrayList]@()
-                            ConnObj = $Null
-                            Name = $arrItem.Name
-                            ConnType = "Out"
-                            StartPoint = $Global:objShapePoint
-                            ConnPoint = $null 
-                            Path = $null
-                            Text = ""
-                            pTextX = 0
-                            pTextY = 0
-                            LineStyle = ($LinesTbl.Controls | Where-Object -FilterScript {$_.Checked}).Tag
-                        }
-                        $Global:objShape.ConnArr.Add($objConn)                                                                                
+                                    funDisAllShapes $null
+                                }
+                            }                                                                       
+                            $Global:objShape.ConnArr
+                            $Global:objShapePoint = $null
+                            $Global:objShape = $null
+                        }                        
                     }
-                Else
-                {
-                    $Global:objShapePoint = $null
-                }
-            }
-            Else
-            {
-                If(($SubIconTbl.Controls | Where-Object -FilterScript {$_.Checked}))
-                {
-                    If($TextIcon.Checked)
-                    {
-                        $Global:typing = $arrItem
-                    }
-                }
-                Else
-                {
-                    If($arrItem.TextPath -ne $Null)
-                    {
-                        If($arrItem.TextPath.isvisible($point))
+                        ElseIf(($Global:objShape -ne $null) -and ($Global:objShape -eq $arrItem) -and ($SolidLine.Checked -Or $DashedLine.Checked -Or $DottedLine.Checked))
                         {
-                            $Global:SelText = $arrItem
+                            If($arrItem.pTopRegion.isVisible($point)){$Global:objShapePoint = "pTop"}
+                            If($arrItem.pRightRegion.isVisible($point)){$Global:objShapePoint = "pRight"}
+                            If($arrItem.pBottomRegion.isVisible($point)){$Global:objShapePoint = "pBottom"}
+                            If($arrItem.pLeftRegion.isVisible($point)){$Global:objShapePoint = "pLeft"}
+                            $objConn = [pscustomobject]@{
+                                Points = [ArrayList]@()
+                                ConnObj = $Null
+                                Name = $arrItem.Name
+                                ConnType = "Out"
+                                StartPoint = $Global:objShapePoint
+                                ConnPoint = $null 
+                                Path = $null
+                                Text = ""
+                                pCenter = $point
+                                TextPath = $Null
+                                pTXDiffer = 0
+                                pTYDiffer = 0
+                                LineStyle = ($LinesTbl.Controls | Where-Object -FilterScript {$_.Checked}).Tag
+                            }
+                            $Global:objShape.ConnArr.Add($objConn)                                                                                
+                        }
+                    Else
+                    {
+                        $Global:objShapePoint = $null
+                    }
+                }
+                If(
+                    ($SubIconTbl.Controls | Where-Object -FilterScript {$_.Checked}) -and 
+                    !($LinesTbl.Controls | Where-Object -FilterScript {$_.Checked})
+                  )                    
+                {
+                    If($SubProcess.Checked -and $arrItem.Type -eq $Square.Name)
+                    {
+                        If($arrItem.SubProcess)
+                        {
+                            $arrItem.SubProcess = $false
+                        }
+                        Else
+                        {
+                            $arrItem.SubProcess = $true
+                        }                                
+                    }
+                    Else
+                    {
+                        If($arrItem.Icon -eq "" -Or $arrItem.Icon -ne ($SubIconTbl.Controls | Where-Object -FilterScript {$_.Checked}).Name)
+                        {
+                            $arrItem.Icon = ($SubIconTbl.Controls | Where-Object -FilterScript {$_.Checked}).Name
+                        }
+                        Else
+                        {
+                            $arrItem.Icon = ""
                         }
                     }
-                }
-            }
-            If($SolidLine.Checked) 
-            {
-                funDisAllShapes $SolidLine  
-            }
-                ElseIf($DashedLine.Checked)
+                }                              
+                Else
                 {
-                    funDisAllShapes $DashedLine
-                }
-                    ElseIf($DottedLine.Checked)
+                    If(!($LinesTbl.Controls | Where-Object -FilterScript {$_.Checked}))
                     {
-                        funDisAllShapes $DottedLine
+                        funDisAllShapes $null
+                        $Global:objShape = $null
                     }
+                }                                             
+                $global:objShape = $arrItem                           
+            }
             Else
             {
-                    funDisAllShapes $null
-                    $Global:objShape = $null
-            }                                             
-            $global:objShape = $arrItem                           
-        }
-        Else
-        {
-            for($q = 0; $q -lt $arrItem.ConnArr.Count; $q++)
-            {
-                If($arrItem.ConnArr[$q].Path.isVisible($point))
+                for($q = 0; $q -lt $arrItem.ConnArr.Count; $q++)
                 {
-                    $Global:SelPath = $arrItem.ConnArr[$q]  
-                } 
+                    If($arrItem.ConnArr[$q].Path.isVisible($point))
+                    {
+                        $Global:SelPath = $arrItem.ConnArr[$q]  
+                    } 
+                }
+            }             
+        }
+        If(!$BolCont)
+        {
+            If(
+                ($LinesTbl.Controls | Where-Object -FilterScript {$_.Checked}) -and 
+                ($Global:objShapePoint -ne $null) -and ($Global:objShape -ne $null)
+              )
+            {
+                for($g = 0; $g -lt $Global:objShape.ConnArr.Count; $g++)
+                {
+                    $connArrItem = $Global:objShape.ConnArr[$g]
+                    If($connArrItem.StartPoint -eq $Global:objShapePoint)
+                    {
+                        $connArrItem.Points.add($point) 
+                    }
+                }                      
             }
-        }             
-    }
-    If(!$BolCont)
-    {
-        If(($SolidLine.Checked -or $DashedLine.Checked -or $dottedLine.Checked) -and ($Global:objShapePoint -ne $null) -and ($Global:objShape -ne $null))
-        {
-            for($g = 0; $g -lt $Global:objShape.ConnArr.Count; $g++)
+            Else
             {
-                $connArrItem = $Global:objShape.ConnArr[$g]
-                If($connArrItem.StartPoint -eq $Global:objShapePoint)
+
+                for($i = 0; $i -lt $MainObject.arrGroups.Count; $i++)
                 {
-                    $connArrItem.Points.add($point) 
+                    $arrGroItem = $MainObject.arrGroups[$i]
+                    If(
+                        $arrGroItem.TopPath.isVisible($point) -or
+                        $arrGroItem.RightPath.isVisible($point) -or
+                        $arrGroItem.BottomPath.isVisible($point) -or
+                        $arrGroItem.LeftPath.isVisible($point) -or
+                        $arrGroItem.TAreaPath.isVisible($point)
+                      )
+                    {
+                        $Global:objGroup = $arrGroItem
+                    }
                 }
-            }                      
-        }
-        Else
-        {
-            $Global:objShape = $null
-            $Global:objShapePoint = $null                   
-        }
-    }               
-<#
-    }
-    Else
-    {
-        $Global:typing = $true
-        $textObj = [pscustomobject]@{
-                    Name = "Text$($arrTexts.Count)"
-                    Point = $point
-                    Bounded = $false
-                    BoundedObj = $Null
-                    Text = "test"
-                }
-        $arrTexts.Add($textObj)
-    }
- #>       
+
+                $Global:objShape = $null
+                $Global:objShapePoint = $null                   
+            }
+        }               
+    }   
     $DesktopPan.Invalidate() 
 }
 
@@ -268,11 +300,16 @@ Function funDPanAddpaint($s,$e){
     $mouse = [Cursor]::Position
     $point = $DesktopPan.PointToClient($mouse)
     $strSwitch = ""
-    If ($StartCircle.Checked -or $Dimond.Checked -or $Square.Checked -Or $InterCircle.Checked -Or $DataObj.Checked)
+#    If ($StartCircle.Checked -or $Dimond.Checked -or $Square.Checked -Or $InterCircle.Checked -Or $DataObject.Checked)
+    If($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked})
     {
         $strSwitch = ($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name
     }
-    If($Global:SelText -eq $Null)
+    If($GroupsTbl.Controls | Where-Object -FilterScript {$_.Checked})
+    {
+        $strSwitch = ($GroupsTbl.Controls | Where-Object -FilterScript {$_.Checked}).name
+    }
+    If($Global:SelText -eq $Null -and $Global:SelPath -eq $null)
     {
         If($Global:bolMouseMove -And $Global:bolMouseDown -And $global:objShape -ne $null)
         {
@@ -281,8 +318,17 @@ Function funDPanAddpaint($s,$e){
     }
     Else
     {
-        $Global:SelText.pTXDiffer = $Global:SelText.pCenter.x - $point.x
-        $Global:SelText.pTYDiffer = $Global:SelText.pCenter.Y - $point.Y
+        If($TextIcon.Checked -and $Global:bolMouseDown -and $Global:SelText -ne $Null)
+        {
+            $Global:SelText.pTXDiffer = $Global:SelText.pCenter.x - $point.x
+            $Global:SelText.pTYDiffer = $Global:SelText.pCenter.Y - $point.Y
+        }
+            ElseIf($TextIcon.Checked -and $Global:bolMouseDown -and $Global:SelPath -ne $Null)
+            {            
+                $Global:SelPath.pTXDiffer = $Global:SelPath.pCenter.X - $point.X
+                $Global:SelPath.pTYDiffer = $Global:SelPath.pCenter.Y - $point.Y
+            }
+
     }
     If($Global:Loading)
     {
@@ -295,9 +341,14 @@ Function funDPanAddpaint($s,$e){
     $pRightPath = New-Object Drawing2D.GraphicsPath
     $pBottomPath = New-Object Drawing2D.GraphicsPath
     $pLeftPath = New-Object Drawing2D.GraphicsPath
+    $TopPath = New-Object Drawing2D.GraphicsPath
+    $RightPath = New-Object Drawing2D.GraphicsPath
+    $BottomPath = New-Object Drawing2D.GraphicsPath
+    $LeftPath = New-Object Drawing2D.GraphicsPath
+    $TAreaPAth = New-Object Drawing2D.GraphicsPath
     switch ($strSwitch)
     {
-        'StartCircle' { 
+        $StartCircle.Name { 
             $point.X = $point.X - ($StartCircleSize / $intDevideBy2)
             $point.Y = $point.Y - ($StartCircleSize / $intDevideBy2)
             $sizeDevidedBy2 = $StartCircleSize / $intDevideBy2            
@@ -319,7 +370,7 @@ Function funDPanAddpaint($s,$e){
             $bolInput = $false
             $MainPen = $RegPen
         }
-        'InterCircle' {
+        $InterCircle.Name {
             $point.X = $point.X - ($InterCircleSize / $intDevideBy2)
             $point.Y = $point.Y - ($InterCircleSize / $intDevideBy2)
             $sizeDevidedBy2 = $InterCircleSize / $intDevideBy2            
@@ -341,7 +392,7 @@ Function funDPanAddpaint($s,$e){
             $bolInput = $false
             $MainPen = $BigPen
         }
-        'dimond' {           
+        $dimond.Name {           
             $point.X = $point.X - ($DimondSize / $intDevideBy2)
             $point.Y = $point.Y - ($DimondSize / $intDevideBy2)
             $sizeDevidedBy2 = $DimondSize / $intDevideBy2
@@ -371,7 +422,7 @@ Function funDPanAddpaint($s,$e){
             $bolInput = $false 
             $MainPen = $RegPen                      
         }
-        'Square' {
+        $Square.Name {
             $point.X = $point.X - ($squareSize / $intDevideBy2)
             $point.Y = $point.Y - ($squareSizeY / $intDevideBy2)
             $TopPointGB = New-Object Point ($point.X) , ($point.Y - $adjustPixel)
@@ -400,7 +451,7 @@ Function funDPanAddpaint($s,$e){
             $bolInput = $false  
             $MainPen = $RegPen                             
         }
-        'DataObject' {
+        $DataObject.Name {
             $point.X = $point.X - ($DataObjSize / $intDevideBy2)
             $point.Y = $point.Y - ($DataObjSize / $intDevideBy2)
             $pp1 = New-Object Point ($point.X) , ($point.Y)
@@ -442,6 +493,25 @@ Function funDPanAddpaint($s,$e){
             $bolInput = $True
             $MainPen = $RegPen
         }
+        $Pool.Name { 
+            $point.X = $point.X - ($PoolSize / $intDevideBy2)
+            $point.Y = $point.Y - ($PoolSize / $intDevideBy2)
+            $sizeDevidedBy2 = $PoolTAreaSize / $intDevideBy2  
+            $PoolTAreaSizeDevidedBy2 = $PoolTAreaSize / $intDevideBy2            
+            $pTop1 = New-Object Point $point.X , $point.Y
+            $pTop2 = New-Object Point ($point.X + $PoolTAreaSize) , $point.Y
+            $pTop3 = New-Object Point ($point.X + $PoolSize) , $point.Y
+            $pBottom1 = New-Object Point $point.X , ($point.Y +$PoolSize)
+            $pBottom2 = New-Object Point ($point.X + $PoolTAreaSize), ($point.Y + $PoolSize)
+            $pBottom3 = New-Object Point ($point.X + $PoolSize), ($point.Y + $PoolSize)
+            $pText = New-Object Point ($point.X + $PoolTAreaSizeDevidedBy2) , ($point.Y + $sizeDevidedBy2)                          
+            $TopPath.AddLine($pTop1,$pTop3)   
+            $RightPath.AddLine($pTop3,$pBottom3)               
+            $BottomPath.AddLine($pBottom1,$pBottom3) 
+            $LeftPath.AddLine($pBottom1,$pTop1)     
+            $TAreaPAth.AddLine($pBottom2,$pTop2) 
+            $MainPen = $RegPen  
+        }
     }
     If($strSwitch -ne "")
     {
@@ -462,68 +532,108 @@ Function funDPanAddpaint($s,$e){
                 $Global:intIterate ++
                 $name = "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate"                
             }
-            $objPSNewShape = [pscustomobject]@{
-                name = $name
-                type = $strSwitch
-                Point = $point
-                Location = $location
-                intIterate = $Global:intIterate
-                Mainregion = $MainRegion
-                Shadowregion = $ShadowRegion
-                pTopRegion = $ptopRegion
-                pRightRegion = $pRightRegion
-                pBottomRegion = $pBottomRegion 
-                pLeftRegion = $pLeftRegion
-                TopPointGB = $TopPointGB
-                BottomPointGB = $BottomPointGB
-                pCenter = $pCenter
-                pTop = $pTop
-                pRight = $pRight
-                pBottom = $pBottom 
-                pLeft = $pLeft
-                MainPath = $MainPath
-                ShadowPath = $ShadowPath
-                pTopPath = $pTopPath
-                pRightPath = $pRightPath
-                pBottomPath = $pBottomPath
-                pLeftPath = $pLeftPath
-                PointPen = $RegPen
-                MainPen = $MainPen
-                ConnArr = [ArrayList]@()
-                Text = ""
-                TextPath = $Null
-                pTXDiffer = 0
-                pTYDiffer = 0
-                fillColor = $fillColor                 
-                maxConn = $maxConn
-                bolInput = $bolInput
+            If($strSwitch -eq ($ShapesTbl.Controls | Where-Object -FilterScript {$_.Name -match $strSwitch}).Name)
+            {
+                $objPSNewShape = [pscustomobject]@{
+                    arrClass = $RegionsClass
+                    name = $name
+                    type = $strSwitch
+                    Point = $point
+                    Location = $location
+                    intIterate = $Global:intIterate
+                    Mainregion = $MainRegion
+                    Shadowregion = $ShadowRegion
+                    pTopRegion = $ptopRegion
+                    pRightRegion = $pRightRegion
+                    pBottomRegion = $pBottomRegion 
+                    pLeftRegion = $pLeftRegion
+                    TopPointGB = $TopPointGB
+                    BottomPointGB = $BottomPointGB
+                    pCenter = $pCenter
+                    pTop = $pTop
+                    pRight = $pRight
+                    pBottom = $pBottom 
+                    pLeft = $pLeft
+                    MainPath = $MainPath
+                    ShadowPath = $ShadowPath
+                    pTopPath = $pTopPath
+                    pRightPath = $pRightPath
+                    pBottomPath = $pBottomPath
+                    pLeftPath = $pLeftPath
+                    PointPen = $RegPen
+                    MainPen = $MainPen
+                    ConnArr = [ArrayList]@()
+                    Text = ""
+                    Icon = ""
+                    SubProcess = $false
+                    Condition = ""
+                    TextPath = $Null
+                    pTXDiffer = 0
+                    pTYDiffer = 0
+                    fillColor = $fillColor                 
+                    maxConn = $maxConn
+                    bolInput = $bolInput
+                }
+                $MainObject.arrRegions.Add($objPSNewShape)
+                funDisAllShapes $null
+                $global:objShape = $objPSNewShape
             }
-            $MainObject.arrRegions.Add($objPSNewShape)
-            funDisAllShapes $null
-            $global:objShape = $objPSNewShape
+            Else
+            {
+                 $objGroup = [pscustomobject]@{
+     
+       
+                    Name = "$name$Global:intIterate"
+                    Point = $point
+                    pTop1 = $pTop1
+                    pTop2 = $pTop2
+                    pTop3 = $pTop3
+                    pBottom1 = $pBottom1
+                    pBottom2 = $pBottom2
+                    pBottom3 = $pBottom3
+                    TopPath = $TopPath
+                    RightPath = $RightPath
+                    BottomPath = $BottomPath
+                    LeftPath = $LeftPath 
+                    TAreaPath = $TAreaPath
+                    Text = ""
+                    PointPen = $RegPen
+                    MainPen = $GroupPen
+                }
+                $MainObject.arrGroups.Add($objGroup)
+                funDisAllShapes $null
+                $global:objGroup = $objGroup   
+            }
         }
         Else
         {
-            $global:objShape.Point = $Orgpoint
-            $global:objShape.MainPath = $MainPath
-            $global:objShape.ShadowPath = $ShadowPath
-            $global:objShape.pTopPath = $pTopPath
-            $global:objShape.pRightPath = $pRightPath
-            $global:objShape.pBottomPath = $pBottomPath
-            $global:objShape.pLeftPath = $pLeftPath
-            $global:objShape.Mainregion = $MainRegion
-            $global:objShape.Shadowregion = $ShadowRegion
-            $global:objShape.pTopRegion = $ptopRegion
-            $global:objShape.pRightRegion = $pRightRegion
-            $global:objShape.pBottomRegion = $pBottomRegion 
-            $global:objShape.pLeftRegion = $pLeftRegion
-            $global:objShape.TopPointGB = $TopPointGB
-            $global:objShape.BottomPointGB = $BottomPointGB
-            $global:objShape.PCenter = $pCenter
-            $global:objShape.pTop = $pTop
-            $global:objShape.pRight = $pRight
-            $global:objShape.pBottom = $pBottom
-            $global:objShape.pLeft = $pLeft
+            If($strSwitch -eq ($ShapesTbl.Controls | Where-Object -FilterScript {$_.Name -match $strSwitch}).Name)
+            {
+                $global:objShape.Point = $Orgpoint
+                $global:objShape.MainPath = $MainPath
+                $global:objShape.ShadowPath = $ShadowPath
+                $global:objShape.pTopPath = $pTopPath
+                $global:objShape.pRightPath = $pRightPath
+                $global:objShape.pBottomPath = $pBottomPath
+                $global:objShape.pLeftPath = $pLeftPath
+                $global:objShape.Mainregion = $MainRegion
+                $global:objShape.Shadowregion = $ShadowRegion
+                $global:objShape.pTopRegion = $ptopRegion
+                $global:objShape.pRightRegion = $pRightRegion
+                $global:objShape.pBottomRegion = $pBottomRegion 
+                $global:objShape.pLeftRegion = $pLeftRegion
+                $global:objShape.TopPointGB = $TopPointGB
+                $global:objShape.BottomPointGB = $BottomPointGB
+                $global:objShape.PCenter = $pCenter
+                $global:objShape.pTop = $pTop
+                $global:objShape.pRight = $pRight
+                $global:objShape.pBottom = $pBottom
+                $global:objShape.pLeft = $pLeft
+            }
+            Else
+            {
+                
+            }
         }
     }
     If ($MainObject.arrRegions.count -gt 0)
@@ -574,9 +684,9 @@ Function funDPanAddpaint($s,$e){
             }
             If($arrItem.Text -ne "")
             {
-                New-Variable -Force -Name "$($arrItem.Name)$cTPath" -Value (New-Object Drawing2D.GraphicsPath) 
-                $TextPath = Get-Variable -ValueOnly -Include "$($arrItem.Name)$cTPath"
-                $pTemp = $pp1 = New-Object Point ($arrItem.Pcenter.X - $arrItem.pTXDiffer) , ($arrItem.Pcenter.Y - $arrItem.pTYDiffer)
+                New-Variable -Force -Name "$($arrItem.Name)$iTPath" -Value (New-Object Drawing2D.GraphicsPath) 
+                $TextPath = Get-Variable -ValueOnly -Include "$($arrItem.Name)$iTPath"
+                $pTemp = New-Object Point ($arrItem.Pcenter.X - $arrItem.pTXDiffer) , ($arrItem.Pcenter.Y - $arrItem.pTYDiffer)
                 If($Global:SelText -eq $arrItem)
                 {
                     $TextPath.AddString($arrItem.Text, $fonty.FontFamily , $BoldFont, $TextSize ,$pTemp, [StringFormat]::GenericDefault) 
@@ -659,14 +769,95 @@ Function funDPanAddpaint($s,$e){
                 {               
                     $e.Graphics.DrawPath($mypenCap, $MainPath)
                 }
+                If($arrConnItem.Text -ne "")
+                {
+                    New-Variable -Force -Name "$($arrConnItem.Name)$cTPathObj" -Value (New-Object Drawing2D.GraphicsPath) 
+                    $TextPath = Get-Variable -ValueOnly -Include "$($arrConnItem.Name)$cTPathObj"
+                    $pTemp = New-Object Point ($arrConnItem.Pcenter.X - $arrConnItem.pTXDiffer) , ($arrConnItem.Pcenter.Y - $arrConnItem.pTYDiffer)
+                    If($Global:SelPath -eq $arrConnItem)
+                    {
+                        $TextPath.AddString($arrConnItem.Text, $fonty.FontFamily , $BoldFont, $TextSize ,$pTemp, [StringFormat]::GenericDefault) 
+                        $e.Graphics.FillPath($SelTextBrush,$TextPath)            
+                    }
+                    Else
+                    {
+                        $TextPath.AddString($arrConnItem.Text, $fonty.FontFamily , $RegularFont, $TextSize ,$pTemp, [StringFormat]::GenericDefault) 
+                        $e.Graphics.FillPath($TextBrush,$TextPath)
+                    } 
+                    $arrConnItem.TextPath = $TextPath               
+    #                $e.Graphics.DrawString($arrItem.Text, $fonty , $myBrush, $arrItem.Pcenter.X,$arrItem.pCenter.y, [StringFormat]::GenericDefault)  
+                }
+            }
+            If($arrItem.SubProcess -Or $arrItem.Icon -ne "")
+            {
+                If($arrItem.Type -eq $Square.Name)
+                {
+                    If($arrItem.SubProcess){
+                        $e.Graphics.DrawImage($SubProcess.Image,$arrItem.pLeft.x + ($SubProcess.Width/$intDevideBy2), $arrItem.pCenter.y - $SubProcess.Height + $arcSize)
+                    }
+                    If($arrItem.Icon -ne "")
+                    {
+                        $TempObj = Get-Variable -ValueOnly -Include $arrItem.Icon
+                        $e.Graphics.DrawImage($TempObj.Image,($arrItem.pCenter.x - $SquareSize) + $TempObj.Width, ($arrItem.pCenter.y - $squareSizeY) + $arcSize)
+                    }
+                }
+                Else
+                {
+                    If($arrItem.Type -eq $Dimond.Name)
+                    {
+                        $TempObj = Get-Variable -ValueOnly -Include $arrItem.Icon
+                        $e.Graphics.DrawImage($TempObj.Image,$arrItem.pTop.x - $DimondSize , $arrItem.pLeft.y - $DimondSize)
+                    }
+                        ElseIf($arrItem.Type -eq $StartCircle.Name -Or $arrItem.Type -eq $InterCircle.Name)
+                        {
+                            $TempObj = Get-Variable -ValueOnly -Include $arrItem.Icon
+                            $e.Graphics.DrawImage($TempObj.Image,($arrItem.pTop.x - $StartCircleSize) - $arcSize,( $arrItem.pCenter.y - $StartCircleSize)-$arcSize)
+                        }
+                    Else
+                    {
+                        $TempObj = Get-Variable -ValueOnly -Include $arrItem.Icon
+                        $e.Graphics.DrawImage($TempObj.Image,($arrItem.pTop.x - $DataObjSize) ,( $arrItem.pCenter.y - $DataObjSizeX))    
+                    }
+                }
             }            
         }
-    }           
+    }
+    If ($MainObject.arrGroups.count -gt 0)
+    {        
+        for($r = 0; $r -lt $MainObject.arrGroups.Count; $r++)
+        {
+            $arrGroItem = $MainObject.arrGroups[$r]
+            If($arrGroItem.TopPath.isVisible($DesktopPan.PointToClient([Cursor]::Position)))
+            {
+                
+            }
+            Else
+            {
+                $e.Graphics.DrawPath($arrGroItem.MainPen, $arrGroItem.TopPath)
+                $e.Graphics.DrawPath($arrGroItem.MainPen, $arrGroItem.RightPath)
+                $e.Graphics.DrawPath($arrGroItem.MainPen, $arrGroItem.BottomPath)
+                $e.Graphics.DrawPath($arrGroItem.MainPen, $arrGroItem.LeftPath)
+                $e.Graphics.DrawPath($TextPen, $arrGroItem.TAreaPath)
+#                $PathGraBrush = New-Object Drawing2D.LinearGradientBrush ($arrGroItem.BottomPointGB,$arrGroItem.TopPointGB,$arrItem.fillColor,[color]::White)
+#                $e.Graphics.FillPath($PathGraBrush,$arrGroItem.MainPath)
+            }
+
+        }
+    }                
 }
 
 Function funDPanMouseUp{
     $Global:bolMouseMove = $false
     $Global:bolMouseDown = $false
+    $SubIconTbl.Controls | Where-Object -FilterScript {$_.Checked} | % {   
+        $_.checked = $false
+        $Global:typing = $Null
+        $Global:SelText = $Null
+        $Global:SelPath = $Null
+        $DesktopPan.Invalidate()
+    }
+
+
     If ($Global:objShape -ne $null)
     {
         foreach($cont in $ShapesTbl.Controls)
@@ -677,7 +868,11 @@ Function funDPanMouseUp{
 }
 
 Function funDPanMouseMove{
-    If(($Global:bolMouseDown) -and ($global:objShape -ne $null) -and !$SolidLine.Checked -and !$DashedLine.Checked -and !$dottedline.Checked)
+    If(
+        ($Global:bolMouseDown) -and 
+        ($global:objShape -ne $null -or $Global:SelPath -ne $Null) -and 
+        !$SolidLine.Checked -and !$DashedLine.Checked -and !$dottedline.Checked
+      )
     {
         $Global:bolMouseMove = $true
         $mouse = [Cursor]::Position
@@ -712,6 +907,7 @@ Function funLoadBtn{
         $namelbl.Text = ((Get-Item $dialog.FileName).Name).Replace(".ate",'')
         foreach($objLoad in $objPSNewShape.arrRegions)
         {
+            $global:Class = $objLoad.Class
             $global:serializedObj = $objLoad.Type
             $Global:intIterate = $objLoad.intIterate
             $global:SerializedP.X = $objLoad.pCenter.X
@@ -728,7 +924,10 @@ Function funLoadBtn{
                 {
                     $MainObject.arrRegions[$i].Text = $objLoad.Text
                     $MainObject.arrRegions[$i].pTXDiffer = $objLoad.pTXDiffer
-                    $MainObject.arrRegions[$i].pTYDiffer = $objLoad.pTYDiffer                
+                    $MainObject.arrRegions[$i].pTYDiffer = $objLoad.pTYDiffer
+                    $MainObject.arrRegions[$i].Icon = $objLoad.Icon
+                    $MainObject.arrRegions[$i].SubProcess = $objLoad.SubProcess
+                    $MainObject.arrRegions[$i].Condition = $objLoad.Condition               
                     for($c = 0; $c -lt $objLoad.ConnArr.Count; $c++)
                     {
                         $points = [ArrayList]@()
@@ -746,8 +945,10 @@ Function funLoadBtn{
                             ConnPoint = $objLoad.ConnArr[$c].ConnPoint
                             Path = $objLoad.ConnArr[$c].Path
                             Text = $objLoad.ConnArr[$c].Text
-                            pTextX = $objLoad.ConnArr[$c].TextX
-                            pTextY = $objLoad.ConnArr[$c].TextY
+                            pCenter = $objLoad.ConnArr[$c].pCenter
+                            TextPath = $objLoad.ConnArr[$c].TextPath
+                            pTXDiffer = $objLoad.ConnArr[$c].pTXDiffer
+                            pTYDiffer = $objLoad.ConnArr[$c].pTYDiffer
                             LineStyle = $objLoad.ConnArr[$c].LineStyle
                         } 
                         $MainObject.arrRegions[$i].ConnArr.Add($connObj)
@@ -801,7 +1002,7 @@ Function funDisAllShapes($O) {
     }
     foreach($obj in $SubIconTbl.Controls)
     {
-        If($obj -ne $O)
+        If($obj -ne $O -and $obj.checked)
         {
             $obj.checked = $false   
         }  
@@ -820,7 +1021,7 @@ Function funDisAllShapes($O) {
             $obj.checked = $false   
         }  
     } 
-    foreach($obj in  $Groups.Controls)
+    foreach($obj in  $GroupsTbl.Controls)
     {
         If($obj -ne $O)
         {
@@ -833,6 +1034,7 @@ Function funDisAllShapes($O) {
     } 
     If(
         !($LinesTbl.Controls | Where-Object -FilterScript {$_.Checked}) -and 
+        !($GroupsTbl.Controls | Where-Object -FilterScript {$_.Checked}) -and 
         !($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked})
       )
     {
@@ -904,9 +1106,9 @@ $DelShape.Add_Click({
 
 $SolidLine = New-Object CheckBox
 $SolidLine.Size = New-Object Size(100,25)
-$SolidLine.name = 'LightMess'
+$SolidLine.name = 'SolidLine'
 $SolidLine.Tag = 0
-$SolidLine.Image = imgStreamer "D:\ATE\IT\Root\images\SolidLine.png"
+$SolidLine.Image = funImgStreamer "D:\ATE\IT\Root\images\SolidLine.png"
 $SolidLine.Appearance = 1
 $SolidLine.FlatStyle = 2
 $SolidLine.Add_click({
@@ -917,8 +1119,8 @@ $SolidLine.Add_click({
 $DashedLine = New-Object CheckBox
 $DashedLine.Size = New-Object Size(100,25)
 $DashedLine.Tag = 1
-$DashedLine.name = 'LightMess'
-$DashedLine.Image = imgStreamer "D:\ATE\IT\Root\images\DashedLine.png"
+$DashedLine.name = 'DashedLine'
+$DashedLine.Image = funImgStreamer "D:\ATE\IT\Root\images\DashedLine.png"
 $DashedLine.Appearance = 1
 $DashedLine.FlatStyle = 2
 $DashedLine.Add_click({
@@ -929,8 +1131,8 @@ $DashedLine.Add_click({
 $DottedLine = New-Object CheckBox
 $DottedLine.Size = New-Object Size(100,25)
 $DottedLine.Tag = 2
-$DottedLine.name = 'LightMess'
-$DottedLine.Image = imgStreamer "D:\ATE\IT\Root\images\DottedLine.png"
+$DottedLine.name = 'DottedLine'
+$DottedLine.Image = funImgStreamer "D:\ATE\IT\Root\images\DottedLine.png"
 $DottedLine.Appearance = 1
 $DottedLine.FlatStyle = 2
 $DottedLine.Add_click({
@@ -940,8 +1142,8 @@ $DottedLine.Add_click({
 
 $MessSubIcon = New-Object CheckBox
 $MessSubIcon.Size = New-Object Size($subIconButSize,$subIconButSize)
-$MessSubIcon.name = 'LightMess'
-$MessSubIcon.Image = imgStreamer "D:\ATE\IT\Root\images\LightMess.png"
+$MessSubIcon.name = 'MessSubIcon'
+$MessSubIcon.Image = funImgStreamer "D:\ATE\IT\Root\images\LightMess.png"
 $MessSubIcon.Appearance = 1
 $MessSubIcon.FlatStyle = 2
 $MessSubIcon.Add_click({
@@ -951,8 +1153,8 @@ $MessSubIcon.Add_click({
 
 $DarkMessSubIcon = New-Object CheckBox
 $DarkMessSubIcon.Size = New-Object Size($subIconButSize,$subIconButSize)
-$DarkMessSubIcon.name = 'DarktMess'
-$DarkMessSubIcon.Image = imgStreamer "D:\ATE\IT\Root\images\DarkMess.png"
+$DarkMessSubIcon.name = 'DarkMessSubIcon'
+$DarkMessSubIcon.Image = funImgStreamer "D:\ATE\IT\Root\images\DarkMess.png"
 $DarkMessSubIcon.Appearance = 1
 $DarkMessSubIcon.FlatStyle = 2
 $DarkMessSubIcon.Add_click({
@@ -962,8 +1164,8 @@ $DarkMessSubIcon.Add_click({
 
 $GearSubIcon = New-Object CheckBox
 $GearSubIcon.Size = New-Object Size($subIconButSize,$subIconButSize)
-$GearSubIcon.name = 'Gear'
-$GearSubIcon.Image = imgStreamer "D:\ATE\IT\Root\images\Gear.png"
+$GearSubIcon.name = 'GearSubIcon'
+$GearSubIcon.Image = funImgStreamer "D:\ATE\IT\Root\images\Gear.png"
 $GearSubIcon.Appearance = 1
 $GearSubIcon.FlatStyle = 2
 $GearSubIcon.Add_click({
@@ -974,8 +1176,8 @@ $GearSubIcon.Add_click({
 
 $ClockSubIcon = New-Object CheckBox
 $ClockSubIcon.Size = New-Object Size($subIconButSize,$subIconButSize)
-$ClockSubIcon.name = 'Clock'
-$ClockSubIcon.Image = imgStreamer "D:\ATE\IT\Root\images\Clock.png"
+$ClockSubIcon.name = 'ClockSubIcon'
+$ClockSubIcon.Image = funImgStreamer "D:\ATE\IT\Root\images\Clock.png"
 $ClockSubIcon.Appearance = 1
 $ClockSubIcon.FlatStyle = 2
 $ClockSubIcon.Add_click({
@@ -983,10 +1185,21 @@ $ClockSubIcon.Add_click({
     funDisAllShapes $ClockSubIcon
 })
 
+$InnerCircle = New-Object CheckBox
+$InnerCircle.Size = New-Object Size($subIconButSize,$subIconButSize)
+$InnerCircle.name = 'InnerCircle'
+$InnerCircle.Image = funImgStreamer "D:\ATE\IT\Root\images\InnerCircle.png"
+$InnerCircle.Appearance = 1
+$InnerCircle.FlatStyle = 2
+$InnerCircle.Add_click({
+    If(!$This.Checked){$DesktopPan.Focus()}
+    funDisAllShapes $InnerCircle
+})
+
 $CrossSubIcon = New-Object CheckBox
 $CrossSubIcon.Size = New-Object Size($subIconButSize,$subIconButSize)
-$CrossSubIcon.name = 'Clock'
-$CrossSubIcon.Image = imgStreamer "D:\ATE\IT\Root\images\Cross.png"
+$CrossSubIcon.name = 'CrossSubIcon'
+$CrossSubIcon.Image = funImgStreamer "D:\ATE\IT\Root\images\Cross.png"
 $CrossSubIcon.Appearance = 1
 $CrossSubIcon.FlatStyle = 2
 $CrossSubIcon.Add_click({
@@ -997,8 +1210,8 @@ $CrossSubIcon.Add_click({
 
 $SinStartSubIcon = New-Object CheckBox
 $SinStartSubIcon.Size = New-Object Size($subIconButSize,$subIconButSize)
-$SinStartSubIcon.name = 'Clock'
-$SinStartSubIcon.Image = imgStreamer "D:\ATE\IT\Root\images\SigStart.png"
+$SinStartSubIcon.name = 'SinStartSubIcon'
+$SinStartSubIcon.Image = funImgStreamer "D:\ATE\IT\Root\images\SigStart.png"
 $SinStartSubIcon.Appearance = 1
 $SinStartSubIcon.FlatStyle = 2
 $SinStartSubIcon.Add_click({
@@ -1008,8 +1221,8 @@ $SinStartSubIcon.Add_click({
 
 $ConSubIcon = New-Object CheckBox
 $ConSubIcon.Size = New-Object Size($subIconButSize,$subIconButSize)
-$ConSubIcon.name = 'Clock'
-$ConSubIcon.Image = imgStreamer "D:\ATE\IT\Root\images\Condition.png"
+$ConSubIcon.name = 'ConSubIcon'
+$ConSubIcon.Image = funImgStreamer "D:\ATE\IT\Root\images\Condition.png"
 $ConSubIcon.Appearance = 1
 $ConSubIcon.FlatStyle = 2
 $ConSubIcon.Add_click({
@@ -1019,8 +1232,8 @@ $ConSubIcon.Add_click({
 
 $SigEndSubIcon = New-Object CheckBox
 $SigEndSubIcon.Size = New-Object Size($subIconButSize,$subIconButSize)
-$SigEndSubIcon.name = 'Clock'
-$SigEndSubIcon.Image = imgStreamer "D:\ATE\IT\Root\images\SigEnd.png"
+$SigEndSubIcon.name = 'SigEndSubIcon'
+$SigEndSubIcon.Image = funImgStreamer "D:\ATE\IT\Root\images\SigEnd.png"
 $SigEndSubIcon.Appearance = 1
 $SigEndSubIcon.FlatStyle = 2
 $SigEndSubIcon.Add_click({
@@ -1030,8 +1243,8 @@ $SigEndSubIcon.Add_click({
 
 $ErrEndSubIcon = New-Object CheckBox
 $ErrEndSubIcon.Size = New-Object Size($subIconButSize,$subIconButSize)
-$ErrEndSubIcon.name = 'Clock'
-$ErrEndSubIcon.Image = imgStreamer "D:\ATE\IT\Root\images\ErrEnd.png"
+$ErrEndSubIcon.name = 'ErrEndSubIcon'
+$ErrEndSubIcon.Image = funImgStreamer "D:\ATE\IT\Root\images\ErrEnd.png"
 $ErrEndSubIcon.Appearance = 1
 $ErrEndSubIcon.FlatStyle = 2
 $ErrEndSubIcon.Add_click({
@@ -1041,8 +1254,8 @@ $ErrEndSubIcon.Add_click({
 
 $ErrorSubIcon = New-Object CheckBox
 $ErrorSubIcon.Size = New-Object Size($subIconButSize,$subIconButSize)
-$ErrorSubIcon.name = 'Clock'
-$ErrorSubIcon.Image = imgStreamer "D:\ATE\IT\Root\images\Error.png"
+$ErrorSubIcon.name = 'ErrorSubIcon'
+$ErrorSubIcon.Image = funImgStreamer "D:\ATE\IT\Root\images\Error.png"
 $ErrorSubIcon.Appearance = 1
 $ErrorSubIcon.FlatStyle = 2
 $ErrorSubIcon.Add_click({
@@ -1053,8 +1266,8 @@ $ErrorSubIcon.Add_click({
 
 $EscaSubIcon = New-Object CheckBox
 $EscaSubIcon.Size = New-Object Size($subIconButSize,$subIconButSize)
-$EscaSubIcon.name = 'Clock'
-$EscaSubIcon.Image = imgStreamer "D:\ATE\IT\Root\images\Escalation.png"
+$EscaSubIcon.name = 'EscaSubIcon'
+$EscaSubIcon.Image = funImgStreamer "D:\ATE\IT\Root\images\Escalation.png"
 $EscaSubIcon.Appearance = 1
 $EscaSubIcon.FlatStyle = 2
 $EscaSubIcon.Add_click({
@@ -1064,8 +1277,8 @@ $EscaSubIcon.Add_click({
 
 $EscaEndSubIcon = New-Object CheckBox
 $EscaEndSubIcon.Size = New-Object Size($subIconButSize,$subIconButSize)
-$EscaEndSubIcon.name = 'Clock'
-$EscaEndSubIcon.Image = imgStreamer "D:\ATE\IT\Root\images\EscalEnd.png"
+$EscaEndSubIcon.name = 'EscaEndSubIcon'
+$EscaEndSubIcon.Image = funImgStreamer "D:\ATE\IT\Root\images\EscalEnd.png"
 $EscaEndSubIcon.Appearance = 1
 $EscaEndSubIcon.FlatStyle = 2
 $EscaEndSubIcon.Add_click({
@@ -1075,19 +1288,20 @@ $EscaEndSubIcon.Add_click({
 
 $TextIcon = New-Object CheckBox
 $TextIcon.Size = New-Object Size($subIconButSize,$subIconButSize)
-$TextIcon.name = 'Clock'
-$TextIcon.Image = imgStreamer "D:\ATE\IT\Root\images\T.png"
+$TextIcon.name = 'TextIcon'
+$TextIcon.Image = funImgStreamer "D:\ATE\IT\Root\images\T.png"
 $TextIcon.Appearance = 1
 $TextIcon.FlatStyle = 2
 $TextIcon.Add_click({
     If(!$This.Checked){$DesktopPan.Focus()}
     funDisAllShapes $TextIcon
+    funTextIconClick
 })
 
 $ArrowSubIcon = New-Object CheckBox
 $ArrowSubIcon.Size = New-Object Size($subIconButSize,$subIconButSize)
-$ArrowSubIcon.name = 'Clock'
-$ArrowSubIcon.Image = imgStreamer "D:\ATE\IT\Root\images\Arrow.png"
+$ArrowSubIcon.name = 'ArrowSubIcon'
+$ArrowSubIcon.Image = funImgStreamer "D:\ATE\IT\Root\images\Arrow.png"
 $ArrowSubIcon.Appearance = 1
 $ArrowSubIcon.FlatStyle = 2
 $ArrowSubIcon.Add_click({
@@ -1098,8 +1312,8 @@ $ArrowSubIcon.Add_click({
 
 $FArrowSubIcon = New-Object CheckBox
 $FArrowSubIcon.Size = New-Object Size($subIconButSize,$subIconButSize)
-$FArrowSubIcon.name = 'Clock'
-$FArrowSubIcon.Image = imgStreamer "D:\ATE\IT\Root\images\FArrow.png"
+$FArrowSubIcon.name = 'FArrowSubIcon'
+$FArrowSubIcon.Image = funImgStreamer "D:\ATE\IT\Root\images\FArrow.png"
 $FArrowSubIcon.Appearance = 1
 $FArrowSubIcon.FlatStyle = 2
 $FArrowSubIcon.Add_click({
@@ -1109,8 +1323,8 @@ $FArrowSubIcon.Add_click({
 
 $UserSubIcon = New-Object CheckBox
 $UserSubIcon.Size = New-Object Size($subIconButSize,$subIconButSize)
-$UserSubIcon.name = 'Clock'
-$UserSubIcon.Image = imgStreamer "D:\ATE\IT\Root\images\User.png"
+$UserSubIcon.name = 'UserSubIcon'
+$UserSubIcon.Image = funImgStreamer "D:\ATE\IT\Root\images\User.png"
 $UserSubIcon.Appearance = 1
 $UserSubIcon.FlatStyle = 2
 $UserSubIcon.Add_click({
@@ -1118,21 +1332,21 @@ $UserSubIcon.Add_click({
     funDisAllShapes $UserSubIcon
 })
 
-$PlusSubIcon = New-Object CheckBox
-$PlusSubIcon.Size = New-Object Size($subIconButSize,$subIconButSize)
-$PlusSubIcon.name = 'Clock'
-$PlusSubIcon.Image = imgStreamer "D:\ATE\IT\Root\images\Plus.png"
-$PlusSubIcon.Appearance = 1
-$PlusSubIcon.FlatStyle = 2
-$PlusSubIcon.Add_click({
+$SubProcess = New-Object CheckBox
+$SubProcess.Size = New-Object Size($subIconButSize,$subIconButSize)
+$SubProcess.name = 'SubProcess'
+$SubProcess.Image = funImgStreamer "D:\ATE\IT\Root\images\Plus.png"
+$SubProcess.Appearance = 1
+$SubProcess.FlatStyle = 2
+$SubProcess.Add_click({
     If(!$This.Checked){$DesktopPan.Focus()}
-    funDisAllShapes $PlusSubIcon
+    funDisAllShapes $SubProcess
 })
 
 $Play = New-Object CheckBox
 $Play.Size = New-Object Size($subIconButSize,$subIconButSize)
-$Play.name = 'Clock'
-$Play.Image = imgStreamer "D:\ATE\IT\Root\images\Play.png"
+$Play.name = 'Play'
+$Play.Image = funImgStreamer "D:\ATE\IT\Root\images\Play.png"
 $Play.Appearance = 1
 $Play.FlatStyle = 2
 $Play.Add_click({
@@ -1143,7 +1357,7 @@ $Play.Add_click({
 $Record = New-Object CheckBox
 $Record.Size = New-Object Size($subIconButSize,$subIconButSize)
 $Record.name = 'Record'
-$Record.Image = imgStreamer "D:\ATE\IT\Root\images\Record.png"
+$Record.Image = funImgStreamer "D:\ATE\IT\Root\images\Record.png"
 $Record.Appearance = 1
 $Record.FlatStyle = 2
 $Record.Add_click({
@@ -1153,8 +1367,8 @@ $Record.Add_click({
 
 $Stop = New-Object CheckBox
 $Stop.Size = New-Object Size($subIconButSize,$subIconButSize)
-$Stop.name = 'Record'
-$Stop.Image = imgStreamer "D:\ATE\IT\Root\images\Stop.png"
+$Stop.name = 'Stop'
+$Stop.Image = funImgStreamer "D:\ATE\IT\Root\images\Stop.png"
 $Stop.Appearance = 1
 $Stop.FlatStyle = 2
 $Stop.Add_click({
@@ -1164,8 +1378,8 @@ $Stop.Add_click({
 
 $ZoomOut = New-Object CheckBox
 $ZoomOut.Size = New-Object Size($subIconButSize,$subIconButSize)
-$ZoomOut.name = 'Record'
-$ZoomOut.Image = imgStreamer "D:\ATE\IT\Root\images\ZoomOut.png"
+$ZoomOut.name = 'ZoomOut'
+$ZoomOut.Image = funImgStreamer "D:\ATE\IT\Root\images\ZoomOut.png"
 $ZoomOut.Appearance = 1
 $ZoomOut.FlatStyle = 2
 $ZoomOut.Add_click({
@@ -1176,8 +1390,8 @@ $ZoomOut.Add_click({
 
 $Magnifier = New-Object CheckBox
 $Magnifier.Size = New-Object Size($subIconButSize,$subIconButSize)
-$Magnifier.name = 'Record'
-$Magnifier.Image = imgStreamer "D:\ATE\IT\Root\images\Magnifier.png"
+$Magnifier.name = 'Magnifier'
+$Magnifier.Image = funImgStreamer "D:\ATE\IT\Root\images\Magnifier.png"
 $Magnifier.Appearance = 1
 $Magnifier.FlatStyle = 2
 $Magnifier.Add_click({
@@ -1188,8 +1402,8 @@ $Magnifier.Add_click({
 
 $ZoomIn = New-Object CheckBox
 $ZoomIn.Size = New-Object Size($subIconButSize,$subIconButSize)
-$ZoomIn.name = 'Record'
-$ZoomIn.Image = imgStreamer "D:\ATE\IT\Root\images\ZoomIn.png"
+$ZoomIn.name = 'ZoomIn'
+$ZoomIn.Image = funImgStreamer "D:\ATE\IT\Root\images\ZoomIn.png"
 $ZoomIn.Appearance = 1
 $ZoomIn.FlatStyle = 2
 $ZoomIn.Add_click({
@@ -1202,7 +1416,7 @@ $ZoomIn.Add_click({
 $StartCircle = New-Object CheckBox
 $StartCircle.Size = New-Object Size($ShapesSize,$ShapesSize)
 $StartCircle.Name = 'StartCircle'
-$StartCircle.Image = imgStreamer "D:\ATE\IT\Root\images\StartCircle.png"
+$StartCircle.Image = funImgStreamer "D:\ATE\IT\Root\images\StartCircle.png"
 #$StartCircle.Location = New-Object System.Drawing.Size(20,100) 
 $StartCircle.Appearance = 1
 $StartCircle.FlatStyle = 2
@@ -1218,7 +1432,7 @@ $StartCircle.Add_click({
 $InterCircle = New-Object CheckBox
 $InterCircle.Size = New-Object Size($ShapesSize,$ShapesSize)
 $InterCircle.name = 'InterCircle'
-$InterCircle.Image= imgStreamer "D:\ATE\IT\Root\images\InterCircle.png"
+$InterCircle.Image= funImgStreamer "D:\ATE\IT\Root\images\InterCircle.png"
 #$StartCircle.Location = New-Object System.Drawing.Size(20,100) 
 $InterCircle.Appearance = 1
 $InterCircle.FlatStyle = 2
@@ -1236,7 +1450,7 @@ $InterCircle.Add_click({
 $Dimond = New-Object CheckBox
 $Dimond.Size = New-Object Size($ShapesSize,$ShapesSize)
 $Dimond.name = 'Dimond'
-$Dimond.Image = imgStreamer "D:\ATE\IT\Root\images\VDimond.png"
+$Dimond.Image = funImgStreamer "D:\ATE\IT\Root\images\VDimond.png"
 $Dimond.ImageAlign = 'MiddleCenter'
 #$Dimond.Location = New-Object System.Drawing.Size(20,200) 
 $Dimond.Appearance = 1
@@ -1251,7 +1465,7 @@ $Dimond.Padding = 5
 $Square = New-Object CheckBox
 $Square.Size = New-Object Size($ShapesSize,$ShapesSize)
 $Square.name = 'Square'
-$Square.Image = imgStreamer "D:\ATE\IT\Root\images\VSquare.png"
+$Square.Image = funImgStreamer "D:\ATE\IT\Root\images\VSquare.png"
 $Square.ImageAlign = 'MiddleCenter'
 $Square.Appearance = 1
 $Square.FlatStyle = 2
@@ -1261,23 +1475,23 @@ $Square.Add_click({
     funDisAllShapes $Square
 })
 
-$DataObj = New-Object CheckBox
-$DataObj.Size = New-Object Size($ShapesSize,$ShapesSize)
-$DataObj.name = 'DataObject'
-$DataObj.Image = imgStreamer "D:\ATE\IT\Root\images\DataObj.png"
-$DataObj.ImageAlign = 'MiddleCenter'
-$DataObj.Appearance = 1
-$DataObj.FlatStyle = 2
-$DataObj.Padding = 5
-$DataObj.Add_click({
+$DataObject = New-Object CheckBox
+$DataObject.Size = New-Object Size($ShapesSize,$ShapesSize)
+$DataObject.name = 'DataObject'
+$DataObject.Image = funImgStreamer "D:\ATE\IT\Root\images\DataObj.png"
+$DataObject.ImageAlign = 'MiddleCenter'
+$DataObject.Appearance = 1
+$DataObject.FlatStyle = 2
+$DataObject.Padding = 5
+$DataObject.Add_click({
     If(!$This.Checked){$DesktopPan.Focus()}
-    funDisAllShapes $DataObj
+    funDisAllShapes $DataObject
 })
 
 $Pool = New-Object CheckBox
 $Pool.Size = New-Object Size($GroupSizeX,$GroupSizeY)
 $Pool.name = 'Pool'
-$Pool.Image = imgStreamer "D:\ATE\IT\Root\images\Pool.png"
+$Pool.Image = funImgStreamer "D:\ATE\IT\Root\images\Pool.png"
 $Pool.ImageAlign = 'MiddleCenter'
 $Pool.Appearance = 1
 $Pool.FlatStyle = 2
@@ -1289,8 +1503,8 @@ $Pool.Add_click({
 
 $Lane = New-Object CheckBox
 $Lane.Size = New-Object Size($GroupSizeX,$GroupSizeY)
-$Lane.name = 'Pool'
-$Lane.Image = imgStreamer "D:\ATE\IT\Root\images\Lane.png"
+$Lane.name = 'Lane'
+$Lane.Image = funImgStreamer "D:\ATE\IT\Root\images\Lane.png"
 $Lane.ImageAlign = 'MiddleCenter'
 $Lane.Appearance = 1
 $Lane.FlatStyle = 2
@@ -1303,20 +1517,20 @@ $Lane.Add_click({
 $Group = New-Object CheckBox
 $Group.Size = New-Object Size($GroupSizeX,$GroupSizeY)
 $Group.name = 'Group'
-$Group.Image = imgStreamer "D:\ATE\IT\Root\images\Group.png"
+$Group.Image = funImgStreamer "D:\ATE\IT\Root\images\Group.png"
 $Group.ImageAlign = 'MiddleCenter'
 $Group.Appearance = 1
 $Group.FlatStyle = 2
 $Group.Padding = 5
 $Group.Add_click({
     If(!$This.Checked){$DesktopPan.Focus()}
-    funDisAllShapes $Pool
+    funDisAllShapes $Group
 })
 
 $Annotation = New-Object CheckBox
 $Annotation.Size = New-Object Size($GroupSizeX,$subIconButSize)
 $Annotation.name = 'Annotation'
-$Annotation.Image = imgStreamer "D:\ATE\IT\Root\images\Annotation.png"
+$Annotation.Image = funImgStreamer "D:\ATE\IT\Root\images\Annotation.png"
 $Annotation.ImageAlign = 'MiddleCenter'
 $Annotation.Appearance = 1
 $Annotation.FlatStyle = 2
@@ -1419,7 +1633,7 @@ $UndoBtn.name = "Undo"
 $UndoBtn.BackColor = "#d2d4d6"
 $UndoBtn.text = ""
 $UndoBtn.width = 30
-$UndoBtn.image = imgStreamer "D:\ATE\IT\Root\images\Undo.png"
+$UndoBtn.image = funImgStreamer "D:\ATE\IT\Root\images\Undo.png"
 $UndoBtn.height = 30
 $UndoBtn.Font = 'Microsoft Sans Serif,10'
 $UndoBtn.ForeColor = "#000"
@@ -1434,7 +1648,7 @@ $RedoBtn.name = "redo"
 $RedoBtn.BackColor = "#d2d4d6"
 $RedoBtn.text = ""
 $RedoBtn.width = 30
-$RedoBtn.image = imgStreamer "D:\ATE\IT\Root\images\redo.png"
+$RedoBtn.image = funImgStreamer "D:\ATE\IT\Root\images\redo.png"
 $RedoBtn.height = 30
 $RedoBtn.Font = 'Microsoft Sans Serif,10'
 $RedoBtn.ForeColor = "#000"
@@ -1495,13 +1709,13 @@ $MagnifierTbl.AutoSize = $true
 $MagnifierTbl.ColumnCount = 3
 #$LaunchTbl.CellBorderStyle = 2
 
-$Groups = New-Object TableLayoutPanel
-$Groups.BackColor = ''
+$GroupsTbl = New-Object TableLayoutPanel
+$GroupsTbl.BackColor = ''
 #$MagnifierTbl.Size = New-Object System.Drawing.Size(100,700)
 #$MagnifierTbl.Location = New-Object System.Drawing.size(2,100)
 #$MagnifierTbl.Dock = [System.Windows.Forms.DockStyle]::Fill
-$Groups.AutoSize = $true
-$Groups.ColumnCount = 1
+$GroupsTbl.AutoSize = $true
+$GroupsTbl.ColumnCount = 1
 #$LaunchTbl.CellBorderStyle = 2
 
 $LinesTbl = New-Object TableLayoutPanel
@@ -1536,7 +1750,7 @@ $ShapesTbl.Controls.Add($StartCircle)
 $ShapesTbl.Controls.Add($InterCircle)
 $ShapesTbl.Controls.Add($Dimond)
 $ShapesTbl.Controls.Add($Square)
-$ShapesTbl.Controls.Add($DataObj)
+$ShapesTbl.Controls.Add($DataObject)
 
 
 #$DesktopPan.Controls.Add()
@@ -1547,6 +1761,8 @@ $SubIconTbl.Controls.Add($GearSubIcon)
 $SubIconTbl.Controls.Add($ClockSubIcon)
 $SubIconTbl.Controls.Add($CrossSubIcon)
 $SubIconTbl.Controls.Add($TextIcon)
+$SubIconTbl.Controls.Add($InnerCircle)
+
 #$SubIconTbl.Controls.Add($SinStartSubIcon)
 #$SubIconTbl.Controls.Add($ConSubIcon)
 #$SubIconTbl.Controls.Add($SigEndSubIcon)
@@ -1557,7 +1773,7 @@ $SubIconTbl.Controls.Add($TextIcon)
 #$SubIconTbl.Controls.Add($ArrowSubIcon)
 #$SubIconTbl.Controls.Add($FArrowSubIcon)
 $SubIconTbl.Controls.Add($UserSubIcon)
-$SubIconTbl.Controls.Add($PlusSubIcon)
+$SubIconTbl.Controls.Add($SubProcess)
 
 $LinesTbl.Controls.Add($SolidLine)
 $LinesTbl.Controls.Add($DashedLine)
@@ -1571,9 +1787,9 @@ $MagnifierTbl.Controls.Add($ZoomOut)
 $MagnifierTbl.Controls.Add($Magnifier)
 $MagnifierTbl.Controls.Add($ZoomIn)
 
-$Groups.Controls.Add($pool)
-$Groups.Controls.Add($Lane)
-$Groups.Controls.Add($Group)
+$GroupsTbl.Controls.Add($pool)
+$GroupsTbl.Controls.Add($Lane)
+$GroupsTbl.Controls.Add($Group)
 
 $TopMenuTbl.Controls.Add($namelbl)
 $TopMenuTbl.Controls.Add($Filenamelbl)
@@ -1597,7 +1813,7 @@ $MainTbl.Controls.Add($ShapesTbl,0,1)
 $MainTbl.Controls.Add($SubIconTbl,0,2)
 $MainTbl.Controls.Add($LinesTbl,0,3)
 $MainTbl.Controls.Add($butsTbl,0,4)
-$MainTbl.Controls.Add($Groups,0,5)
+$MainTbl.Controls.Add($GroupsTbl,0,5)
 $MainTbl.Controls.Add($Annotation,0,6)
 $MainTbl.SetRowSpan($DesktopPan,6)
 
