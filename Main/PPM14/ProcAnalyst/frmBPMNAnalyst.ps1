@@ -1059,6 +1059,60 @@ function funClearAll{
     }   
 } 
 
+#-----------------------------EndOfFunction
+$LinesTbl = New-Object TableLayoutPanel
+$LinesTbl.BackColor = ''
+$LinesTbl.Name = "LinesTbl"
+#$SubIconTbl.Size = New-Object System.Drawing.Size(100,700)
+#$SubIconTbl.Location = New-Object System.Drawing.size(2,100)
+#$SubIconTbl.Dock = [System.Windows.Forms.DockStyle]::Fill
+$LinesTbl.AutoSize = $true
+$LinesTbl.ColumnCount = 1
+#$SubIconTbl.CellBorderStyle = 2
+Write-Host $ChkBoxes
+    If (Test-Path $ChkBoxes )
+    {
+        #$depcode = $_.Name
+        $ScriptCSV = Import-Csv $ChkBoxes
+        # $DepCodeFol = $_.Name
+        $ScriptCSV | % {  
+            #$ScriptName = $_.Name                     
+            New-Variable -Force -Name $_.chkBoxName -Value (New-Object $_.obj)
+            $thisCheckBox = Get-Variable -ValueOnly -Include $_.chkBoxName
+            #$thisButton.Anchor = 'right'
+            $thisCheckBox.Name = $_.chkBoxName
+            # $thisButton.Location = New-Object System.Drawing.Size(175,(35+26*$test))
+            $thisCheckBox.Size = New-Object System.Drawing.Size($_.sizeX,$_.sizeY)
+#           $thisCheckBox.Padding = $_.Padding
+#           $thisCheckBox.Margin = $_.Margin
+            $thisCheckBox.Tag = $_.Tag
+            $thisCheckBox.Image = funImgStreamer "$imgFol\$($_.ImageName)$imgFileExt"
+            $thisCheckBox.ImageAlign = $_.ImageAlign
+            $thisCheckBox.Appearance = $_.Appearance
+            $thisCheckBox.FlatStyle = $_.FlatStyle
+            $thisCheckBox.Add_Click({
+                If(!$This.Checked){$DesktopPan.Focus()}
+                funDisAllShapes  $thisCheckBox 
+            })  
+            $Thistbl = Get-Variable -ValueOnly -Include $_.TableName
+            $Thistbl.controls.add($thisCheckBox)               
+        }                                    
+    }
+        
+
+
+
+
+
+
+
+
+
+
+
+
+#----------------------------Controls
+
 $DesktopPan = New-Object Panel
 #$DesktopPan.BackColor = 'green'
 $DesktopPan.Location = New-Object Size(120,50)
@@ -1098,13 +1152,14 @@ $DelShape.height = 30
 $DelShape.Font = 'Microsoft Sans Serif,10'
 $DelShape.ForeColor = "#000"
 $DelShape.TabIndex = 1
+
 $DelShape.Add_Click({
     funDisAllShapes $ShapesTbl
     funDelShape       
 })
 
-
-$SolidLine = New-Object CheckBox
+<#
+$SolidLine = New-Object System.Windows.Forms.CheckBox
 $SolidLine.Size = New-Object Size(100,25)
 $SolidLine.name = 'SolidLine'
 $SolidLine.Tag = 0
@@ -1115,7 +1170,8 @@ $SolidLine.Add_click({
     If(!$This.Checked){$DesktopPan.Focus()}
     funDisAllShapes $SolidLine
 })
-
+#>
+<#
 $DashedLine = New-Object CheckBox
 $DashedLine.Size = New-Object Size(100,25)
 $DashedLine.Tag = 1
@@ -1127,8 +1183,9 @@ $DashedLine.Add_click({
     If(!$This.Checked){$DesktopPan.Focus()}
     funDisAllShapes $DashedLine
 })
+#>
 
-$DottedLine = New-Object CheckBox
+<#$DottedLine = New-Object CheckBox
 $DottedLine.Size = New-Object Size(100,25)
 $DottedLine.Tag = 2
 $DottedLine.name = 'DottedLine'
@@ -1139,7 +1196,7 @@ $DottedLine.Add_click({
     If(!$This.Checked){$DesktopPan.Focus()}
     funDisAllShapes $DottedLine
 })
-
+#>
 $MessSubIcon = New-Object CheckBox
 $MessSubIcon.Size = New-Object Size($subIconButSize,$subIconButSize)
 $MessSubIcon.name = 'MessSubIcon'
@@ -1718,14 +1775,7 @@ $GroupsTbl.AutoSize = $true
 $GroupsTbl.ColumnCount = 1
 #$LaunchTbl.CellBorderStyle = 2
 
-$LinesTbl = New-Object TableLayoutPanel
-$LinesTbl.BackColor = ''
-#$SubIconTbl.Size = New-Object System.Drawing.Size(100,700)
-#$SubIconTbl.Location = New-Object System.Drawing.size(2,100)
-#$SubIconTbl.Dock = [System.Windows.Forms.DockStyle]::Fill
-$LinesTbl.AutoSize = $true
-$LinesTbl.ColumnCount = 1
-#$SubIconTbl.CellBorderStyle = 2
+
 
 $TopMenuTbl =  New-Object TableLayoutPanel
 $TopMenuTbl.BackColor = ''
@@ -1774,11 +1824,11 @@ $SubIconTbl.Controls.Add($InnerCircle)
 #$SubIconTbl.Controls.Add($FArrowSubIcon)
 $SubIconTbl.Controls.Add($UserSubIcon)
 $SubIconTbl.Controls.Add($SubProcess)
-
+<#
 $LinesTbl.Controls.Add($SolidLine)
 $LinesTbl.Controls.Add($DashedLine)
 $LinesTbl.Controls.Add($DottedLine)
-
+#>
 $LaunchTbl.Controls.Add($Play)
 $LaunchTbl.Controls.Add($Record)
 $LaunchTbl.Controls.Add($Stop)

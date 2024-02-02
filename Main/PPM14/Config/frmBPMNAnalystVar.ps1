@@ -15,6 +15,15 @@ Where-Object {$_.UserID -match $([Environment]::UserName)} | % {$_.mainpath}
 #
 # Define objects and variables customed to this script between the lines
 #///////////////////////////////////////////////////////////////////////////////////
+#$depCode = "PPM14"
+$frmName = (Get-Item $PSCommandPath).Name
+#Write-Host $VarFileCont
+$frmConfFol = ($frmName.Replace($PSFileExten,$EmptyStr)) -replace $VarFileCont,$EmptyStr
+$depCode = "$((Get-Item $PSScriptRoot).Parent.Name)"
+$frmConfigPath = "$confRoot\$depCode\$frmConfFol"
+$imgFol = "$ImageFolder\$depCode\$frmConfFol"
+$ChkBoxes ="$frmConfigPath\ChkBoxes.csv"
+Write-Host $ChkBoxes
 $RegionsClass = "Region"
 $GroupsClass = "Groups"
 $Global:strFileName = $null
@@ -25,7 +34,6 @@ $RegularFont = 0
 $varDebugTrace = 0
 $Logging = $True
 $ImageExt = ".png"
-$depCode = "PPM14"
 $PoolSize = 200
 $LaneSize = 300
 $GroupSize = 400
