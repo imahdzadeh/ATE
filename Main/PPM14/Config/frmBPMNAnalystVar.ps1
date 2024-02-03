@@ -22,8 +22,8 @@ $frmConfFol = ($frmName.Replace($PSFileExten,$EmptyStr)) -replace $VarFileCont,$
 $depCode = "$((Get-Item $PSScriptRoot).Parent.Name)"
 $frmConfigPath = "$confRoot\$depCode\$frmConfFol"
 $imgFol = "$ImageFolder\$depCode\$frmConfFol"
-$ChkBoxes ="$frmConfigPath\ChkBoxes.csv"
-Write-Host $ChkBoxes
+$ControlsCSV ="$frmConfigPath\Controls.csv"
+$TablesCSV ="$frmConfigPath\Tables.csv"
 $RegionsClass = "Region"
 $GroupsClass = "Groups"
 $Global:strFileName = $null

@@ -1,0 +1,43 @@
+obj,TableName,objName,Width,Height,Padding,Margin,Tag,ImageName,ImageAlign,Appearance,FlatStyle,functions,BackColor,ForeColor,TextAlign,Text
+System.Windows.Forms.CheckBox,LinesTbl,SolidLine,100,25,,,0,SolidLine,MiddleCenter,1,2,,,,,
+System.Windows.Forms.CheckBox,LinesTbl,DashedLine,100,25,,,1,DashedLine,MiddleCenter,1,2,,,,,
+System.Windows.Forms.CheckBox,LinesTbl,DottedLine,100,25,,,2,DottedLine,MiddleCenter,1,2,,,,,
+System.Windows.Forms.CheckBox,SubIconTbl,MessSubIcon,30,30,,,0,LightMess,MiddleCenter,1,2,,,,,
+System.Windows.Forms.CheckBox,SubIconTbl,DarkMessSubIcon,30,30,,,0,DarkMess,MiddleCenter,1,2,,,,,
+System.Windows.Forms.CheckBox,SubIconTbl,GearSubIcon,30,30,,,0,Gear,MiddleCenter,1,2,,,,,
+System.Windows.Forms.CheckBox,SubIconTbl,ClockSubIcon,30,30,,,0,Clock,MiddleCenter,1,2,,,,,
+System.Windows.Forms.CheckBox,SubIconTbl,InnerCircle,30,30,,,0,InnerCircle,MiddleCenter,1,2,,,,,
+System.Windows.Forms.CheckBox,SubIconTbl,CrossSubIcon,30,30,,,0,Cross,MiddleCenter,1,2,,,,,
+System.Windows.Forms.CheckBox,SubIconTbl,ConSubIcon,30,30,,,0,Condition,MiddleCenter,1,2,,,,,
+System.Windows.Forms.CheckBox,SubIconTbl,ErrEndSubIcon,30,30,,,0,ErrEnd,MiddleCenter,1,2,,,,,
+System.Windows.Forms.CheckBox,SubIconTbl,ErrorSubIcon,30,30,,,0,Error,MiddleCenter,1,2,,,,,
+System.Windows.Forms.CheckBox,SubIconTbl,EscaSubIcon,30,30,,,0,EscalEnd,MiddleCenter,1,2,,,,,
+System.Windows.Forms.CheckBox,SubIconTbl,TextIcon,30,30,,,0,T,MiddleCenter,1,2,funTextIconClick,,,,
+System.Windows.Forms.CheckBox,SubIconTbl,UserSubIcon,30,30,,,0,User,MiddleCenter,1,2,,,,,
+System.Windows.Forms.CheckBox,SubIconTbl,UserSubIconSubProcess,30,30,,,0,Plus,MiddleCenter,1,2,,,,,
+System.Windows.Forms.CheckBox,LaunchTbl,Play,30,30,,,0,Play,MiddleCenter,1,2,,,,,
+System.Windows.Forms.CheckBox,LaunchTbl,Record,30,30,,,0,Record,MiddleCenter,1,2,,,,,
+System.Windows.Forms.CheckBox,LaunchTbl,Stop,30,30,,,0,Stop,MiddleCenter,1,2,,,,,
+System.Windows.Forms.CheckBox,MagnifierTbl,ZoomOut,30,30,,,0,ZoomOut,MiddleCenter,1,2,,,,,
+System.Windows.Forms.CheckBox,MagnifierTbl,Magnifier,30,30,,,0,Magnifier,MiddleCenter,1,2,,,,,
+System.Windows.Forms.CheckBox,MagnifierTbl,ZoomIn,30,30,,,0,ZoomIn,MiddleCenter,1,2,,,,,
+System.Windows.Forms.CheckBox,ShapesTbl,StartCircle,50,50,,,0,StartCircle,MiddleCenter,1,2,,,,,
+System.Windows.Forms.CheckBox,ShapesTbl,InterCircle,50,50,,,0,InterCircle,MiddleCenter,1,2,,,,,
+System.Windows.Forms.CheckBox,ShapesTbl,Dimond,50,50,,,0,VDimond,MiddleCenter,1,2,,,,,
+System.Windows.Forms.CheckBox,ShapesTbl,Square,50,50,,,0,VSquare,MiddleCenter,1,2,,,,,
+System.Windows.Forms.CheckBox,ShapesTbl,DataObject,50,50,,,0,DataObj,MiddleCenter,1,2,,,,,
+System.Windows.Forms.CheckBox,GroupsTbl,Pool,100,60,,,0,Pool,MiddleCenter,1,2,,,,,
+System.Windows.Forms.CheckBox,GroupsTbl,Lane,100,60,,,0,Lane,MiddleCenter,1,2,,,,,
+System.Windows.Forms.CheckBox,GroupsTbl,Group,100,60,,,0,Group,MiddleCenter,1,2,,,,,
+System.Windows.Forms.Button,TopMenuTbl,DelAll,110,30,,,,,,,,funClearAll,#d2d4d6,#000,,پاک کردن همه شکلها
+System.Windows.Forms.Button,TopMenuTbl,Save,80,30,,,,,,,,funSaveBtn,#d2d4d6,#000,,ذخیره
+System.Windows.Forms.Button,TopMenuTbl,Saveas,80,30,,,,,,,,funSaveAsBtn,#d2d4d6,#000,,ذخیره با نام
+System.Windows.Forms.Button,TopMenuTbl,Load,80,30,,,,,,,,funLoadBtn,#d2d4d6,#000,,بارگذاری
+System.Windows.Forms.Button,TopMenuTbl,New,80,30,,,,,,,,funNewBtn,#d2d4d6,#000,,جدید
+System.Windows.Forms.Button,TopMenuTbl,Undo,30,30,,,,Undo,,,,,#d2d4d6,#000,,
+System.Windows.Forms.Button,TopMenuTbl,Redo,30,30,,,,Redo,,,,,#d2d4d6,#000,,
+System.Windows.Forms.Button,TopMenuTbl,DelShape,110,30,,,,,,,,funDelShape,#d2d4d6,#000,,حذف شکل
+System.Windows.Forms.Label,TopMenuTbl,FileNameLbl,100,30,,,,,,,,,,,256, 
+System.Windows.Forms.Label,TopMenuTbl,FileNameLabelLbl,50,30,,,,,,,,,,,512,:نام فایل
+System.Windows.Forms.TableLayoutPanel,TopMenuTbl,LaunchTbl,,,,,,,,,,,,,,
+System.Windows.Forms.TableLayoutPanel,TopMenuTbl,MagnifierTbl,,,,,,,,,,,,,, 

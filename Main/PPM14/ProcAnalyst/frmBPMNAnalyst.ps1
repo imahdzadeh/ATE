@@ -27,9 +27,8 @@ $MainObject = [pscustomobject]@{
                 arrGroups = [ArrayList]@()
               }
 Function funTextIconClick{
-    
     If($TextIcon.Checked)
-    {
+    {   
         If($global:objShape -ne $null)
         { 
             $Global:typing = $global:objShape
@@ -894,6 +893,10 @@ Function funDPanMouseMove{
     }    
 }
 
+Function funNewBtn{
+
+}
+
 Function funLoadBtn{
     $dialog = [System.Windows.Forms.OpenFileDialog]::new()
     $dialog.RestoreDirectory = $true
@@ -904,7 +907,7 @@ Function funLoadBtn{
         $global:serializedObj = $null
         $global:SerializedP = New-Object Point
         $objPSNewShape = Import-Clixml $dialog.FileName
-        $namelbl.Text = ((Get-Item $dialog.FileName).Name).Replace(".ate",'')
+        $FileNameLbl.Text = ((Get-Item $dialog.FileName).Name).Replace(".ate",'')
         foreach($objLoad in $objPSNewShape.arrRegions)
         {
             $global:Class = $objLoad.Class
@@ -969,7 +972,7 @@ Function funSaveAsBtn{
     if($result -eq [System.Windows.Forms.DialogResult]::OK){
         $Global:strFileName = "$($dialog.FileName).ate"
         $MainObject | Export-Clixml "$($dialog.FileName).ate" -Depth 1
-        $namelbl.Text = ((Get-Item "$($dialog.FileName).ate").Name).Replace(".ate",'')
+        $FileNameLbl.Text = ((Get-Item "$($dialog.FileName).ate").Name).Replace(".ate",'')
     }   
 }
 
@@ -983,7 +986,7 @@ Function funSaveBtn{
         if($result -eq [System.Windows.Forms.DialogResult]::OK){
             $Global:strFileName = "$($dialog.FileName).ate"
             $MainObject | Export-Clixml "$($dialog.FileName).ate" -Depth 1
-            $namelbl.Text = (Get-Item "$($dialog.FileName).ate").Name
+            $FileNameLbl.Text = (Get-Item "$($dialog.FileName).ate").Name
         }
     }
     Else
@@ -1056,60 +1059,76 @@ function funClearAll{
     If($MainObject.arrRegions.Count -gt 0)
     {  
         $MainObject.arrRegions.Clear()
-    }   
+    }
+    If($MainObject.arrGroups.Count -gt 0)
+    {  
+        $MainObject.arrGroups.Clear()
+    }    
 } 
 
-#-----------------------------EndOfFunction
-$LinesTbl = New-Object TableLayoutPanel
-$LinesTbl.BackColor = ''
-$LinesTbl.Name = "LinesTbl"
-#$SubIconTbl.Size = New-Object System.Drawing.Size(100,700)
-#$SubIconTbl.Location = New-Object System.Drawing.size(2,100)
-#$SubIconTbl.Dock = [System.Windows.Forms.DockStyle]::Fill
-$LinesTbl.AutoSize = $true
-$LinesTbl.ColumnCount = 1
-#$SubIconTbl.CellBorderStyle = 2
-Write-Host $ChkBoxes
-    If (Test-Path $ChkBoxes )
+#-----------------------------EndOfFunctions
+
+    If (Test-Path $TablesCSV)
     {
-        #$depcode = $_.Name
-        $ScriptCSV = Import-Csv $ChkBoxes
-        # $DepCodeFol = $_.Name
-        $ScriptCSV | % {  
-            #$ScriptName = $_.Name                     
-            New-Variable -Force -Name $_.chkBoxName -Value (New-Object $_.obj)
-            $thisCheckBox = Get-Variable -ValueOnly -Include $_.chkBoxName
-            #$thisButton.Anchor = 'right'
-            $thisCheckBox.Name = $_.chkBoxName
-            # $thisButton.Location = New-Object System.Drawing.Size(175,(35+26*$test))
-            $thisCheckBox.Size = New-Object System.Drawing.Size($_.sizeX,$_.sizeY)
-#           $thisCheckBox.Padding = $_.Padding
-#           $thisCheckBox.Margin = $_.Margin
-            $thisCheckBox.Tag = $_.Tag
-            $thisCheckBox.Image = funImgStreamer "$imgFol\$($_.ImageName)$imgFileExt"
-            $thisCheckBox.ImageAlign = $_.ImageAlign
-            $thisCheckBox.Appearance = $_.Appearance
-            $thisCheckBox.FlatStyle = $_.FlatStyle
-            $thisCheckBox.Add_Click({
-                If(!$This.Checked){$DesktopPan.Focus()}
-                funDisAllShapes  $thisCheckBox 
-            })  
+        $TablesCSV = Import-Csv $TablesCSV
+        $TablesCSV | % {                     
+            New-Variable -Force -Name $_.TableName -Value (New-Object $_.obj)
+            $thisTable = Get-Variable -ValueOnly -Include $_.TableName
+            $thisTable.Name = $_.TableName
+            $thisTable.AutoSize = $_.AutoSize
+            $thisTable.ColumnCount = $_.ColumnCount
+            $thisTable.RowCount = $_.RowCount
+            $thisTable.CellBorderStyle = $_.CellBorderStyle
+            $thisTable.Height = $_.Height
+        }
+    }
+    If (Test-Path $ControlsCSV )
+    {
+        $Controls = Import-Csv $ControlsCSV
+        $Controls | % {
+            If($_.Obj -ne "System.Windows.Forms.TableLayoutPanel"){
+                New-Variable -Force -Name $_.objName -Value (New-Object $_.obj)
+                $thisControl = Get-Variable -ValueOnly -Include $_.objName
+                $thisControl.Name = $_.objName
+            }
+            Else
+            {
+                $thisControl = Get-Variable -ValueOnly -Include $_.objName
+            }
+            $thisControl.Size = New-Object System.Drawing.Size($_.width,$_.Height)
+            If($_.ImageName -ne [System.DBNull]::Value){$thisControl.Image = funImgStreamer "$imgFol\$($_.ImageName)$imgFileExt"}     
+            If($_.ImageAlign -ne [System.DBNull]::Value){$thisControl.ImageAlign = $_.ImageAlign}
+            If($_.Padding -ne [System.DBNull]::Value){$thisControl.Padding = $_.Padding}  
+            If($_.Margin -ne [System.DBNull]::Value){$thisControl.Margin = $_.Margin}
+            If($_.Tag -ne [System.DBNull]::Value){$thisControl.Tag = $_.Tag}  
+            If($_.Appearance -ne [System.DBNull]::Value){$thisControl.Appearance = $_.Appearance}
+            If($_.FlatStyle -ne [System.DBNull]::Value){$thisControl.FlatStyle = $_.FlatStyle}
+            If($_.BackColor -ne [System.DBNull]::Value){$thisControl.BackColor = $_.BackColor}
+            If($_.Text -ne [System.DBNull]::Value){$thisControl.Text = $_.Text}
+            If($_.ForeColor -ne [System.DBNull]::Value){$thisControl.ForeColor = $_.ForeColor}
+            If($_.TextAlign -ne [System.DBNull]::Value){$thisControl.TextAlign = $_.TextAlign}
+            If($_.functions -ne [System.DBNull]::Value)
+            {
+                $funName = $_.functions
+                New-Variable -Force -Name "$($_.objName)var" -Value ($_.functions)
+                $thisControl.Add_Click({
+                    If(!$This.Checked){$DesktopPan.Focus()}
+                    funDisAllShapes  $This
+                    $ObjFunVar = Get-Variable -ValueOnly -Include "$($This.Name)$VarFileCont"
+                    invoke-expression  $ObjFunVar
+                })                                     
+            }
+            Else
+            {
+                $thisControl.Add_Click({
+                    If(!$This.Checked){$DesktopPan.Focus()}
+                    funDisAllShapes  $This
+                })                  
+            }
             $Thistbl = Get-Variable -ValueOnly -Include $_.TableName
-            $Thistbl.controls.add($thisCheckBox)               
+            $Thistbl.controls.add($thisControl)                
         }                                    
     }
-        
-
-
-
-
-
-
-
-
-
-
-
 
 #----------------------------Controls
 
@@ -1129,461 +1148,6 @@ $DesktopPan.add_MouseDown({funDPanMouseDown})
 $DesktopPan.add_MouseUp({funDPanMouseUp})
 $DesktopPan.add_MouseMove({funDPanMouseMove})
 
-$ShowPRFbtn = New-Object Button
-#$ShowPRFbtn.Location = New-Object System.Drawing.Size(1000,38) 
-$ShowPRFbtn.BackColor = "#d2d4d6"
-$ShowPRFbtn.text = "پاک کردن همه شکلها"
-$ShowPRFbtn.width = 110
-$ShowPRFbtn.height = 30
-$ShowPRFbtn.Font = 'Microsoft Sans Serif,10'
-$ShowPRFbtn.ForeColor = "#000"
-$ShowPRFbtn.Add_Click({
-    funDisAllShapes $ShapesTbl
-    funClearAll  
-    $DesktopPan.Invalidate()         
-})
-
-$DelShape = New-Object Button
-$DelShape.Location = New-Object Size(2,50) 
-$DelShape.BackColor = "#d2d4d6"
-$DelShape.text = "حذف شکل"
-$DelShape.width = 110
-$DelShape.height = 30
-$DelShape.Font = 'Microsoft Sans Serif,10'
-$DelShape.ForeColor = "#000"
-$DelShape.TabIndex = 1
-
-$DelShape.Add_Click({
-    funDisAllShapes $ShapesTbl
-    funDelShape       
-})
-
-<#
-$SolidLine = New-Object System.Windows.Forms.CheckBox
-$SolidLine.Size = New-Object Size(100,25)
-$SolidLine.name = 'SolidLine'
-$SolidLine.Tag = 0
-$SolidLine.Image = funImgStreamer "D:\ATE\IT\Root\images\SolidLine.png"
-$SolidLine.Appearance = 1
-$SolidLine.FlatStyle = 2
-$SolidLine.Add_click({
-    If(!$This.Checked){$DesktopPan.Focus()}
-    funDisAllShapes $SolidLine
-})
-#>
-<#
-$DashedLine = New-Object CheckBox
-$DashedLine.Size = New-Object Size(100,25)
-$DashedLine.Tag = 1
-$DashedLine.name = 'DashedLine'
-$DashedLine.Image = funImgStreamer "D:\ATE\IT\Root\images\DashedLine.png"
-$DashedLine.Appearance = 1
-$DashedLine.FlatStyle = 2
-$DashedLine.Add_click({
-    If(!$This.Checked){$DesktopPan.Focus()}
-    funDisAllShapes $DashedLine
-})
-#>
-
-<#$DottedLine = New-Object CheckBox
-$DottedLine.Size = New-Object Size(100,25)
-$DottedLine.Tag = 2
-$DottedLine.name = 'DottedLine'
-$DottedLine.Image = funImgStreamer "D:\ATE\IT\Root\images\DottedLine.png"
-$DottedLine.Appearance = 1
-$DottedLine.FlatStyle = 2
-$DottedLine.Add_click({
-    If(!$This.Checked){$DesktopPan.Focus()}
-    funDisAllShapes $DottedLine
-})
-#>
-$MessSubIcon = New-Object CheckBox
-$MessSubIcon.Size = New-Object Size($subIconButSize,$subIconButSize)
-$MessSubIcon.name = 'MessSubIcon'
-$MessSubIcon.Image = funImgStreamer "D:\ATE\IT\Root\images\LightMess.png"
-$MessSubIcon.Appearance = 1
-$MessSubIcon.FlatStyle = 2
-$MessSubIcon.Add_click({
-    If(!$This.Checked){$DesktopPan.Focus()}
-    funDisAllShapes $MessSubIcon
-})
-
-$DarkMessSubIcon = New-Object CheckBox
-$DarkMessSubIcon.Size = New-Object Size($subIconButSize,$subIconButSize)
-$DarkMessSubIcon.name = 'DarkMessSubIcon'
-$DarkMessSubIcon.Image = funImgStreamer "D:\ATE\IT\Root\images\DarkMess.png"
-$DarkMessSubIcon.Appearance = 1
-$DarkMessSubIcon.FlatStyle = 2
-$DarkMessSubIcon.Add_click({
-    If(!$This.Checked){$DesktopPan.Focus()}
-    funDisAllShapes $DarkMessSubIcon
-})
-
-$GearSubIcon = New-Object CheckBox
-$GearSubIcon.Size = New-Object Size($subIconButSize,$subIconButSize)
-$GearSubIcon.name = 'GearSubIcon'
-$GearSubIcon.Image = funImgStreamer "D:\ATE\IT\Root\images\Gear.png"
-$GearSubIcon.Appearance = 1
-$GearSubIcon.FlatStyle = 2
-$GearSubIcon.Add_click({
-    If(!$This.Checked){$DesktopPan.Focus()}
-    funDisAllShapes $GearSubIcon
-})
-
-
-$ClockSubIcon = New-Object CheckBox
-$ClockSubIcon.Size = New-Object Size($subIconButSize,$subIconButSize)
-$ClockSubIcon.name = 'ClockSubIcon'
-$ClockSubIcon.Image = funImgStreamer "D:\ATE\IT\Root\images\Clock.png"
-$ClockSubIcon.Appearance = 1
-$ClockSubIcon.FlatStyle = 2
-$ClockSubIcon.Add_click({
-    If(!$This.Checked){$DesktopPan.Focus()}
-    funDisAllShapes $ClockSubIcon
-})
-
-$InnerCircle = New-Object CheckBox
-$InnerCircle.Size = New-Object Size($subIconButSize,$subIconButSize)
-$InnerCircle.name = 'InnerCircle'
-$InnerCircle.Image = funImgStreamer "D:\ATE\IT\Root\images\InnerCircle.png"
-$InnerCircle.Appearance = 1
-$InnerCircle.FlatStyle = 2
-$InnerCircle.Add_click({
-    If(!$This.Checked){$DesktopPan.Focus()}
-    funDisAllShapes $InnerCircle
-})
-
-$CrossSubIcon = New-Object CheckBox
-$CrossSubIcon.Size = New-Object Size($subIconButSize,$subIconButSize)
-$CrossSubIcon.name = 'CrossSubIcon'
-$CrossSubIcon.Image = funImgStreamer "D:\ATE\IT\Root\images\Cross.png"
-$CrossSubIcon.Appearance = 1
-$CrossSubIcon.FlatStyle = 2
-$CrossSubIcon.Add_click({
-    If(!$This.Checked){$DesktopPan.Focus()}
-    funDisAllShapes $CrossSubIcon
-})
-
-
-$SinStartSubIcon = New-Object CheckBox
-$SinStartSubIcon.Size = New-Object Size($subIconButSize,$subIconButSize)
-$SinStartSubIcon.name = 'SinStartSubIcon'
-$SinStartSubIcon.Image = funImgStreamer "D:\ATE\IT\Root\images\SigStart.png"
-$SinStartSubIcon.Appearance = 1
-$SinStartSubIcon.FlatStyle = 2
-$SinStartSubIcon.Add_click({
-    If(!$This.Checked){$DesktopPan.Focus()}
-    funDisAllShapes $SinStartSubIcon
-})
-
-$ConSubIcon = New-Object CheckBox
-$ConSubIcon.Size = New-Object Size($subIconButSize,$subIconButSize)
-$ConSubIcon.name = 'ConSubIcon'
-$ConSubIcon.Image = funImgStreamer "D:\ATE\IT\Root\images\Condition.png"
-$ConSubIcon.Appearance = 1
-$ConSubIcon.FlatStyle = 2
-$ConSubIcon.Add_click({
-    If(!$This.Checked){$DesktopPan.Focus()}
-    funDisAllShapes $ConSubIcon
-})
-
-$SigEndSubIcon = New-Object CheckBox
-$SigEndSubIcon.Size = New-Object Size($subIconButSize,$subIconButSize)
-$SigEndSubIcon.name = 'SigEndSubIcon'
-$SigEndSubIcon.Image = funImgStreamer "D:\ATE\IT\Root\images\SigEnd.png"
-$SigEndSubIcon.Appearance = 1
-$SigEndSubIcon.FlatStyle = 2
-$SigEndSubIcon.Add_click({
-    If(!$This.Checked){$DesktopPan.Focus()}
-    funDisAllShapes $SigEndSubIcon
-})
-
-$ErrEndSubIcon = New-Object CheckBox
-$ErrEndSubIcon.Size = New-Object Size($subIconButSize,$subIconButSize)
-$ErrEndSubIcon.name = 'ErrEndSubIcon'
-$ErrEndSubIcon.Image = funImgStreamer "D:\ATE\IT\Root\images\ErrEnd.png"
-$ErrEndSubIcon.Appearance = 1
-$ErrEndSubIcon.FlatStyle = 2
-$ErrEndSubIcon.Add_click({
-    If(!$This.Checked){$DesktopPan.Focus()}
-    funDisAllShapes $ErrEndSubIcon
-})
-
-$ErrorSubIcon = New-Object CheckBox
-$ErrorSubIcon.Size = New-Object Size($subIconButSize,$subIconButSize)
-$ErrorSubIcon.name = 'ErrorSubIcon'
-$ErrorSubIcon.Image = funImgStreamer "D:\ATE\IT\Root\images\Error.png"
-$ErrorSubIcon.Appearance = 1
-$ErrorSubIcon.FlatStyle = 2
-$ErrorSubIcon.Add_click({
-    If(!$This.Checked){$DesktopPan.Focus()}
-    funDisAllShapes $ErrorSubIcon
-})
-
-
-$EscaSubIcon = New-Object CheckBox
-$EscaSubIcon.Size = New-Object Size($subIconButSize,$subIconButSize)
-$EscaSubIcon.name = 'EscaSubIcon'
-$EscaSubIcon.Image = funImgStreamer "D:\ATE\IT\Root\images\Escalation.png"
-$EscaSubIcon.Appearance = 1
-$EscaSubIcon.FlatStyle = 2
-$EscaSubIcon.Add_click({
-    If(!$This.Checked){$DesktopPan.Focus()}
-    funDisAllShapes $EscaSubIcon
-})
-
-$EscaEndSubIcon = New-Object CheckBox
-$EscaEndSubIcon.Size = New-Object Size($subIconButSize,$subIconButSize)
-$EscaEndSubIcon.name = 'EscaEndSubIcon'
-$EscaEndSubIcon.Image = funImgStreamer "D:\ATE\IT\Root\images\EscalEnd.png"
-$EscaEndSubIcon.Appearance = 1
-$EscaEndSubIcon.FlatStyle = 2
-$EscaEndSubIcon.Add_click({
-    If(!$This.Checked){$DesktopPan.Focus()}
-    funDisAllShapes $EscaEndSubIcon
-})
-
-$TextIcon = New-Object CheckBox
-$TextIcon.Size = New-Object Size($subIconButSize,$subIconButSize)
-$TextIcon.name = 'TextIcon'
-$TextIcon.Image = funImgStreamer "D:\ATE\IT\Root\images\T.png"
-$TextIcon.Appearance = 1
-$TextIcon.FlatStyle = 2
-$TextIcon.Add_click({
-    If(!$This.Checked){$DesktopPan.Focus()}
-    funDisAllShapes $TextIcon
-    funTextIconClick
-})
-
-$ArrowSubIcon = New-Object CheckBox
-$ArrowSubIcon.Size = New-Object Size($subIconButSize,$subIconButSize)
-$ArrowSubIcon.name = 'ArrowSubIcon'
-$ArrowSubIcon.Image = funImgStreamer "D:\ATE\IT\Root\images\Arrow.png"
-$ArrowSubIcon.Appearance = 1
-$ArrowSubIcon.FlatStyle = 2
-$ArrowSubIcon.Add_click({
-    If(!$This.Checked){$DesktopPan.Focus()}
-    funDisAllShapes $ArrowSubIcon
-})
-
-
-$FArrowSubIcon = New-Object CheckBox
-$FArrowSubIcon.Size = New-Object Size($subIconButSize,$subIconButSize)
-$FArrowSubIcon.name = 'FArrowSubIcon'
-$FArrowSubIcon.Image = funImgStreamer "D:\ATE\IT\Root\images\FArrow.png"
-$FArrowSubIcon.Appearance = 1
-$FArrowSubIcon.FlatStyle = 2
-$FArrowSubIcon.Add_click({
-    If(!$This.Checked){$DesktopPan.Focus()}
-    funDisAllShapes $FArrowSubIcon
-})
-
-$UserSubIcon = New-Object CheckBox
-$UserSubIcon.Size = New-Object Size($subIconButSize,$subIconButSize)
-$UserSubIcon.name = 'UserSubIcon'
-$UserSubIcon.Image = funImgStreamer "D:\ATE\IT\Root\images\User.png"
-$UserSubIcon.Appearance = 1
-$UserSubIcon.FlatStyle = 2
-$UserSubIcon.Add_click({
-    If(!$This.Checked){$DesktopPan.Focus()}
-    funDisAllShapes $UserSubIcon
-})
-
-$SubProcess = New-Object CheckBox
-$SubProcess.Size = New-Object Size($subIconButSize,$subIconButSize)
-$SubProcess.name = 'SubProcess'
-$SubProcess.Image = funImgStreamer "D:\ATE\IT\Root\images\Plus.png"
-$SubProcess.Appearance = 1
-$SubProcess.FlatStyle = 2
-$SubProcess.Add_click({
-    If(!$This.Checked){$DesktopPan.Focus()}
-    funDisAllShapes $SubProcess
-})
-
-$Play = New-Object CheckBox
-$Play.Size = New-Object Size($subIconButSize,$subIconButSize)
-$Play.name = 'Play'
-$Play.Image = funImgStreamer "D:\ATE\IT\Root\images\Play.png"
-$Play.Appearance = 1
-$Play.FlatStyle = 2
-$Play.Add_click({
-    If(!$This.Checked){$DesktopPan.Focus()}
-    funDisAllShapes $Play
-})
-
-$Record = New-Object CheckBox
-$Record.Size = New-Object Size($subIconButSize,$subIconButSize)
-$Record.name = 'Record'
-$Record.Image = funImgStreamer "D:\ATE\IT\Root\images\Record.png"
-$Record.Appearance = 1
-$Record.FlatStyle = 2
-$Record.Add_click({
-    If(!$This.Checked){$DesktopPan.Focus()}
-    funDisAllShapes $Record
-})
-
-$Stop = New-Object CheckBox
-$Stop.Size = New-Object Size($subIconButSize,$subIconButSize)
-$Stop.name = 'Stop'
-$Stop.Image = funImgStreamer "D:\ATE\IT\Root\images\Stop.png"
-$Stop.Appearance = 1
-$Stop.FlatStyle = 2
-$Stop.Add_click({
-    If(!$This.Checked){$DesktopPan.Focus()}
-    funDisAllShapes $Stop
-})
-
-$ZoomOut = New-Object CheckBox
-$ZoomOut.Size = New-Object Size($subIconButSize,$subIconButSize)
-$ZoomOut.name = 'ZoomOut'
-$ZoomOut.Image = funImgStreamer "D:\ATE\IT\Root\images\ZoomOut.png"
-$ZoomOut.Appearance = 1
-$ZoomOut.FlatStyle = 2
-$ZoomOut.Add_click({
-    If(!$This.Checked){$DesktopPan.Focus()}
-    funDisAllShapes $ZoomOut
-    $this.Checked = $false
-})
-
-$Magnifier = New-Object CheckBox
-$Magnifier.Size = New-Object Size($subIconButSize,$subIconButSize)
-$Magnifier.name = 'Magnifier'
-$Magnifier.Image = funImgStreamer "D:\ATE\IT\Root\images\Magnifier.png"
-$Magnifier.Appearance = 1
-$Magnifier.FlatStyle = 2
-$Magnifier.Add_click({
-    If(!$This.Checked){$DesktopPan.Focus()}
-    funDisAllShapes $Magnifier
-    $this.Checked = $false
-})
-
-$ZoomIn = New-Object CheckBox
-$ZoomIn.Size = New-Object Size($subIconButSize,$subIconButSize)
-$ZoomIn.name = 'ZoomIn'
-$ZoomIn.Image = funImgStreamer "D:\ATE\IT\Root\images\ZoomIn.png"
-$ZoomIn.Appearance = 1
-$ZoomIn.FlatStyle = 2
-$ZoomIn.Add_click({
-    If(!$This.Checked){$DesktopPan.Focus()}
-    funDisAllShapes $ZoomIn
-    $this.Checked = $false
-})
-
-
-$StartCircle = New-Object CheckBox
-$StartCircle.Size = New-Object Size($ShapesSize,$ShapesSize)
-$StartCircle.Name = 'StartCircle'
-$StartCircle.Image = funImgStreamer "D:\ATE\IT\Root\images\StartCircle.png"
-#$StartCircle.Location = New-Object System.Drawing.Size(20,100) 
-$StartCircle.Appearance = 1
-$StartCircle.FlatStyle = 2
-#$StartCircle.width = 80
-#$StartCircle.height = 80
-#$StartCircle.AutoSize = $true
-#$StartCircle.Padding = 5
-$StartCircle.Add_click({
-    If(!$This.Checked){$DesktopPan.Focus()}
-    funDisAllShapes $StartCircle
-})
-
-$InterCircle = New-Object CheckBox
-$InterCircle.Size = New-Object Size($ShapesSize,$ShapesSize)
-$InterCircle.name = 'InterCircle'
-$InterCircle.Image= funImgStreamer "D:\ATE\IT\Root\images\InterCircle.png"
-#$StartCircle.Location = New-Object System.Drawing.Size(20,100) 
-$InterCircle.Appearance = 1
-$InterCircle.FlatStyle = 2
-#$StartCircle.width = 80
-#$StartCircle.height = 80
-#$StartCircle.AutoSize = $true
-#$StartCircle.Padding = 5
-$InterCircle.Add_click({
-    If(!$This.Checked){$DesktopPan.Focus()}
-    funDisAllShapes $InterCircle
-})
-
-
-
-$Dimond = New-Object CheckBox
-$Dimond.Size = New-Object Size($ShapesSize,$ShapesSize)
-$Dimond.name = 'Dimond'
-$Dimond.Image = funImgStreamer "D:\ATE\IT\Root\images\VDimond.png"
-$Dimond.ImageAlign = 'MiddleCenter'
-#$Dimond.Location = New-Object System.Drawing.Size(20,200) 
-$Dimond.Appearance = 1
-$Dimond.FlatStyle = 2
-$Dimond.Add_click({
-    If(!$This.Checked){$DesktopPan.Focus()}
-    funDisAllShapes $Dimond
-})
-$Dimond.Padding = 5
-
-
-$Square = New-Object CheckBox
-$Square.Size = New-Object Size($ShapesSize,$ShapesSize)
-$Square.name = 'Square'
-$Square.Image = funImgStreamer "D:\ATE\IT\Root\images\VSquare.png"
-$Square.ImageAlign = 'MiddleCenter'
-$Square.Appearance = 1
-$Square.FlatStyle = 2
-$Square.Padding = 5
-$Square.Add_click({
-    If(!$This.Checked){$DesktopPan.Focus()}
-    funDisAllShapes $Square
-})
-
-$DataObject = New-Object CheckBox
-$DataObject.Size = New-Object Size($ShapesSize,$ShapesSize)
-$DataObject.name = 'DataObject'
-$DataObject.Image = funImgStreamer "D:\ATE\IT\Root\images\DataObj.png"
-$DataObject.ImageAlign = 'MiddleCenter'
-$DataObject.Appearance = 1
-$DataObject.FlatStyle = 2
-$DataObject.Padding = 5
-$DataObject.Add_click({
-    If(!$This.Checked){$DesktopPan.Focus()}
-    funDisAllShapes $DataObject
-})
-
-$Pool = New-Object CheckBox
-$Pool.Size = New-Object Size($GroupSizeX,$GroupSizeY)
-$Pool.name = 'Pool'
-$Pool.Image = funImgStreamer "D:\ATE\IT\Root\images\Pool.png"
-$Pool.ImageAlign = 'MiddleCenter'
-$Pool.Appearance = 1
-$Pool.FlatStyle = 2
-$Pool.Padding = 5
-$Pool.Add_click({
-    If(!$This.Checked){$DesktopPan.Focus()}
-    funDisAllShapes $Pool
-})
-
-$Lane = New-Object CheckBox
-$Lane.Size = New-Object Size($GroupSizeX,$GroupSizeY)
-$Lane.name = 'Lane'
-$Lane.Image = funImgStreamer "D:\ATE\IT\Root\images\Lane.png"
-$Lane.ImageAlign = 'MiddleCenter'
-$Lane.Appearance = 1
-$Lane.FlatStyle = 2
-$Lane.Padding = 5
-$Lane.Add_click({
-    If(!$This.Checked){$DesktopPan.Focus()}
-    funDisAllShapes $Lane
-})
-
-$Group = New-Object CheckBox
-$Group.Size = New-Object Size($GroupSizeX,$GroupSizeY)
-$Group.name = 'Group'
-$Group.Image = funImgStreamer "D:\ATE\IT\Root\images\Group.png"
-$Group.ImageAlign = 'MiddleCenter'
-$Group.Appearance = 1
-$Group.FlatStyle = 2
-$Group.Padding = 5
-$Group.Add_click({
-    If(!$This.Checked){$DesktopPan.Focus()}
-    funDisAllShapes $Group
-})
-
 $Annotation = New-Object CheckBox
 $Annotation.Size = New-Object Size($GroupSizeX,$subIconButSize)
 $Annotation.name = 'Annotation'
@@ -1598,19 +1162,10 @@ $Annotation.Add_click({
 })
 
 $MainTbl = New-Object TableLayoutPanel
-#$MainTbl.Location = New-Object System.Drawing.Size(2,50) 
 $MainTbl.AutoSize = $true
 $MainTbl.CellBorderStyle = 1
-#$MainTbl.BackColor = "#d2d4d6"
 $MainTbl.ColumnCount = 2
 $MainTbl.RowCount = 5
-
-$butsTbl =  New-Object TableLayoutPanel
-$butsTbl.BackColor = ''
-#$butsTbl.Controls.Add($ShowPRFbtn)
-#$butsTbl.Controls.Add($DelShape)
-$butsTbl.AutoSize = $true
-
 
 $ReturnBtn = New-Object Button
 $ReturnBtn.Location = New-Object Size(2,50) 
@@ -1628,233 +1183,6 @@ $ReturnBtn.Add_Click({
     & "$MainRoot\$($this.Name).ps1"
 }.GetNewClosure())
 
-$SaveBtn = New-Object Button
-$SaveBtn.Location = New-Object Size(2,50) 
-$SaveBtn.name = "Save"
-$SaveBtn.BackColor = "#d2d4d6"
-$SaveBtn.text = "ذخیره"
-$SaveBtn.width = 80
-$SaveBtn.height = 30
-$SaveBtn.Font = 'Microsoft Sans Serif,10'
-$SaveBtn.ForeColor = "#000"
-$SaveBtn.TabIndex = 1
-$SaveBtn.Add_Click({
-    funSaveBtn
-})
-
-$SaveAsBtn = New-Object Button
-$SaveAsBtn.Location = New-Object Size(2,50) 
-$SaveAsBtn.name = "Saveas"
-$SaveAsBtn.BackColor = "#d2d4d6"
-$SaveAsBtn.text = "ذخیره با نام"
-$SaveAsBtn.width = 80
-$SaveAsBtn.height = 30
-$SaveAsBtn.Font = 'Microsoft Sans Serif,10'
-$SaveAsBtn.ForeColor = "#000"
-$SaveAsBtn.TabIndex = 1
-$SaveAsBtn.Add_Click({
-    funSaveAsBtn
-})
-
-$LoadBtn = New-Object Button
-$LoadBtn.Location = New-Object Size(2,50) 
-$LoadBtn.name = "Load"
-$LoadBtn.BackColor = "#d2d4d6"
-$LoadBtn.text = "بارگذاری"
-$LoadBtn.width = 80
-$LoadBtn.height = 30
-$LoadBtn.Font = 'Microsoft Sans Serif,10'
-$LoadBtn.ForeColor = "#000"
-$LoadBtn.TabIndex = 1
-$LoadBtn.Add_Click({
-    funLoadBtn
- })
-
-$NewBtn = New-Object Button
-$NewBtn.Location = New-Object Size(2,50) 
-$NewBtn.name = "New"
-$NewBtn.BackColor = "#d2d4d6"
-$NewBtn.text = "جدید"
-$NewBtn.width = 80
-$NewBtn.height = 30
-$NewBtn.Font = 'Microsoft Sans Serif,10'
-$NewBtn.ForeColor = "#000"
-$NewBtn.TabIndex = 1
-$NewBtn.Add_Click({
-    funLoadBtn
- })
-
-$UndoBtn = New-Object Button
-$UndoBtn.Location = New-Object Size(2,50) 
-$UndoBtn.name = "Undo"
-$UndoBtn.BackColor = "#d2d4d6"
-$UndoBtn.text = ""
-$UndoBtn.width = 30
-$UndoBtn.image = funImgStreamer "D:\ATE\IT\Root\images\Undo.png"
-$UndoBtn.height = 30
-$UndoBtn.Font = 'Microsoft Sans Serif,10'
-$UndoBtn.ForeColor = "#000"
-$UndoBtn.TabIndex = 1
-$UndoBtn.Add_Click({
- })
-
-
-$RedoBtn = New-Object Button
-$RedoBtn.Location = New-Object Size(2,50) 
-$RedoBtn.name = "redo"
-$RedoBtn.BackColor = "#d2d4d6"
-$RedoBtn.text = ""
-$RedoBtn.width = 30
-$RedoBtn.image = funImgStreamer "D:\ATE\IT\Root\images\redo.png"
-$RedoBtn.height = 30
-$RedoBtn.Font = 'Microsoft Sans Serif,10'
-$RedoBtn.ForeColor = "#000"
-$RedoBtn.TabIndex = 1
-$RedoBtn.Add_Click({
- })
-
-
-
-$namelbl = New-Object Label
-$namelbl.Text = ""
-$namelbl.height = 30
-$namelbl.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 12)
-$namelbl.TextAlign = 256
-
-$Filenamelbl = New-Object Label
-$Filenamelbl.Text = ":نام فایل"
-$Filenamelbl.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 12)
-$Filenamelbl.height = 30
-$Filenamelbl.width = 50
-$Filenamelbl.TextAlign = 512
-
-$ShapesTbl = New-Object TableLayoutPanel
-$ShapesTbl.BackColor = ''
-#$ShapesTbl.Size = New-Object System.Drawing.Size(100,700)
-#$ShapesTbl.Location = New-Object System.Drawing.size(2,100)
-#$DesktopPan.Dock = [System.Windows.Forms.DockStyle]::Fill
-$ShapesTbl.AutoSize = $true
-$ShapesTbl.ColumnCount = 2
-#$ShapesTbl.CellBorderStyle = 2
-
-
-$SubIconTbl = New-Object TableLayoutPanel
-$SubIconTbl.BackColor = ''
-#$SubIconTbl.Size = New-Object System.Drawing.Size(100,700)
-#$SubIconTbl.Location = New-Object System.Drawing.size(2,100)
-#$SubIconTbl.Dock = [System.Windows.Forms.DockStyle]::Fill
-$SubIconTbl.AutoSize = $true
-$SubIconTbl.ColumnCount = 3
-#$SubIconTbl.CellBorderStyle = 2
-
-
-$LaunchTbl = New-Object TableLayoutPanel
-$LaunchTbl.BackColor = ''
-#$LaunchTbl.Size = New-Object System.Drawing.Size(100,700)
-#$LaunchTbl.Location = New-Object System.Drawing.size(2,100)
-#$LaunchTbl.Dock = [System.Windows.Forms.DockStyle]::Fill
-$LaunchTbl.AutoSize = $true
-$LaunchTbl.ColumnCount = 3
-#$LaunchTbl.CellBorderStyle = 2
-
-$MagnifierTbl = New-Object TableLayoutPanel
-$MagnifierTbl.BackColor = ''
-#$MagnifierTbl.Size = New-Object System.Drawing.Size(100,700)
-#$MagnifierTbl.Location = New-Object System.Drawing.size(2,100)
-#$MagnifierTbl.Dock = [System.Windows.Forms.DockStyle]::Fill
-$MagnifierTbl.AutoSize = $true
-$MagnifierTbl.ColumnCount = 3
-#$LaunchTbl.CellBorderStyle = 2
-
-$GroupsTbl = New-Object TableLayoutPanel
-$GroupsTbl.BackColor = ''
-#$MagnifierTbl.Size = New-Object System.Drawing.Size(100,700)
-#$MagnifierTbl.Location = New-Object System.Drawing.size(2,100)
-#$MagnifierTbl.Dock = [System.Windows.Forms.DockStyle]::Fill
-$GroupsTbl.AutoSize = $true
-$GroupsTbl.ColumnCount = 1
-#$LaunchTbl.CellBorderStyle = 2
-
-
-
-$TopMenuTbl =  New-Object TableLayoutPanel
-$TopMenuTbl.BackColor = ''
-#$TopMenuTbl.Controls.Add($ReturnBtn)
-$TopMenuTbl.RowCount = 1
-$TopMenuTbl.ColumnCount = 12
-$TopMenuTbl.AutoSize = $true
-$TopMenuTbl.CellBorderStyle = 1
-#$TopMenuTbl.Height = 30
-
-#$ShapesTbl.Controls.Add($butsPanel)
-<#
-$ShapesTbl.Controls.Add($StartCircle,0,0)
-$ShapesTbl.Controls.Add($InterCircle,0,0)
-$ShapesTbl.Controls.Add($Dimond,0,1)
-$ShapesTbl.Controls.Add($Square,1,0)
-$ShapesTbl.Controls.Add($DataObj,1,0)
-#>
-
-
-$ShapesTbl.Controls.Add($StartCircle)
-$ShapesTbl.Controls.Add($InterCircle)
-$ShapesTbl.Controls.Add($Dimond)
-$ShapesTbl.Controls.Add($Square)
-$ShapesTbl.Controls.Add($DataObject)
-
-
-#$DesktopPan.Controls.Add()
-
-$SubIconTbl.Controls.Add($MessSubIcon)
-$SubIconTbl.Controls.Add($DarkMessSubIcon)
-$SubIconTbl.Controls.Add($GearSubIcon)
-$SubIconTbl.Controls.Add($ClockSubIcon)
-$SubIconTbl.Controls.Add($CrossSubIcon)
-$SubIconTbl.Controls.Add($TextIcon)
-$SubIconTbl.Controls.Add($InnerCircle)
-
-#$SubIconTbl.Controls.Add($SinStartSubIcon)
-#$SubIconTbl.Controls.Add($ConSubIcon)
-#$SubIconTbl.Controls.Add($SigEndSubIcon)
-#$SubIconTbl.Controls.Add($ErrEndSubIcon)
-#$SubIconTbl.Controls.Add($ErrorSubIcon)
-#$SubIconTbl.Controls.Add($EscaSubIcon)
-#$SubIconTbl.Controls.Add($EscaEndSubIcon)
-#$SubIconTbl.Controls.Add($ArrowSubIcon)
-#$SubIconTbl.Controls.Add($FArrowSubIcon)
-$SubIconTbl.Controls.Add($UserSubIcon)
-$SubIconTbl.Controls.Add($SubProcess)
-<#
-$LinesTbl.Controls.Add($SolidLine)
-$LinesTbl.Controls.Add($DashedLine)
-$LinesTbl.Controls.Add($DottedLine)
-#>
-$LaunchTbl.Controls.Add($Play)
-$LaunchTbl.Controls.Add($Record)
-$LaunchTbl.Controls.Add($Stop)
-
-$MagnifierTbl.Controls.Add($ZoomOut)
-$MagnifierTbl.Controls.Add($Magnifier)
-$MagnifierTbl.Controls.Add($ZoomIn)
-
-$GroupsTbl.Controls.Add($pool)
-$GroupsTbl.Controls.Add($Lane)
-$GroupsTbl.Controls.Add($Group)
-
-$TopMenuTbl.Controls.Add($namelbl)
-$TopMenuTbl.Controls.Add($Filenamelbl)
-$TopMenuTbl.Controls.Add($NewBtn)
-$TopMenuTbl.Controls.Add($SaveBtn)
-$TopMenuTbl.Controls.Add($SaveAsBtn)
-$TopMenuTbl.Controls.Add($LoadBtn)
-$TopMenuTbl.Controls.Add($UndoBtn)
-$TopMenuTbl.Controls.Add($RedoBtn)
-$TopMenuTbl.Controls.Add($LaunchTbl)
-$TopMenuTbl.Controls.Add($MagnifierTbl)
-$TopMenuTbl.Controls.Add($ShowPRFbtn)
-$TopMenuTbl.Controls.Add($DelShape)
-
-
 $MainTbl.Controls.Add($ReturnBtn,0,0)
 $MainTbl.Controls.Add($ReturnBtn,0,0)
 $MainTbl.Controls.Add($TopMenuTbl,1,0)
@@ -1862,18 +1190,15 @@ $MainTbl.Controls.Add($DesktopPan,1,1)
 $MainTbl.Controls.Add($ShapesTbl,0,1)
 $MainTbl.Controls.Add($SubIconTbl,0,2)
 $MainTbl.Controls.Add($LinesTbl,0,3)
-$MainTbl.Controls.Add($butsTbl,0,4)
-$MainTbl.Controls.Add($GroupsTbl,0,5)
-$MainTbl.Controls.Add($Annotation,0,6)
+#$MainTbl.Controls.Add($butsTbl,0,4)
+$MainTbl.Controls.Add($GroupsTbl,0,4)
+$MainTbl.Controls.Add($Annotation,0,5)
 $MainTbl.SetRowSpan($DesktopPan,6)
-
 
 $Secoform.Controls.Add($MainTbl)
 $Secoform.Add_Shown({$Secoform.Activate(); $DesktopPan.Focus()})
-
 $Secoform.KeyPreview = $true
 $Secoform.Add_KeyDown({funFormKeyDown})
-
 
 $Secoform.Add_Closing{
    $Global:objShapePoint = $null
