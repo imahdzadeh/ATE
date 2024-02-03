@@ -14,7 +14,7 @@ System.Windows.Forms.CheckBox,SubIconTbl,ErrorSubIcon,30,30,,,0,Error,MiddleCent
 System.Windows.Forms.CheckBox,SubIconTbl,EscaSubIcon,30,30,,,0,EscalEnd,MiddleCenter,1,2,,,,,
 System.Windows.Forms.CheckBox,SubIconTbl,TextIcon,30,30,,,0,T,MiddleCenter,1,2,funTextIconClick,,,,
 System.Windows.Forms.CheckBox,SubIconTbl,UserSubIcon,30,30,,,0,User,MiddleCenter,1,2,,,,,
-System.Windows.Forms.CheckBox,SubIconTbl,UserSubIconSubProcess,30,30,,,0,Plus,MiddleCenter,1,2,,,,,
+System.Windows.Forms.CheckBox,SubIconTbl,SubProcess,30,30,,,0,Plus,MiddleCenter,1,2,,,,,
 System.Windows.Forms.CheckBox,LaunchTbl,Play,30,30,,,0,Play,MiddleCenter,1,2,,,,,
 System.Windows.Forms.CheckBox,LaunchTbl,Record,30,30,,,0,Record,MiddleCenter,1,2,,,,,
 System.Windows.Forms.CheckBox,LaunchTbl,Stop,30,30,,,0,Stop,MiddleCenter,1,2,,,,,

@@ -130,7 +130,8 @@ Function funAddGroups($point, $intIterate, $name){
 
 Function funDPanMouseDown{
     $Global:bolMouseDown = $true
-    $BolCont = $false
+    $BolContRegions = $false
+    $BolContGroup = $false
     $mouse = [Cursor]::Position
     $point = $DesktopPan.PointToClient($mouse)
     If(!$TextIcon.Checked)
@@ -143,7 +144,7 @@ Function funDPanMouseDown{
             If ($arrItem.ShadowRegion.isVisible($point))
             {
                 $SubProcess.Checked
-                $BolCont = $True
+                $BolContRegions = $True
                 If(
                     $arrItem.pTopRegion.isVisible($point) -or 
                     $arrItem.pRightRegion.isVisible($point) -or 
@@ -251,7 +252,7 @@ Function funDPanMouseDown{
                 }
             }             
         }
-        If(!$BolCont)
+        If(!$BolContRegions)
         {
             If(
                 ($LinesTbl.Controls | Where-Object -FilterScript {$_.Checked}) -and 
@@ -269,22 +270,49 @@ Function funDPanMouseDown{
             }
             Else
             {
-
                 for($i = 0; $i -lt $MainObject.arrGroups.Count; $i++)
                 {
                     $arrGroItem = $MainObject.arrGroups[$i]
-                    If(
-                        $arrGroItem.TopPath.isVisible($point) -or
-                        $arrGroItem.RightPath.isVisible($point) -or
-                        $arrGroItem.BottomPath.isVisible($point) -or
-                        $arrGroItem.LeftPath.isVisible($point) -or
-                        $arrGroItem.TAreaPath.isVisible($point)
-                      )
-                    {
-                        $Global:objGroup = $arrGroItem
-                    }
+                    If($arrGroItem.TopPath.isVisible($point))
+                        {   
+                            $BolContGroups = $True
+                            $arrGroItem.AxisPath = "TopPath"
+                            $Global:objGroup = $arrGroItem
+                            $arrGroItem.TPoint = $point
+                        }
+                            ElseIf($arrGroItem.RightPath.isVisible($point))
+                            {
+                                $BolContGroups = $True
+                                $arrGroItem.AxisPath = "RightPath"
+                                $Global:objGroup = $arrGroItem 
+                                $arrGroItem.TPoint = $point                     
+                            }
+                                ElseIf($arrGroItem.BottomPath.isVisible($point))
+                                {
+                                    $BolContGroups = $True
+                                    $arrGroItem.AxisPath = "BottomPath"
+                                    $Global:objGroup = $arrGroItem  
+                                    $arrGroItem.TPoint = $point                           
+                                }
+                                    ElseIf($arrGroItem.LeftPath.isVisible($point))
+                                    {
+                                        $BolContGroups = $True
+                                        $arrGroItem.AxisPath = "LeftPath"
+                                        $Global:objGroup = $arrGroItem 
+                                        $arrGroItem.TPoint = $point                                  
+                                    }
+                                        ElseIf($arrGroItem.TAreaPath.isVisible($point))
+                                        {
+                                            $BolContGroups = $True
+                                            $arrGroItem.AxisPath = "TAreaPath"
+                                            $Global:objGroup = $arrGroItem
+                                            $arrGroItem.TPoint = $point                                      
+                                        }                                      
                 }
-
+                If(!$BolContGroups)
+                {
+                    $Global:objGroup = $Null     
+                }
                 $Global:objShape = $null
                 $Global:objShapePoint = $null                   
             }
@@ -314,6 +342,10 @@ Function funDPanAddpaint($s,$e){
         {
             $strSwitch = $global:objShape.type  
         }
+            ElseIf($Global:bolMouseMove -And $Global:bolMouseDown -And $Global:objGroup -ne $null)
+            {
+                $strSwitch = $Global:objGroup.type  
+            }
     }
     Else
     {
@@ -344,7 +376,8 @@ Function funDPanAddpaint($s,$e){
     $RightPath = New-Object Drawing2D.GraphicsPath
     $BottomPath = New-Object Drawing2D.GraphicsPath
     $LeftPath = New-Object Drawing2D.GraphicsPath
-    $TAreaPAth = New-Object Drawing2D.GraphicsPath
+    $TLinePath = New-Object Drawing2D.GraphicsPath
+    $TAreaPath = New-Object Drawing2D.GraphicsPath
     switch ($strSwitch)
     {
         $StartCircle.Name { 
@@ -492,24 +525,85 @@ Function funDPanAddpaint($s,$e){
             $bolInput = $True
             $MainPen = $RegPen
         }
-        $Pool.Name { 
-            $point.X = $point.X - ($PoolSize / $intDevideBy2)
-            $point.Y = $point.Y - ($PoolSize / $intDevideBy2)
-            $sizeDevidedBy2 = $PoolTAreaSize / $intDevideBy2  
-            $PoolTAreaSizeDevidedBy2 = $PoolTAreaSize / $intDevideBy2            
+        $Pool.Name {
+            If($Global:objGroup -ne $null)
+            {
+                If($Global:objGroup.AxisPath -eq "TopPath")
+                {
+                    $point.Y = $Global:objGroup.Point.Y - ($Global:objGroup.Point.Y - $Point.Y)
+                    $point.X = $Global:objGroup.Point.X
+                    $PoolWidth = $Global:objGroup.pTop3.x - $point.X
+                    $PoolHeight = $Global:objGroup.pBottom1.Y - $point.Y 
+                }
+                    ElseIf($Global:objGroup.AxisPath -eq "RightPath")
+                    {
+                        $PoolWidth = $point.X - $Global:objGroup.pTop1.x
+                        $point.X = $Global:objGroup.Point.X
+                        $point.Y = $Global:objGroup.Point.Y                       
+                        $PoolHeight = $Global:objGroup.pBottom1.Y - $point.Y 
+                    }
+                        ElseIf($Global:objGroup.AxisPath -eq "BottomPath")
+                        {
+                            $PoolHeight = $point.Y - $Global:objGroup.pTop1.Y 
+                            $point.X = $Global:objGroup.Point.X
+                            $point.Y = $Global:objGroup.Point.Y                                                
+                            $PoolWidth = $Global:objGroup.pTop3.x - $point.X                       
+                        }
+                            ElseIf($Global:objGroup.AxisPath -eq "LeftPath")
+                            {
+                                $PoolWidth = $Global:objGroup.pTop3.x - $point.X
+                                $point.X = $Global:objGroup.Point.X - ($Global:objGroup.Point.X - $Point.X)                               
+                                $point.Y = $Global:objGroup.Point.Y                                               
+                                $PoolHeight = $Global:objGroup.pBottom1.Y - $point.Y                            
+                            }
+                                ElseIf($Global:objGroup.AxisPath -eq "TAreaPath")
+                                {
+                                    $Px = $point
+                                    $PoolWidth = $Global:objGroup.pTop3.x - $Global:objGroup.pTop1.x 
+                                    $PoolHeight = $Global:objGroup.pBottom1.Y  - $Global:objGroup.pTop1.Y 
+                                    $point.X = $Global:objGroup.point.X - ($Global:objGroup.TPoint.X - $point.X)
+                                    $point.Y = $Global:objGroup.point.Y - ($Global:objGroup.TPoint.Y - $point.Y)
+                                    $Global:objGroup.TPoint = $Px
+                                }
+            }
+            Else
+            {
+                $PoolWidth = $PoolSize
+                $PoolHeight = $PoolSize 
+                $point.X
+                $point.Y     
+            }           
             $pTop1 = New-Object Point $point.X , $point.Y
             $pTop2 = New-Object Point ($point.X + $PoolTAreaSize) , $point.Y
-            $pTop3 = New-Object Point ($point.X + $PoolSize) , $point.Y
-            $pBottom1 = New-Object Point $point.X , ($point.Y +$PoolSize)
-            $pBottom2 = New-Object Point ($point.X + $PoolTAreaSize), ($point.Y + $PoolSize)
-            $pBottom3 = New-Object Point ($point.X + $PoolSize), ($point.Y + $PoolSize)
-            $pText = New-Object Point ($point.X + $PoolTAreaSizeDevidedBy2) , ($point.Y + $sizeDevidedBy2)                          
-            $TopPath.AddLine($pTop1,$pTop3)   
-            $RightPath.AddLine($pTop3,$pBottom3)               
-            $BottomPath.AddLine($pBottom1,$pBottom3) 
-            $LeftPath.AddLine($pBottom1,$pTop1)     
-            $TAreaPAth.AddLine($pBottom2,$pTop2) 
-            $MainPen = $RegPen  
+            $pTop3 = New-Object Point ($point.X + $PoolWidth) , $point.Y
+            $pBottom1 = New-Object Point $point.X , ($point.Y + $PoolHeight)
+            $pBottom2 = New-Object Point ($point.X + $PoolTAreaSize), ($point.Y + $PoolHeight)
+            $pBottom3 = New-Object Point ($point.X + $PoolWidth), ($point.Y + $PoolHeight)           
+            $MAreaRect = $TAreaRect = New-Object Rectangle ($pTop1.x + $PoolLineSize) , ($pTop1.Y + $PoolLineSize),`
+                                                            (($pTop3.x - $pTop1.x) - $PoolLineSize) , (($pBottom3.Y -$pTop1.Y) - $PoolLineSize)
+            $MainPath.AddRectangle($MAreaRect)
+            $TopPath.AddLine($pTop1,(New-Object Point ($pTop3.x + $PoolLineSize), $pTop1.Y)) 
+            $TopPath.AddLine((New-Object Point ($pTop3.x), ($pTop3.Y + $PoolLineSize)), `
+                            (New-Object Point ($pTop1.x + $PoolLineSize), ($pTop1.Y+$PoolLineSize)))                             
+            $TopPath.CloseAllFigures()
+            $RightPath.AddLine((New-Object Point ($pTop3.x), ($pTop3.Y + $PoolLineSize)),$pBottom3) 
+            $RightPath.AddLine((New-Object Point ($pBottom3.x + $PoolLineSize) , ($pBottom3.Y + $PoolLineSize)),`
+                                (New-Object Point ($pTop3.x + $PoolLineSize), ($pTop3.Y)))  
+            $RightPath.CloseAllFigures()          
+            $BottomPath.AddLine((New-Object Point $pBottom3.x, $pBottom3.Y),`
+                                (New-Object Point ($pBottom1.x + $PoolLineSize), ($pBottom1.Y))) 
+            $BottomPath.AddLine((New-Object Point ($pBottom1.x), ($pBottom1.Y + $PoolLineSize)), `
+                                (New-Object Point ($pBottom3.x + $PoolLineSize), ($pBottom3.Y + $PoolLineSize)))  
+            $BottomPath.CloseAllFigures()                                                 
+            $LeftPath.AddLine($pTop1,(New-Object Point ($pBottom1.x) , ($pBottom1.Y + $PoolLineSize))) 
+            $LeftPath.AddLine((New-Object Point ($pBottom1.x + $PoolLineSize) , ($pBottom1.Y)), `
+                                (New-Object Point ($pTop1.x+$PoolLineSize) , ($pTop1.Y + $PoolLineSize)))  
+            $LeftPath.CloseAllFigures()
+            $TLinePath.AddLine((New-Object Point $pTop2.x, ($pTop2.Y + $PoolLineSize)), $pBottom2)
+            $TAreaRect = New-Object Rectangle ($pTop1.x + $PoolLineSize) , ($pTop1.Y + $PoolLineSize),`
+                                             (($pTop2.X - $pTop1.X) - $PoolLineSize), (($pBottom2.Y - $pTop2.Y) - $PoolLineSize)                                                            
+            $TAreaPath.AddRectangle($TAreaRect)
+            $MainPen = $RegPen 
         }
     }
     If($strSwitch -ne "")
@@ -520,7 +614,10 @@ Function funDPanAddpaint($s,$e){
         $pLeftRegion = new-object Region $pLeftPath
         $ShadowRegion = new-object Region $ShadowPath
         $MainRegion = new-object Region  $MainPath
-        If((($Global:bolMouseMove -eq $false) -or ($Global:bolMouseDown -eq $faslse) -or ($global:objShape -eq $null)) -or ($Global:Loading))
+        If(
+            (($Global:bolMouseMove -eq $false) -or ($Global:bolMouseDown -eq $faslse) -or (($global:objShape -eq $null) -and ($Global:objGroup -eq $Null))) -or 
+            ($Global:Loading)
+          )
         {
             If($Global:Loading)
             {
@@ -529,7 +626,8 @@ Function funDPanAddpaint($s,$e){
             Else
             {
                 $Global:intIterate ++
-                $name = "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate"                
+                $name = "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate"
+                $name = "$(($GroupsTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate"              
             }
             If($strSwitch -eq ($ShapesTbl.Controls | Where-Object -FilterScript {$_.Name -match $strSwitch}).Name)
             {
@@ -579,11 +677,11 @@ Function funDPanAddpaint($s,$e){
             }
             Else
             {
-                 $objGroup = [pscustomobject]@{
-     
-       
-                    Name = "$name$Global:intIterate"
+                 $objGroup = [pscustomobject]@{     
+                    Name = $name
+                    Type= $strSwitch
                     Point = $point
+                    TPoint = $Null
                     pTop1 = $pTop1
                     pTop2 = $pTop2
                     pTop3 = $pTop3
@@ -595,8 +693,11 @@ Function funDPanAddpaint($s,$e){
                     BottomPath = $BottomPath
                     LeftPath = $LeftPath 
                     TAreaPath = $TAreaPath
+                    TLinePath = $TLinePath
+                    MainPath = $MainPath
                     Text = ""
-                    PointPen = $RegPen
+                    AxisPath = ""
+                    TextPen = $TextPen
                     MainPen = $GroupPen
                 }
                 $MainObject.arrGroups.Add($objGroup)
@@ -631,7 +732,20 @@ Function funDPanAddpaint($s,$e){
             }
             Else
             {
-                
+                $Global:objGroup.Point = $point
+                $Global:objGroup.pTop1 = $pTop1
+                $Global:objGroup.pTop2 = $pTop2
+                $Global:objGroup.pTop3 = $pTop3
+                $Global:objGroup.pBottom1 = $pBottom1
+                $Global:objGroup.pBottom2 = $pBottom2
+                $Global:objGroup.pBottom3 = $pBottom3
+                $Global:objGroup.MainPath = $MainPath
+                $Global:objGroup.TopPath = $TopPath
+                $Global:objGroup.RightPath = $RightPath
+                $Global:objGroup.BottomPath = $BottomPath
+                $Global:objGroup.LeftPath = $LeftPath 
+                $Global:objGroup.TAreaPath = $TAreaPath
+                $Global:objGroup.TLinePath = $TLinePath
             }
         }
     }
@@ -824,19 +938,29 @@ Function funDPanAddpaint($s,$e){
     If ($MainObject.arrGroups.count -gt 0)
     {        
         for($r = 0; $r -lt $MainObject.arrGroups.Count; $r++)
-        {
+        {           
             $arrGroItem = $MainObject.arrGroups[$r]
+            $e.Graphics.FillPath($TextBrush, $arrGroItem.TopPath)
+            $e.Graphics.FillPath($TextBrush, $arrGroItem.RightPath)
+            $e.Graphics.FillPath($TextBrush, $arrGroItem.BottomPath)
+            $e.Graphics.FillPath($TextBrush, $arrGroItem.LeftPath)
+            $e.Graphics.DrawPath($arrGroItem.TextPen, $arrGroItem.TLinePath)
+#            $e.Graphics.FillPath($SelTextBrush, $arrGroItem.TAreaPath)
+           
+
             If($arrGroItem.TopPath.isVisible($DesktopPan.PointToClient([Cursor]::Position)))
-            {
-                
-            }
+            {$e.Graphics.Fillpath($SelTextBrush, $arrGroItem.TopPath)}
+                ElseIf($arrGroItem.RightPath.isVisible($DesktopPan.PointToClient([Cursor]::Position)))
+                {$e.Graphics.FillPath($SelTextBrush, $arrGroItem.RightPath)}
+                    ElseIf($arrGroItem.BottomPath.isVisible($DesktopPan.PointToClient([Cursor]::Position)))
+                    {$e.Graphics.FillPath($SelTextBrush, $arrGroItem.BottomPath)}
+                        ElseIf($arrGroItem.LeftPath.isVisible($DesktopPan.PointToClient([Cursor]::Position)))
+                        {$e.Graphics.FillPath($SelTextBrush, $arrGroItem.LeftPath)}
+                            ElseIf($arrGroItem.TAreaPath.isVisible($DesktopPan.PointToClient([Cursor]::Position)))
+                            {$e.Graphics.FillPath($SelTextBrush, $arrGroItem.MainPath)}
             Else
             {
-                $e.Graphics.DrawPath($arrGroItem.MainPen, $arrGroItem.TopPath)
-                $e.Graphics.DrawPath($arrGroItem.MainPen, $arrGroItem.RightPath)
-                $e.Graphics.DrawPath($arrGroItem.MainPen, $arrGroItem.BottomPath)
-                $e.Graphics.DrawPath($arrGroItem.MainPen, $arrGroItem.LeftPath)
-                $e.Graphics.DrawPath($TextPen, $arrGroItem.TAreaPath)
+                
 #                $PathGraBrush = New-Object Drawing2D.LinearGradientBrush ($arrGroItem.BottomPointGB,$arrGroItem.TopPointGB,$arrItem.fillColor,[color]::White)
 #                $e.Graphics.FillPath($PathGraBrush,$arrGroItem.MainPath)
             }
@@ -856,20 +980,27 @@ Function funDPanMouseUp{
         $DesktopPan.Invalidate()
     }
 
-
     If ($Global:objShape -ne $null)
     {
         foreach($cont in $ShapesTbl.Controls)
         {
             $cont.checked = $false
         }
-    }   
+    }
+
+    If ($Global:objGroup -ne $null)
+    {
+        foreach($cont in $GroupsTbl.Controls)
+        {
+            $cont.checked = $false
+        }
+    }       
 }
 
 Function funDPanMouseMove{
     If(
         ($Global:bolMouseDown) -and 
-        ($global:objShape -ne $null -or $Global:SelPath -ne $Null) -and 
+        ($global:objShape -ne $null -or $Global:SelPath -ne $Null -or $Global:objGroup -ne $Null) -and 
         !$SolidLine.Checked -and !$DashedLine.Checked -and !$dottedline.Checked
       )
     {
@@ -1203,6 +1334,7 @@ $Secoform.Add_KeyDown({funFormKeyDown})
 $Secoform.Add_Closing{
    $Global:objShapePoint = $null
    $Global:objShape = $null
+   $Global:objGroup = $Null
 }
 $Secoform.Add_Load{
     Set-DoubleBuffer -grid $DesktopPan -Enabled $true
