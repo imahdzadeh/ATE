@@ -122,12 +122,6 @@ Function funImgStreamer($imgPath){
     $inStream.Dispose()
 }
 
-Function funAddGroups($point, $intIterate, $name){
-
-          
-   
-}
-
 Function funDPanMouseDown{
     $Global:bolMouseDown = $true
     $BolContRegions = $false
@@ -331,10 +325,14 @@ Function funDPanAddpaint($s,$e){
     If($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked})
     {
         $strSwitch = ($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name
+        $Global:intIterate ++
+        $name = "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate"
     }
     If($GroupsTbl.Controls | Where-Object -FilterScript {$_.Checked})
     {
         $strSwitch = ($GroupsTbl.Controls | Where-Object -FilterScript {$_.Checked}).name
+        $Global:intIterate ++
+        $name = "$(($GroupsTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate"  
     }
     If($Global:SelText -eq $Null -and $Global:SelPath -eq $null)
     {
@@ -359,12 +357,12 @@ Function funDPanAddpaint($s,$e){
                 $Global:SelPath.pTXDiffer = $Global:SelPath.pCenter.X - $point.X
                 $Global:SelPath.pTYDiffer = $Global:SelPath.pCenter.Y - $point.Y
             }
-
     }
     If($Global:Loading)
     {
         $point = $Global:SerializedP
         $strSwitch = $global:serializedObj
+        $name = "$strSwitch$($Global:intIterate)"
     }
     $MainPath = New-Object Drawing2D.GraphicsPath
     $ShadowPath = New-Object Drawing2D.GraphicsPath
@@ -619,16 +617,6 @@ Function funDPanAddpaint($s,$e){
             ($Global:Loading)
           )
         {
-            If($Global:Loading)
-            {
-                $name = "$strSwitch$($Global:intIterate)"
-            }
-            Else
-            {
-                $Global:intIterate ++
-                $name = "$(($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate"
-                $name = "$(($GroupsTbl.Controls | Where-Object -FilterScript {$_.Checked}).name)$Global:intIterate"              
-            }
             If($strSwitch -eq ($ShapesTbl.Controls | Where-Object -FilterScript {$_.Name -match $strSwitch}).Name)
             {
                 $objPSNewShape = [pscustomobject]@{
@@ -697,7 +685,7 @@ Function funDPanAddpaint($s,$e){
                     MainPath = $MainPath
                     Text = ""
                     AxisPath = ""
-                    TextPen = $TextPen
+                    TextPen = $TinyPen
                     MainPen = $GroupPen
                 }
                 $MainObject.arrGroups.Add($objGroup)
@@ -1090,6 +1078,7 @@ Function funLoadBtn{
                 }
             }
         }
+        $MainObject.arrRegions
         $DesktopPan.Invalidate() 
         $Global:strFileName = Get-Item $dialog.FileName
         $Global:Loading = $false
@@ -1102,7 +1091,8 @@ Function funSaveAsBtn{
     $result = $dialog.ShowDialog()
     if($result -eq [System.Windows.Forms.DialogResult]::OK){
         $Global:strFileName = "$($dialog.FileName).ate"
-        $MainObject | Export-Clixml "$($dialog.FileName).ate" -Depth 1
+        $MainObject | Export-Clixml "$($dialog.FileName).ate" -Depth 5
+        $MainObject.arrRegions
         $FileNameLbl.Text = ((Get-Item "$($dialog.FileName).ate").Name).Replace(".ate",'')
     }   
 }
@@ -1114,15 +1104,16 @@ Function funSaveBtn{
         $dialog = [System.Windows.Forms.SaveFileDialog]::new()
         $dialog.RestoreDirectory = $true
         $result = $dialog.ShowDialog()
+        $MainObject.arrRegions
         if($result -eq [System.Windows.Forms.DialogResult]::OK){
             $Global:strFileName = "$($dialog.FileName).ate"
-            $MainObject | Export-Clixml "$($dialog.FileName).ate" -Depth 1
+            $MainObject | Export-Clixml "$($dialog.FileName).ate" -Depth 5
             $FileNameLbl.Text = (Get-Item "$($dialog.FileName).ate").Name
         }
     }
     Else
     {
-        $MainObject | Export-Clixml $Global:strFileName -Depth 1
+        $MainObject | Export-Clixml $Global:strFileName -Depth 5
     }   
 }
 
