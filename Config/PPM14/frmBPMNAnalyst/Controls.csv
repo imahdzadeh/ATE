@@ -23,6 +23,7 @@ System.Windows.Forms.CheckBox,MagnifierTbl,Magnifier,30,30,,,0,Magnifier,MiddleC
 System.Windows.Forms.CheckBox,MagnifierTbl,ZoomIn,30,30,,,0,ZoomIn,MiddleCenter,1,2,,,,,
 System.Windows.Forms.CheckBox,ShapesTbl,StartCircle,50,50,,,0,StartCircle,MiddleCenter,1,2,,,,,
 System.Windows.Forms.CheckBox,ShapesTbl,InterCircle,50,50,,,0,InterCircle,MiddleCenter,1,2,,,,,
+System.Windows.Forms.CheckBox,ShapesTbl,DoubleCircle,50,50,,,0,DoubleCircle,MiddleCenter,1,2,,,,,
 System.Windows.Forms.CheckBox,ShapesTbl,Dimond,50,50,,,0,VDimond,MiddleCenter,1,2,,,,,
 System.Windows.Forms.CheckBox,ShapesTbl,Square,50,50,,,0,VSquare,MiddleCenter,1,2,,,,,
 System.Windows.Forms.CheckBox,ShapesTbl,DataObject,50,50,,,0,DataObj,MiddleCenter,1,2,,,,,

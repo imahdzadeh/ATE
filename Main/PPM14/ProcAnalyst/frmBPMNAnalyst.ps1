@@ -398,6 +398,29 @@ Function funDPanAddpaint($s,$e){
     
     switch ($strSwitch)
     {
+        $DoubleCircle.Name { 
+            $point.X = $point.X - ($StartCircleSize / $intDevideBy2)
+            $point.Y = $point.Y - ($StartCircleSize / $intDevideBy2)
+            $sizeDevidedBy2 = $StartCircleSize / $intDevideBy2            
+            $TopPointGB = New-Object Point ($point.X) , ($point.Y - $adjustPixel)
+            $BottomPointGB = New-Object Point ($point.X) , (($point.Y + $StartCircleSize) + $adjustPixel)
+            $pCenter = New-Object Point ($point.X + ($sizeDevidedBy2)) , ($point.Y + $sizeDevidedBy2)
+            $pTop = New-Object Point ($point.X + $sizeDevidedBy2), $point.Y
+            $pRight = New-Object Point (($point.X + $sizeDevidedBy2) + ($sizeDevidedBy2)) , ($point.Y + $sizeDevidedBy2)
+            $pBottom = New-Object Point ($point.X + $sizeDevidedBy2) , (($point.Y + $sizeDevidedBy2) + ($sizeDevidedBy2))
+            $pLeft = New-Object Point (($point.X + $sizeDevidedBy2) - $sizeDevidedBy2) , ($point.Y + $sizeDevidedBy2)                               
+            $MainPath.AddEllipse($point.X,$point.Y,$StartCircleSize,$StartCircleSize)
+            $MainPath.AddEllipse($point.X+$intDevideBy2,$point.Y+$intDevideBy2,$StartCircleSize-$intArrowSize,$StartCircleSize-$intArrowSize)
+            $pTopPath.AddEllipse($pTop.X-($ConnPSize / $intDevideBy2),$pTop.Y,$ConnPSize,$ConnPSize)
+            $pRightPath.AddEllipse($pRight.X - ($ConnPSize), $pRight.Y - ($ConnPSize / $intDevideBy2),$ConnPSize,$ConnPSize)
+            $pLeftPath.AddEllipse($pLeft.X,($pLeft.Y - ($ConnPSize / $intDevideBy2)),$ConnPSize,$ConnPSize)
+            $pBottomPath.AddEllipse($pBottom.X - ($ConnPSize / $intDevideBy2),($pBottom.Y - ($ConnPSize)),$ConnPSize,$ConnPSize)
+            $ShadowPath.AddEllipse(($point.X)-$ShadowSize,($point.Y)-$ShadowSize,$StartCircleSize+($ShadowSize*$intMultiplyBy2),$StartCircleSize+($ShadowSize*$intMultiplyBy2))
+            $fillColor = [color]::White                  
+            $maxConn = 1
+            $bolInput = $false
+            $MainPen = $GroupPen
+        }
         $StartCircle.Name { 
             $point.X = $point.X - ($StartCircleSize / $intDevideBy2)
             $point.Y = $point.Y - ($StartCircleSize / $intDevideBy2)
@@ -750,7 +773,7 @@ Function funDPanAddpaint($s,$e){
                     TAreaPath = $TAreaPath
                     TLinePath = $TLinePath
                     MainPath = $MainPath
-                    Text = $name
+                    Text = "$strSwitch$($MainObject.arrGroups.Count+1)"
                     TextPath = $TextPath
                     pCenter = $pCenter
                     AxisPath = ""
@@ -785,7 +808,7 @@ Function funDPanAddpaint($s,$e){
                     pBottom2 = $pBottom2
                     LanePAth = $BottomPath
                     TAreaPath = $TAreaPath
-                    Text = $name
+                    Text = "$strSwitch$($global:objGroup.Lanes.Count)"
                     TextPath = $TextPath
                     pCenter = $pCenter
                     TextPen = $TinyPen
@@ -797,7 +820,6 @@ Function funDPanAddpaint($s,$e){
                 $global:objGroup.Lanes.Add($objLane)
                 funDisAllShapes $null
                 $global:objLane = $objLane
-                write-host "obj $($objLane.Name) added"
             }
         }
         Else
@@ -1023,12 +1045,12 @@ Function funDPanAddpaint($s,$e){
                 If($arrItem.Type -eq $Square.Name)
                 {
                     If($arrItem.SubProcess){
-                        $e.Graphics.DrawImage($SubProcess.Image,$arrItem.pLeft.x + ($SubProcess.Width/$intDevideBy2), $arrItem.pCenter.y - $SubProcess.Height + $arcSize)
+                        $e.Graphics.DrawImage($SubProcess.Image,($arrItem.pLeft.x), $arrItem.pCenter.y - $SubProcess.Height + $arcSize)
                     }
                     If($arrItem.Icon -ne "")
                     {
                         $TempObj = Get-Variable -ValueOnly -Include $arrItem.Icon
-                        $e.Graphics.DrawImage($TempObj.Image,($arrItem.pCenter.x - $SquareSize) + $TempObj.Width, ($arrItem.pCenter.y - $squareSizeY) + $arcSize)
+                        $e.Graphics.DrawImage($TempObj.Image,($arrItem.pCenter.x - $SquareSize) + $arcSize, ($arrItem.pCenter.y - $squareSizeY) - $intArrowSize)
                     }
                 }
                 Else
@@ -1045,9 +1067,8 @@ Function funDPanAddpaint($s,$e){
 #                        $e.Graphics.DrawImage($avatar,$arrItem.point.x  , $arrItem.point.y)
 
 #                        $e.Graphics.DrawImage($avatar,$arrItem.pcenter.x  , $arrItem.pcenter.y)
-                        Write-Host $arrItem.point
                     }
-                        ElseIf($arrItem.Type -eq $StartCircle.Name -Or $arrItem.Type -eq $InterCircle.Name)
+                        ElseIf($arrItem.Type -eq $StartCircle.Name -Or $arrItem.Type -eq $InterCircle.Name -Or $arrItem.Type -eq $DoubleCircle.Name)
                         {
                             $TempObj = Get-Variable -ValueOnly -Include $arrItem.Icon
                             $e.Graphics.DrawImage($TempObj.Image,($arrItem.pTop.x - $StartCircleSize) - $arcSize,( $arrItem.pCenter.y - $StartCircleSize)-$arcSize)
@@ -1055,7 +1076,7 @@ Function funDPanAddpaint($s,$e){
                     Else
                     {
                         $TempObj = Get-Variable -ValueOnly -Include $arrItem.Icon
-                        $e.Graphics.DrawImage($TempObj.Image,($arrItem.pTop.x - $DataObjSize) ,( $arrItem.pCenter.y - $DataObjSizeX))    
+                        $e.Graphics.DrawImage($TempObj.Image,($arrItem.pTop.x - $DataObjSize)- $intArrowSize ,( $arrItem.pTop.y - $DataObjSizeX))    
                     }
                 }
             }            
@@ -1116,8 +1137,8 @@ Function funDPanAddpaint($s,$e){
                 If($n -gt 0)
                 {
     #                $arrConnItem = $arrGroItem.Lanes[$n]
-                    New-Variable -Force -Name "$($arrGroItem.Name)$n" -Value (New-Object Drawing2D.GraphicsPath) 
-                    $MainPath = Get-Variable -ValueOnly -Include "$($arrGroItem.Name)$n"
+                    New-Variable -Force -Name "$($arrGroItem.Lanes[$n].Name)$nMPath" -Value (New-Object Drawing2D.GraphicsPath) 
+                    $MainPath = Get-Variable -ValueOnly -Include "$($arrGroItem.Lanes[$n].Name)$nMPath"
     #                $MainPath = New-Object Drawing2D.GraphicsPath
                     New-Variable -Force -Name "$($arrGroItem.Lanes[$n].Name)$nTPath" -Value (New-Object Drawing2D.GraphicsPath) 
                     $TextPath = Get-Variable -ValueOnly -Include "$($arrGroItem.Lanes[$n].Name)$nTPath"
@@ -1146,7 +1167,7 @@ Function funDPanAddpaint($s,$e){
                     $BottomPath.CloseAllFigures()
 #>
 #                    $arrGroItem.Lanes[$n].BottomPath = $BottomPath  
-#                    $e.Graphics.FillPath($SelTextBrush, $MainPath)
+#                    $e.Graphics.FillPath($TextBrush, $LinePath)
                     
                     $e.Graphics.FillPath($WhiteTextBrush, $LinePath)
                     $e.Graphics.DrawLine($arrGroItem.TextPen,$pBottom1,$pBottom2)
@@ -1314,6 +1335,7 @@ Function funLoadBtn{
             $DesktopPan.Invalidate() 
             $DesktopPan.Update()        
         }
+        $Global:Loading = $false
         for($i = 0; $i -lt $MainObject.arrGroups.Count; $i++)
         {
             foreach($objLoad in $objPSNewShape.arrGroups)
@@ -1322,42 +1344,94 @@ Function funLoadBtn{
                 {
                     $MainObject.arrGroups[$i].Text = $objLoad.Text
                     $MainObject.arrGroups[$i].pTXDiffer = $objLoad.pTXDiffer
-                    $MainObject.arrGroups[$i].pTYDiffer = $objLoad.pTYDiffer  
+                    $MainObject.arrGroups[$i].pTYDiffer = $objLoad.pTYDiffer                
+                    for($u = 1; $u -lt $objLoad.Lanes.Count; $u++)
+                    {
+                        $global:serializedObj = ""
+                        $Global:intIterate ++
+                        
+                        $objLane = [pscustomobject]@{     
+                                Name = $objLoad.Lanes[$u].name
+                                Type= $objLoad.Lanes[$u].Type
+                                pCenter = $Null
+                                TextPath = $Null
+                                LanePath = $Null
+                                TAreaPath = $Null
+                                intIterate = $objLoad.Lanes[$u].intIterate
+                                Pool = $objLoad.Lanes[$u].Pool
+                                Point = $objLoad.Lanes[$u].point
+                                TPoint = $objLoad.Lanes[$u].TPoint
+                                pTop = $objLoad.Lanes[$u].pTop
+                                pBottom1 = $objLoad.Lanes[$u].pBottom1
+                                pBottom2 = $objLoad.Lanes[$u].pBottom2
+                                Text = $objLoad.Lanes[$u].Text
+                                TextPen = $TinyPen
+                                MainPen = $GroupPen
+                                pTXDiffer = $objLoad.Lanes[$u].pTXDiffer
+                                pTYDiffer = $objLoad.Lanes[$u]. pTYDiffer
+                                LaneHeight =$objLoad.Lanes[$u].LaneHeight
+                            } 
+                        $MainObject.arrGroups[$i].Lanes.Add($objLane)
+                        $DesktopPan.Invalidate() 
+                        $DesktopPan.Update()
+    <#                                         
+                        $MainObject.arrGroups[$i].Lanes[$u].Point = $objLoad.Lanes[$u].point
+                        $MainObject.arrGroups[$i].Lanes[$u].TPoint = $objLoad.Lanes[$u].Null
+                        $MainObject.arrGroups[$i].Lanes[$u].pTop = $objLoad.Lanes[$u].pTop
+    
+                        $MainObject.arrGroups[$i].Lanes[$u].pBottom1 = $objLoad.Lanes[$u].pBottom1
+    
+                        $MainObject.arrGroups[$i].Lanes[$u].pBottom2 = $objLoad.Lanes[$u].pBottom2
+                        $MainObject.arrGroups[$i].Lanes[$u].LanePAth = $objLoad.Lanes[$u].BottomPath
+                        $MainObject.arrGroups[$i].Lanes[$u].TAreaPath = $objLoad.Lanes[$u].TAreaPath
+                        $MainObject.arrGroups[$i].Lanes[$u].TextPath = $objLoad.Lanes[$u].TextPath
+                        $MainObject.arrGroups[$i].Lanes[$u].pCenter = $objLoad.Lanes[$u].pCenter
+                        $MainObject.arrGroups[$i].Lanes[$u].TextPen = $objLoad.Lanes[$u].TinyPen
+                        $MainObject.arrGroups[$i].Lanes[$u].MainPen = $objLoad.Lanes[$u].GroupPen
+                    
+                        $MainObject.arrGroups[$i].Lanes[$u].Pool = $objLoad.Lanes[$u].Pool
+    
+                        $MainObject.arrGroups[$i].Lanes[$u].LaneHeight = $objLoad.Lanes[$u].LaneHeight
+                        
+                        $MainObject.arrGroups[$i].Lanes[$u].intIterate = $objLoad.Lanes[$u].intIterate
+                        $MainObject.arrGroups[$i].Lanes[$u].Type = $objLoad.Lanes[$u].Type
+                        $MainObject.arrGroups[$i].Lanes[$u].Text = $objLoad.Lanes[$u].Text
+                        $MainObject.arrGroups[$i].Lanes[$u].pTXDiffer = $objLoad.Lanes[$u].pTXDiffer
+                        $MainObject.arrGroups[$i].Lanes[$u].pTYDiffer = $objLoad.Lanes[$u].pTYDiffer 
+    
+    [pscustomobject]@{     
+                        Name = $name
+                        Type= $strSwitch
+                        intIterate = $Global:intIterate
+                        Pool = $Null
+                        Point = $point
+                        TPoint = $Null
+                        pTop = $pTop
+                        pBottom1 = $pBottom1
+                        pBottom2 = $pBottom2
+                        LanePAth = $BottomPath
+                        TAreaPath = $TAreaPath
+                        Text = $name
+                        TextPath = $TextPath
+                        pCenter = $pCenter
+                        TextPen = $TinyPen
+                        MainPen = $GroupPen
+                        pTXDiffer = 0
+                        pTYDiffer = 0
+                        LaneHeight = $LaneSize
+                    }
+    #>                    
+                                 
+                    }                
+                
+                
                 }
-                for($u = 1; $u -lt $objLoad.Lanes.Count; $u++)
-                {
-                    $global:serializedObj = $objLoad.Lanes[$u].Type
-                    $Global:intIterate = $objLoad.Lanes[$u].intIterate
-                    $DesktopPan.Invalidate() 
-                    $DesktopPan.Update()
-<#                                         
-                    $MainObject.arrGroups[$i].Lanes[$u].Point = $objLoad.Lanes[$u].point
-                    $MainObject.arrGroups[$i].Lanes[$u].TPoint = $objLoad.Lanes[$u].Null
-                    $MainObject.arrGroups[$i].Lanes[$u].pTop = $objLoad.Lanes[$u].pTop
-#>
-                    $MainObject.arrGroups[$i].Lanes[$u].pBottom1 = $objLoad.Lanes[$u].pBottom1
-<#
-                    $MainObject.arrGroups[$i].Lanes[$u].pBottom2 = $objLoad.Lanes[$u].pBottom2
-                    $MainObject.arrGroups[$i].Lanes[$u].LanePAth = $objLoad.Lanes[$u].BottomPath
-                    $MainObject.arrGroups[$i].Lanes[$u].TAreaPath = $objLoad.Lanes[$u].TAreaPath
-                    $MainObject.arrGroups[$i].Lanes[$u].TextPath = $objLoad.Lanes[$u].TextPath
-                    $MainObject.arrGroups[$i].Lanes[$u].pCenter = $objLoad.Lanes[$u].pCenter
-                    $MainObject.arrGroups[$i].Lanes[$u].TextPen = $objLoad.Lanes[$u].TinyPen
-                    $MainObject.arrGroups[$i].Lanes[$u].MainPen = $objLoad.Lanes[$u].GroupPen
-                    $MainObject.arrGroups[$i].Lanes[$u].LaneHeight = $objLoad.Lanes[$u].LaneSize
-                    $MainObject.arrGroups[$i].Lanes[$u].Pool = $objLoad.Lanes[$u].Pool
-#>
-                    $MainObject.arrGroups[$i].Lanes[$u].intIterate = $objLoad.Lanes[$u].intIterate
-                    $MainObject.arrGroups[$i].Lanes[$u].Type = $objLoad.Lanes[$u].Type
-                    $MainObject.arrGroups[$i].Lanes[$u].Text = $objLoad.Lanes[$u].Text
-                    $MainObject.arrGroups[$i].Lanes[$u].pTXDiffer = $objLoad.Lanes[$u].pTXDiffer
-                    $MainObject.arrGroups[$i].Lanes[$u].pTYDiffer = $objLoad.Lanes[$u].pTYDiffer              
-                }
+
             }
         }
         $DesktopPan.Invalidate() 
         $Global:strFileName = Get-Item $dialog.FileName
-        $Global:Loading = $false
+        
     }
 }
 
@@ -1367,7 +1441,7 @@ Function funSaveAsBtn{
     $result = $dialog.ShowDialog()
     if($result -eq [System.Windows.Forms.DialogResult]::OK){
         $Global:strFileName = "$($dialog.FileName).ate"
-        $MainObject | Export-Clixml "$($dialog.FileName).ate" -Depth 5
+        $MainObject | Export-Clixml "$($dialog.FileName).ate" -Depth 1
         $FileNameLbl.Text = ((Get-Item "$($dialog.FileName).ate").Name).Replace(".ate",'')
     }   
 }
@@ -1382,13 +1456,13 @@ Function funSaveBtn{
         $MainObject.arrGroups
         if($result -eq [System.Windows.Forms.DialogResult]::OK){
             $Global:strFileName = "$($dialog.FileName).ate"
-            $MainObject | Export-Clixml "$($dialog.FileName).ate" -Depth 5
+            $MainObject | Export-Clixml "$($dialog.FileName).ate" -Depth 1
             $FileNameLbl.Text = (Get-Item "$($dialog.FileName).ate").Name
         }
     }
     Else
     {
-        $MainObject | Export-Clixml $Global:strFileName -Depth 5
+        $MainObject | Export-Clixml $Global:strFileName -Depth 1
     } 
     $MainObject.arrGroups  
 }
@@ -1609,6 +1683,7 @@ $Secoform.Add_Closing{
    $Global:SelPath = $Null
    $Global:SelLane = $Null
    $Global:intIterate = 0
+   $Global:ObjLane = $Null
 #   $Global:objGroup?.AxisPath = $Null
    $MainObject.arrRegions.Clear()
    $MainObject.arrGroups.Clear()
