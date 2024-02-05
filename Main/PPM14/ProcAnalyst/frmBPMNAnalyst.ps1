@@ -45,7 +45,10 @@ Function funFormKeyDown{
         }
             ElseIf($_.Keydata -match "Shift" -and $_.Keycode -ne "ShiftKey")
             {
-                $Global:typing.Text = "$($Global:typing.Text)$($_.Keycode)"
+                If($_.Keycode -match "^([^0-9]*)$")
+                {
+                    $Global:typing.Text = "$($Global:typing.Text)$($_.Keycode)"
+                }                
 #               [Console]::beep(500, 600)
             }
                 ElseIf($_.Keycode -eq [Keys]::Back)
