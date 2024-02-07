@@ -5,7 +5,31 @@
 
 . "$(Split-Path $PSScriptRoot -Parent)\Config\$(($PSCommandPath.Split('\') | select -last 1) -replace (".ps1$","var.ps1"))"
 
+
+
 If($varDebugTrace -ne 0){Set-PSDebug -Trace $varDebugTrace}Else{Set-PSDebug -Trace $varDebugTrace}
+Function funScale ($Magobj){
+    
+    If($Magobj.Name -eq $ZoomIn.Name)
+    {
+        $Global:ScaleUnit = 1.05
+        Write-Host $ZoomIn.Name
+        $desktoppan.Invalidate()
+    }
+        ElseIf($Magobj.Name -eq $ZoomOut.Name)
+        {
+            Write-Host $ZoomOut.Name
+            $Global:ScaleUnit = 0.95
+            $desktoppan.Invalidate()
+        }
+            ElseIf($Magobj.Name -eq $Magnifier.Name)
+            {
+                Write-Host $Magnifier.Name
+                $Global:ScaleUnit = 1
+                $desktoppan.Invalidate()
+            }
+    $Magobj.Checked = $false
+}  
 
 Function funTextIconClick{
     If($TextIcon.Checked)
@@ -327,6 +351,7 @@ Function funDPanMouseDown{
 
 Function funDPanAddpaint($s,$e){
 #    $e.Graphics.InterpolationMode = 2
+    $frmPath = New-Object System.Drawing.Drawing2D.GraphicsPath
     $e.Graphics.SmoothingMode = 4
     $mouse = [Cursor]::Position
     $point = $DesktopPan.PointToClient($mouse)
@@ -895,6 +920,11 @@ Function funDPanAddpaint($s,$e){
             }
         }
     }
+
+    $MatrixScale = New-Object System.Drawing.Drawing2D.Matrix
+    $MatrixScale.Scale($Global:ScaleUnit,$Global:ScaleUnit)
+#    $e.Graphics.transform($MatrixScale)
+
     If ($MainObject.arrRegions.count -gt 0)
     {        
         for($i = 0; $i -lt $MainObject.arrRegions.Count; $i++)
@@ -904,9 +934,15 @@ Function funDPanAddpaint($s,$e){
                 $arrItem.Mainregion.isVisible($DesktopPan.PointToClient([Cursor]::Position)) `
                 -or ($arrItem -eq $Global:objShape)                                                                                                       
                )
-            {       
+            { 
+            
+#                $frmPath.AddPath($arrItem.ShadowPath,$true)
+ #               $frmPath.AddPath( $arrItem.MainPath,$true)
+                      
                 $e.Graphics.DrawPath($mypen2, $arrItem.ShadowPath)
                 $e.Graphics.DrawPath($arrItem.MainPen, $arrItem.MainPath)
+
+#                $e.Graphics.DrawPath($arrItem.MainPen, $frmPath)
                 
                 $PathGraBrush = New-Object Drawing2D.PathGradientBrush($arrItem.MainPath)
                 $PathGraBrush.SurroundColors = $arrItem.fillColor
@@ -930,17 +966,33 @@ Function funDPanAddpaint($s,$e){
             }
             Else
             {
+#                $frmPath.AddPath($arrItem.ShadowPath,$true)
+#                $frmPath.AddPath( $arrItem.MainPath,$true)
                 $e.Graphics.DrawPath($arrItem.MainPen, $arrItem.MainPath)
+#                $e.Graphics.DrawPath($arrItem.MainPen, $frmPath)
+                
                 $PathGraBrush = New-Object Drawing2D.LinearGradientBrush ($arrItem.BottomPointGB,$arrItem.TopPointGB,$arrItem.fillColor,[color]::White)
 #                $PathGraBrush.SurroundColors = $arrItem.fillColor
 
                 $e.Graphics.FillPath($PathGraBrush,$arrItem.MainPath)
+
+#                $e.Graphics.FillPath($PathGraBrush, $frmPath)
                                
 #                $e.Graphics.DrawString("test", $fonty , $myBrush, $arrItem.p.X+40,$arrItem.p.y+55, [StringFormat]::GenericDefault)
  #               $e.Graphics.DrawImage($avatar,$arrItem.P1.x,$arrItem.P1.y)
 #                $e.Graphics.DrawImage($avatar,$arrItem.P2.x,$arrItem.P2.y)
 #                $e.Graphics.SetClip($arrItem.Mainregion,4)
             }
+#            New-Variable -Force -Name "$($arrItem.Name)$iMPScale" -Value (New-Object System.Drawing.Drawing2D.Matrix) 
+#            $MatrixScale = Get-Variable -ValueOnly -Include "$($arrItem.Name)$iMPScale"
+            
+
+
+
+#            $e.Graphics.Transform = $MatrixScale
+#            $e.Graphics.FillPath($PathGraBrush, $frmPath)
+ #           $Global:ScaleUnit = 1
+
             If($arrItem.Text -ne "")
             {
                 New-Variable -Force -Name "$($arrItem.Name)$iTPath" -Value (New-Object Drawing2D.GraphicsPath) 

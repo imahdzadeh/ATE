@@ -32,6 +32,7 @@ $LaneLineSize = 1
 $PoolLineSize = 2
 $TextSize = 12
 $BoldFont = 1
+$Global:ScaleUnit = 1
 $RegularFont = 0
 $varDebugTrace = 0
 $Logging = $True
