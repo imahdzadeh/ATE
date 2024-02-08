@@ -15,6 +15,8 @@ Where-Object {$_.UserID -match $([Environment]::UserName)} | % {$_.mainpath}
 #
 # Define objects and variables customed to this script between the lines
 #///////////////////////////////////////////////////////////////////////////////////
+$DesktopWidth = 1100
+$desktopHeight = 700
 #$depCode = "PPM14"
 $frmName = (Get-Item $PSCommandPath).Name
 #Write-Host $VarFileCont
@@ -104,7 +106,7 @@ public static extern IntPtr CreateRoundRectRgn(int nLeftRect, int nTopRect,
 $Win32Helpers = Add-Type -MemberDefinition $code -Name "Win32Helpers" -PassThru
 $Secoform = New-Object Windows.Forms.Form -Property @{
     StartPosition = [Windows.Forms.FormStartPosition]::CenterScreen
-    Size          = New-Object Drawing.Size 1300, 800
+    Size          = New-Object Drawing.Size 1250, 800
     Text          =            $shamsiYear.ToString() + "/" + 
                                ($shamsiMonth = $persianCalendar.GetMonth($gregorianDate)) + "/" + 
                                ( $shamsiDay = $persianCalendar.GetDayOfMonth($gregorianDate)).ToString() + "`t`t`t`t`t`t`t`t`t`t`t`t`t`t`t`t`t`t`t`t`t" + "مهد پویان اطلس" 

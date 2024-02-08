@@ -5,6 +5,6 @@ System.Windows.Forms.TableLayoutPanel,MainTbl,SubIconTbl,,$true,3,,0,
 System.Windows.Forms.TableLayoutPanel,MainTbl,LaunchTbl,,$true,3,0,0,
 System.Windows.Forms.TableLayoutPanel,MainTbl,MagnifierTbl,,$true,3,0,0,
 System.Windows.Forms.TableLayoutPanel,MainTbl,GroupsTbl,,$true,1,,0,
-System.Windows.Forms.TableLayoutPanel,MainTbl,TopMenuTbl,,$true,12,1,1,25
+System.Windows.Forms.TableLayoutPanel,MainTbl,TopMenuTbl,,$true,16,1,1,25
 
 

@@ -42,9 +42,6 @@ System.Windows.Forms.Button,TopMenuTbl,Undo,30,30,,,,Undo,,,,,#d2d4d6,#000,,
 System.Windows.Forms.Button,TopMenuTbl,Redo,30,30,,,,Redo,,,,,#d2d4d6,#000,,
 System.Windows.Forms.Label,TopMenuTbl,FileNameLbl,110,30,,,,,,,,,,,256, 
 System.Windows.Forms.Label,TopMenuTbl,FileNameLabelLbl,50,30,,,,,,,,,,,512,:نام فایل
+System.Windows.Forms.Label,TopMenuTbl,FileNameLabelLbl,50,30,,,,,,,,,,,512,:طول
 System.Windows.Forms.TableLayoutPanel,TopMenuTbl,LaunchTbl,,,,,,,,,,,,,,
 System.Windows.Forms.TableLayoutPanel,TopMenuTbl,MagnifierTbl,,,,,,,,,,,,,, 
-System.Windows.Forms.TextBox,TopMenuTbl,WidthTxb,50,30,,,,,,,,,,,, 
-System.Windows.Forms.Label,TopMenuTbl,WidthLbl,50,30,,,,,,,,,,,512,:طول
-System.Windows.Forms.TextBox,TopMenuTbl,HeightTxb,50,30,,,,,,,,,,,, 
-System.Windows.Forms.Label,TopMenuTbl,HeightLbl,50,30,,,,,,,,,,,512,:ارتفاع

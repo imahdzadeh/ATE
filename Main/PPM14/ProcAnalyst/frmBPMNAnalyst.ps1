@@ -1,13 +1,26 @@
-﻿# Created by Isar Mahdzadeh
-# Decmeber 12 2023
-# imahdzadeh@gmail.com
-# Atenshin Elsci
+﻿#==================================
+#|   Created by Isar Mahdzadeh    |
+#==================================
+#|   Decmeber 12 2023             |
+#==================================
+#|   imahdzadeh@gmail.com         |
+#==================================
+#|   Atenshin Elsci               |
+#==================================
 
 . "$(Split-Path $PSScriptRoot -Parent)\Config\$(($PSCommandPath.Split('\') | select -last 1) -replace (".ps1$","var.ps1"))"
 
-
-
 If($varDebugTrace -ne 0){Set-PSDebug -Trace $varDebugTrace}Else{Set-PSDebug -Trace $varDebugTrace}
+
+Function funFrmSettings($Width,$Height){
+
+    If($Width){$WidthTxb.Text = $Width}
+    If($Height){$HeightTxb.Text = $Height}
+    $DesktopPan.Size = New-Object Size($WidthTxb.Text,$HeightTxb.Text)
+    $MainObject.objSettings.Width = $WidthTxb.Text
+    $MainObject.objSettings.Height = $HeightTxb.Text
+}
+
 Function funScale ($Magobj){
     
     If($Magobj.Name -eq $ZoomIn.Name)
@@ -1327,7 +1340,7 @@ Function funLoadBtn{
         $global:SerializedP = New-Object Point
         $objPSNewShape = Import-Clixml $dialog.FileName
         $FileNameLbl.Text = ((Get-Item $dialog.FileName).Name).Replace(".ate",'')
-        $objPSNewShape.arrGroups
+        funFrmSettings $objPSNewShape.objSettings.Width $objPSNewShape.objSettings.Height 
         foreach($objLoad in $objPSNewShape.arrRegions)
         {
             $global:Class = $objLoad.Class
@@ -1486,7 +1499,6 @@ Function funLoadBtn{
         }
         $DesktopPan.Invalidate() 
         $Global:strFileName = Get-Item $dialog.FileName
-        
     }
 }
 
@@ -1522,7 +1534,8 @@ Function funSaveBtn{
     $MainObject.arrGroups  
 }
 
-Function funDisAllShapes($O) {  
+Function funDisAllShapes($O) { 
+ 
     foreach($obj in $ShapesTbl.Controls)
     {
         If($obj -ne $O)
@@ -1570,7 +1583,8 @@ Function funDisAllShapes($O) {
     {
         $Global:objShapePoint = $Null
         $desktopPan.Invalidate()
-    }  
+    } 
+     
 }
 
 function Set-DoubleBuffer {
@@ -1598,6 +1612,10 @@ function funClearAll{
     $MainObject = [pscustomobject]@{
                     arrRegions = [ArrayList]@()
                     arrGroups = [ArrayList]@()
+                    objSettings =[pscustomobject]@{
+                        Width = $DesktopWidth
+                        Height = $DesktopHeight
+                    }
                   }
     If (Test-Path $TablesCSV)
     {
@@ -1652,7 +1670,7 @@ function funClearAll{
             Else
             {
                 $thisControl.Add_Click({
-                    If(!$This.Checked){$DesktopPan.Focus()}
+#                    If(!$This.Checked){$DesktopPan.Focus()}
                     funDisAllShapes  $This
                 })                  
             }
@@ -1663,11 +1681,38 @@ function funClearAll{
 
 #----------------------------Controls
 
+$WidthTxb.Add_KeyDown({      
+        if ($_.KeyCode -eq [System.Windows.Forms.Keys]::Enter) {     
+            $_.SuppressKeyPress = $True
+            funFrmSettings $WidthTxb.Text $null
+        }
+        Else
+        {
+            # Check if Text contains any non-Digits
+            if($WidthTxb.Text -notmatch '\D'){
+            }      
+        }
+    })
+
+$HeightTxb.Add_KeyDown({      
+        if ($_.KeyCode -eq [System.Windows.Forms.Keys]::Enter) {     
+            $_.SuppressKeyPress = $True
+            funFrmSettings $null $HeightTxb.Text 
+        }
+        Else
+        {
+            # Check if Text contains any non-Digits
+            if($HeightTxb.Text -notmatch '\D'){
+            }      
+        }
+    })
+
 $DesktopPan = New-Object Panel
-#$DesktopPan.BackColor = 'green'
-$DesktopPan.Location = New-Object Size(120,50)
+#$DesktopPan.Anchor = 'Top, Left'
+#$DesktopPan.BackColor = 'red'
+#$DesktopPan.Location = New-Object Size(120,50)
 $DesktopPan.Size = New-Object Size(1100,700)
-$DesktopPan.Dock = [DockStyle]::Fill
+#$DesktopPan.Dock = [DockStyle]::Fill
 #$DesktopPan.AutoSize = $true
 $DesktopPan.name = "Main"
 $DesktopPan.BorderStyle = 1
@@ -1678,6 +1723,13 @@ $DesktopPan.Add_paint({
 $DesktopPan.add_MouseDown({funDPanMouseDown})
 $DesktopPan.add_MouseUp({funDPanMouseUp})
 $DesktopPan.add_MouseMove({funDPanMouseMove})
+#$DesktopPan.AutoScroll = $true
+
+$DesktopCC = New-Object Panel
+$DesktopCC.AutoScroll = $true
+$DesktopCC.Size = New-Object Size(1100,700)
+$DesktopCC.Controls.Add($DesktopPan)
+#$DesktopCC.BackColor = 'green'
 
 $Annotation = New-Object CheckBox
 $Annotation.Size = New-Object Size($GroupSizeX,$subIconButSize)
@@ -1693,6 +1745,8 @@ $Annotation.Add_click({
 })
 
 $MainTbl = New-Object TableLayoutPanel
+#$MainTbl.Size = New-Object Size(1200,700)
+#$MainTbl.BackColor = 'red'
 $MainTbl.AutoSize = $true
 $MainTbl.CellBorderStyle = 1
 $MainTbl.ColumnCount = 2
@@ -1717,14 +1771,16 @@ $ReturnBtn.Add_Click({
 $MainTbl.Controls.Add($ReturnBtn,0,0)
 $MainTbl.Controls.Add($ReturnBtn,0,0)
 $MainTbl.Controls.Add($TopMenuTbl,1,0)
-$MainTbl.Controls.Add($DesktopPan,1,1)
+#$MainTbl.SetColumnSpan()
+$MainTbl.Controls.Add($DesktopCC,1,1)
 $MainTbl.Controls.Add($ShapesTbl,0,1)
 $MainTbl.Controls.Add($SubIconTbl,0,2)
 $MainTbl.Controls.Add($LinesTbl,0,3)
 #$MainTbl.Controls.Add($butsTbl,0,4)
 $MainTbl.Controls.Add($GroupsTbl,0,4)
 $MainTbl.Controls.Add($Annotation,0,5)
-$MainTbl.SetRowSpan($DesktopPan,6)
+$MainTbl.SetRowSpan($DesktopCC,6)
+#New-Object Drawing.Size 1250, 820
 
 $Secoform.Controls.Add($MainTbl)
 $Secoform.Add_Shown({$Secoform.Activate(); $DesktopPan.Focus()})
@@ -1746,7 +1802,7 @@ $Secoform.Add_Closing{
 $Secoform.Add_Load{
     Set-DoubleBuffer -grid $DesktopPan -Enabled $true
     $DelShape.Focus()
-    
+    funFrmSettings $DesktopWidth $DesktopHeight
 }
 
 [void]$Secoform.ShowDialog()   # display the dialog

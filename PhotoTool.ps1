@@ -7,8 +7,8 @@ if($result -eq [System.Windows.Forms.DialogResult]::OK){
     $wip = New-Object -ComObject wia.imageprocess
     $scale = $wip.FilterInfos.Item("Scale").FilterId                    
     $wip.Filters.Add($scale)
-    $wip.Filters[1].Properties("MaximumWidth") = 90
-    $wip.Filters[1].Properties("MaximumHeight") = 90
+    $wip.Filters[1].Properties("MaximumWidth") = 80
+    $wip.Filters[1].Properties("MaximumHeight") = 80
     #aspect ratio should be set as false if you want the pics in exact size 
     $wip.Filters[1].Properties("PreserveAspectRatio") = $true
     $wip.Apply($wia) 
