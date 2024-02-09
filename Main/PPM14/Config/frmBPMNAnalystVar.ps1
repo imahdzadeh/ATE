@@ -17,6 +17,8 @@ Where-Object {$_.UserID -match $([Environment]::UserName)} | % {$_.mainpath}
 #///////////////////////////////////////////////////////////////////////////////////
 $DesktopWidth = 1100
 $desktopHeight = 700
+$intMaxWidth = 10000
+$intMaxHeight = 5000
 #$depCode = "PPM14"
 $frmName = (Get-Item $PSCommandPath).Name
 #Write-Host $VarFileCont

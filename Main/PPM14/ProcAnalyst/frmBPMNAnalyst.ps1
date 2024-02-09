@@ -1,12 +1,12 @@
-﻿#==================================
-#|   Created by Isar Mahdzadeh    |
-#==================================
-#|   Decmeber 12 2023             |
-#==================================
-#|   imahdzadeh@gmail.com         |
-#==================================
-#|   Atenshin Elsci               |
-#==================================
+﻿#==================================#
+#|   Created by Isar Mahdzadeh    |#
+#==================================#
+#|   Decmeber 12 2023             |#
+#==================================#
+#|   imahdzadeh@gmail.com         |#
+#==================================#
+#|   Atenshin Elsci               |#
+#==================================#
 
 . "$(Split-Path $PSScriptRoot -Parent)\Config\$(($PSCommandPath.Split('\') | select -last 1) -replace (".ps1$","var.ps1"))"
 
@@ -1656,6 +1656,7 @@ function funClearAll{
             If($_.Text -ne [System.DBNull]::Value){$thisControl.Text = $_.Text}
             If($_.ForeColor -ne [System.DBNull]::Value){$thisControl.ForeColor = $_.ForeColor}
             If($_.TextAlign -ne [System.DBNull]::Value){$thisControl.TextAlign = $_.TextAlign}
+            If($_.Anchor -ne [System.DBNull]::Value){$thisControl.Anchor = $_.Anchor}
             If($_.functions -ne [System.DBNull]::Value)
             {
                 $funName = $_.functions
@@ -1682,29 +1683,40 @@ function funClearAll{
 #----------------------------Controls
 
 $WidthTxb.Add_KeyDown({      
-        if ($_.KeyCode -eq [System.Windows.Forms.Keys]::Enter) {     
-            $_.SuppressKeyPress = $True
-            funFrmSettings $WidthTxb.Text $null
+        If ($_.KeyCode -eq [System.Windows.Forms.Keys]::Enter -and $WidthTxb.Text -notmatch '\D') {
+            If([int]$WidthTxb.Text -lt $intMaxWidth)
+            {     
+                $_.SuppressKeyPress = $True
+                funFrmSettings $WidthTxb.Text $null
+            }
         }
+<#
         Else
         {
             # Check if Text contains any non-Digits
             if($WidthTxb.Text -notmatch '\D'){
             }      
         }
+#>
     })
 
 $HeightTxb.Add_KeyDown({      
-        if ($_.KeyCode -eq [System.Windows.Forms.Keys]::Enter) {     
-            $_.SuppressKeyPress = $True
-            funFrmSettings $null $HeightTxb.Text 
+        If ($_.KeyCode -eq [System.Windows.Forms.Keys]::Enter -and $HeightTxb.Text -notmatch '\D') {
+            If([int]$HeightTxb.Text -lt $intMaxHeight)
+            {
+                $_.SuppressKeyPress = $True
+                funFrmSettings $null $HeightTxb.Text                
+            }
         }
+<#
         Else
         {
             # Check if Text contains any non-Digits
             if($HeightTxb.Text -notmatch '\D'){
+                Write-Host "ooops"
             }      
         }
+#>
     })
 
 $DesktopPan = New-Object Panel
