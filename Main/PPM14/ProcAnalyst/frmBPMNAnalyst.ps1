@@ -1782,10 +1782,11 @@ $DesktopPan.add_MouseMove({funDPanMouseMove})
 
 $DesktopCC = New-Object Panel
 $DesktopCC.AutoScroll = $true
-$DesktopCC.Size = New-Object Size(1100,650)
+$DesktopCC.Size = New-Object Size(1100,601)
 $DesktopCC.Controls.Add($DesktopPan)
 #$DesktopCC.BackColor = 'green'
 
+<#
 $Annotation = New-Object CheckBox
 $Annotation.Size = New-Object Size($GroupSizeX,$subIconButSize)
 $Annotation.name = 'Annotation'
@@ -1798,6 +1799,7 @@ $Annotation.Add_click({
     If(!$This.Checked){$DesktopPan.Focus()}
     funDisAllShapes $Annotation
 })
+#>
 
 $MainTbl = New-Object TableLayoutPanel
 #$MainTbl.Size = New-Object Size(1200,700)
@@ -1805,7 +1807,7 @@ $MainTbl = New-Object TableLayoutPanel
 $MainTbl.AutoSize = $true
 $MainTbl.CellBorderStyle = 1
 $MainTbl.ColumnCount = 2
-$MainTbl.RowCount = 6
+$MainTbl.RowCount = 5
 
 $ReturnBtn = New-Object Button
 $ReturnBtn.Location = New-Object Size(2,50) 
@@ -1833,8 +1835,8 @@ $MainTbl.Controls.Add($SubIconTbl,0,2)
 $MainTbl.Controls.Add($LinesTbl,0,3)
 #$MainTbl.Controls.Add($butsTbl,0,4)
 $MainTbl.Controls.Add($GroupsTbl,0,4)
-$MainTbl.Controls.Add($Annotation,0,5)
-$MainTbl.SetRowSpan($DesktopCC,6)
+#$MainTbl.Controls.Add($Annotation,0,5)
+$MainTbl.SetRowSpan($DesktopCC,4)
 #New-Object Drawing.Size 1250, 820
 
 $Secoform.Controls.Add($MainTbl)
