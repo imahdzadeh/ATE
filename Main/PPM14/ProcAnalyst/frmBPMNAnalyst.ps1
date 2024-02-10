@@ -63,7 +63,15 @@ Function funTextIconClick{
                     $Global:typing = $global:objGroup
                     $Global:SelText = $global:objGroup
                 }
-     }  
+     }
+     Else
+     {
+        $Global:typing = $Null
+        $Global:SelText = $Null
+        $Global:SelPath = $Null
+        write-host "text"
+        $DesktopPan.Invalidate()
+     }
 }               
 
 Function funFormKeyDown{
@@ -112,16 +120,36 @@ Function funFormKeyDown{
 }
 
 Function funDelShape{
-    If ($MainObject.arrRegions.Count -gt 0 -and $global:objShape -ne $null)
+    If ($MainObject.arrRegions.Count -gt 0 -and $global:objShape)
     {
         $MainObject.arrRegions.Remove($global:objShape)        
         $Global:objShape = $Null              
     }
-        ElseIf($MainObject.arrGroups.Count -gt 0 -and $Global:objGroup)
+        ElseIf($MainObject.arrGroups.Count -gt 0 -and $Global:objGroup -and !$Global:SelLane -and $Global:objGroup.Type -ne $Lane.Name)
         {
             $MainObject.arrGroups.Remove($Global:objGroup)
-            $Global:objGroup = $Null
             $Global:objGroup.AxisPath = $Null
+            $Global:objGroup = $Null            
+        }
+        Elseif($MainObject.arrGroups.Count -gt 0 -and $Global:objGroup -and ($Global:SelLane -or $Global:objGroup.Type -eq $Lane.Name))
+        {
+            for($j = 0; $j -lt $MainObject.arrGroups.Count; $j++)
+            {
+                for($b = 0; $b -lt $MainObject.arrGroups[$j].Lanes.Count; $b++)
+                {
+                    If($MainObject.arrGroups[$j].Lanes[$b] -eq $Global:SelLane -Or $MainObject.arrGroups[$j].Lanes[$b] -eq $Global:objGroup)
+                    {
+                        If($MainObject.arrGroups[$j].Lanes[$b] -eq $Global:SelLane)
+                        {
+                            $MainObject.arrGroups[$j].Lanes.Remove($Global:SelLane)
+                        }
+                        Else
+                        {
+                            $MainObject.arrGroups[$j].Lanes.Remove($Global:objGroup)
+                        }
+                    }
+                }
+            }
         }
     Else
     {
@@ -346,18 +374,24 @@ Function funDPanMouseDown{
                             {
                                 $BolContGroups = $True
                                 $Global:SelLane = $arrGroItem.Lanes[$h]
+                                $Global:objGroup = $arrGroItem.Lanes[$h]
                             }
                                 ElseIf($arrGroItem.Lanes[$h].TAreaPath.isVisible($point))
                                 {
                                     $BolContGroups = $True
-                                    $Global:SelPath = $arrGroItem.Lanes[$h]
+ #                                   $Global:SelPath = $arrGroItem.Lanes[$h]
+#                                    $Global:SelText = $arrGroItem.Lanes[$h].TextPath
+                                    $Global:objGroup = $arrGroItem.Lanes[$h]
                                 } 
                         }                                                                      
                     }                                                        
                 }
                 If(!$BolContGroups -and $Global:objGroup -ne $Null)
                 {
-                    $Global:objGroup.AxisPath = ""
+                    If($Global:objGroup.Type -eq $pool.Name)
+                    {
+                        $Global:objGroup.AxisPath = ""
+                    }                    
                     $Global:objGroup = $Null
                         
                 }
@@ -393,7 +427,8 @@ Function funDPanAddpaint($s,$e){
     {
         $strSwitch = $Lane.name
         $Global:intIterate ++
-        $name = "$strSwitch$Global:intIterate"
+#        $name = "$strSwitch$Global:intIterate"
+        $name = "$($Global:objGroup.Lanes.Count)"
     }
     If($Global:SelText -eq $Null -and $Global:SelPath -eq $null -and $Global:SelLane -eq $Null)
     {
@@ -401,7 +436,7 @@ Function funDPanAddpaint($s,$e){
         {
             $strSwitch = $global:objShape.type  
         }
-            ElseIf($Global:bolMouseMove -And $Global:bolMouseDown -And $Global:objGroup -ne $null)
+            ElseIf($Global:bolMouseMove -And $Global:bolMouseDown -And $Global:objGroup -ne $null -and $Global:objGroup.Type -ne $Lane.Name)
             {
                 $strSwitch = $Global:objGroup.type
             }
@@ -1248,7 +1283,7 @@ Function funDPanAddpaint($s,$e){
                     $e.Graphics.DrawLine($arrGroItem.TextPen,$pBottom1,$pBottom2)
 
 #                    $pTemp = New-Object Point ($arrGroItem.Lanes[$n].pTop.X - $arrGroItem.Lanes[$n].pTXDiffer) , ($arrGroItem.Lanes[$n].pTop.Y - $arrGroItem.Lanes[$n].pTYDiffer)
-                    If($Global:SelText -eq $arrGroItem.Lanes[$n].TextPath)
+                    If($Global:objGroup.TextPath -eq $arrGroItem.Lanes[$n].TextPath)
                     {
                         $TextPath.AddString($arrGroItem.Lanes[$n].Text, $fonty.FontFamily , $BoldFont, $TextSize ,$pTemp, [StringFormat]::GenericDefault)            
                     }
@@ -1284,6 +1319,7 @@ Function funDPanMouseUp{
         $Global:typing = $Null
         $Global:SelText = $Null
         $Global:SelPath = $Null
+        write-host "mousse up"
         $DesktopPan.Invalidate()
     }
 
@@ -1307,7 +1343,7 @@ Function funDPanMouseUp{
 Function funDPanMouseMove{
     If(
         ($Global:bolMouseDown) -and 
-        ($global:objShape -ne $null -or $Global:SelPath -ne $Null -or $Global:objGroup -ne $Null) -and 
+        ($global:objShape -ne $null -or $Global:SelPath -ne $Null -or $Global:objGroup -ne $Null -or $global:SelLane -ne $null) -and 
 #        !$SolidLine.Checked -and !$DashedLine.Checked -and !$dottedline.Checked
         !($LinesTbl.Controls | Where-Object -FilterScript {$_.Checked})
       )
@@ -1775,7 +1811,7 @@ $ReturnBtn = New-Object Button
 $ReturnBtn.Location = New-Object Size(2,50) 
 $ReturnBtn.name = "Desktop"
 $ReturnBtn.BackColor = "#d2d4d6"
-$ReturnBtn.text = "<<<< بازگشت به صفحه قبل"
+$ReturnBtn.text = "<<<< صفحه قبل"
 $ReturnBtn.width = 115
 $ReturnBtn.height = 40
 $ReturnBtn.Font = 'Microsoft Sans Serif,10'

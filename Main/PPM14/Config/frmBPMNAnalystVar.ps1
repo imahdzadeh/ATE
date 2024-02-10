@@ -108,7 +108,7 @@ public static extern IntPtr CreateRoundRectRgn(int nLeftRect, int nTopRect,
 $Win32Helpers = Add-Type -MemberDefinition $code -Name "Win32Helpers" -PassThru
 $Secoform = New-Object Windows.Forms.Form -Property @{
     StartPosition = [Windows.Forms.FormStartPosition]::CenterScreen
-    Size          = New-Object Drawing.Size 1250,745
+    Size          = New-Object Drawing.Size 1250,750
     Text          =            $shamsiYear.ToString() + "/" + 
                                ($shamsiMonth = $persianCalendar.GetMonth($gregorianDate)) + "/" + 
                                ( $shamsiDay = $persianCalendar.GetDayOfMonth($gregorianDate)).ToString() + "`t`t`t`t`t`t`t`t`t`t`t`t`t`t`t`t`t`t`t" + "مهد پویان اطلس" 
