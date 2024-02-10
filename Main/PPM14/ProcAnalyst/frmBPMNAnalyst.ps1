@@ -218,7 +218,14 @@ Function funDPanMouseDown{
                                 pTYDiffer = 0
                                 LineStyle = ($LinesTbl.Controls | Where-Object -FilterScript {$_.Checked}).Tag
                             }
-                            $Global:objShape.ConnArr.Add($objConn)                                                                                
+                            for($a = 0; $a -lt $Global:objShape.ConnArr.Count; $a++)
+                            {
+                                If($Global:objShape.ConnArr[$a].Startpoint -ne $Null -and $Global:objShape.ConnArr[$a].ConnPoint -eq $Null)
+                                {
+                                    $Global:objShape.ConnArr.RemoveAt($a)
+                                }
+                            }
+                            $Global:objShape.ConnArr.Add($objConn)                                                                             
                         }
                     Else
                     {
@@ -1739,7 +1746,7 @@ $DesktopPan.add_MouseMove({funDPanMouseMove})
 
 $DesktopCC = New-Object Panel
 $DesktopCC.AutoScroll = $true
-$DesktopCC.Size = New-Object Size(1100,700)
+$DesktopCC.Size = New-Object Size(1100,650)
 $DesktopCC.Controls.Add($DesktopPan)
 #$DesktopCC.BackColor = 'green'
 
@@ -1762,7 +1769,7 @@ $MainTbl = New-Object TableLayoutPanel
 $MainTbl.AutoSize = $true
 $MainTbl.CellBorderStyle = 1
 $MainTbl.ColumnCount = 2
-$MainTbl.RowCount = 5
+$MainTbl.RowCount = 6
 
 $ReturnBtn = New-Object Button
 $ReturnBtn.Location = New-Object Size(2,50) 
