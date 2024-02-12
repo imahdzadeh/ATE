@@ -55,7 +55,6 @@ Function funTextIconClick{
             ElseIf($Global:SelPath -ne $Null)
             {
                 $Global:typing = $Global:SelPath
-
             }
 #                ElseIf($global:objGroup -ne $Null)
                 ElseIf($global:objGroup -ne $Null )
@@ -63,13 +62,21 @@ Function funTextIconClick{
                     $Global:typing = $global:objGroup
                     $Global:SelText = $global:objGroup
                 }
+        $DesktopPan.Invalidate()
      }
      Else
      {
-        $Global:typing = $Null
+        If($Global:typing)
+        {
+            If($Global:ObjText)
+            {
+                $Global:ObjText.Redo = $Global:typing.Text
+                $UndoStack.Push($Global:ObjText)
+            }
+            $Global:typing = $Null
+        }       
         $Global:SelText = $Null
         $Global:SelPath = $Null
-        write-host "text"
         $DesktopPan.Invalidate()
      }
 }               
@@ -84,6 +91,16 @@ Function funFormKeyDown{
     }
     Else
     {
+        If(!$Global:ObjText)
+        {
+            $Global:ObjText = [pscustomobject]@{
+                        Type = "Text"
+                        Redo = $Null
+                        Undo = $Global:typing.Text
+                        Parentobject = $MainObject.arrRegions
+                        obj = $Global:typing
+                    }             
+        }
         If($_.Keycode -eq [Keys]::Return)
         {
             $Global:typing.Text = "$($Global:typing.Text)`n"
@@ -227,7 +244,15 @@ Function funDPanMouseDown{
         for($i = 0; $i -lt $MainObject.arrRegions.Count; $i++)
         {
             $arrItem = $MainObject.arrRegions[$i]
-            $Global:typing = $null
+            If($Global:typing)
+            {
+                If($Global:ObjText)
+                {
+                    $Global:ObjText.Redo = $Global:typing.Text
+                    $UndoStack.Push($Global:ObjText)
+                }
+                $Global:typing = $Null
+            }
             If ($arrItem.ShadowRegion.isVisible($point))
             {
                 $SubProcess.Checked
@@ -252,11 +277,17 @@ Function funDPanMouseDown{
                                 If($Global:objShape.ConnArr[$j].StartPoint -eq $Global:objShapePoint)
                                 {
                                     $Global:objShape.ConnArr[$j].ConnPoint = $TempPoint
-                                    $Global:objShape.ConnArr[$j].ConnObj = $arrItem                                            
+                                    $Global:objShape.ConnArr[$j].ConnObj = $arrItem
+                                    $UndoStack.Push([pscustomobject]@{
+                                            Type = $Creation
+                                            Redo = "Add"
+                                            Undo = "Remove"
+                                            Parentobject = $Global:objShape.ConnArr
+                                            obj = $Global:objShape.ConnArr[$j]
+                                        })                                            
                                     funDisAllShapes $null
                                 }
-                            }                                                                       
-                            $Global:objShape.ConnArr
+                            }
                             $Global:objShapePoint = $null
                             $Global:objShape = $null
                         }                        
@@ -366,7 +397,16 @@ Function funDPanMouseDown{
                 for($i = 0; $i -lt $MainObject.arrGroups.Count; $i++)
                 {
                     $arrGroItem = $MainObject.arrGroups[$i]
-                    $Global:typing = $null
+                    If($Global:typing)
+                    {
+                        If($Global:ObjText)
+                        {
+                            $Global:ObjText.Redo = $Global:typing.Text
+                            $UndoStack.Push($Global:ObjText)
+                            Write-Host "2"
+                        }
+                        $Global:typing = $Null
+                    }
                     If($arrGroItem.TopPath.isVisible($point))
                         {   
                             $BolContGroups = $True
@@ -415,8 +455,6 @@ Function funDPanMouseDown{
                                 ElseIf($arrGroItem.Lanes[$h].TAreaPath.isVisible($point))
                                 {
                                     $BolContGroups = $True
- #                                   $Global:SelPath = $arrGroItem.Lanes[$h]
-#                                    $Global:SelText = $arrGroItem.Lanes[$h].TextPath
                                     $Global:objGroup = $arrGroItem.Lanes[$h]
                                 } 
                         }                                                                      
@@ -426,10 +464,9 @@ Function funDPanMouseDown{
                 {
                     If($Global:objGroup.Type -eq $pool.Name)
                     {
-                        $Global:objGroup.AxisPath = ""
+                        $Global:objGroup.AxisPath = $Null
                     }                    
-                    $Global:objGroup = $Null
-                        
+                    $Global:objGroup = $Null                       
                 }
                 $Global:objShape = $null
                 $Global:objShapePoint = $null                   
@@ -462,8 +499,6 @@ Function funDPanAddpaint($s,$e){
             $Global:objGroup = $Global:UndoRedoMove.obj
         }
     }
-
-#    If ($StartCircle.Checked -or $Dimond.Checked -or $Square.Checked -Or $InterCircle.Checked -Or $DataObject.Checked)
     If($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked})
     {
         $strSwitch = ($ShapesTbl.Controls | Where-Object -FilterScript {$_.Checked}).name
@@ -480,7 +515,6 @@ Function funDPanAddpaint($s,$e){
     {
         $strSwitch = $Lane.name
         $Global:intIterate ++
-#        $name = "$strSwitch$Global:intIterate"
         $name = "$($Global:objGroup.Lanes.Count)"
     }
     If($Global:SelText -eq $Null -and $Global:SelPath -eq $null -and $Global:SelLane -eq $Null)
@@ -503,10 +537,10 @@ Function funDPanAddpaint($s,$e){
             ElseIf($Global:bolMouseMove -And $Global:bolMouseDown -And $Global:objGroup -ne $null -and $Global:objGroup.Type -ne $Lane.Name)
             {
                 $strSwitch = $Global:objGroup.type
-                If(!$Global:ObjMove)
+                If(!$Global:PoolResize -and $Global:objGroup.AxisPath -ne "TAreaPath")
                 {
-                    $Global:ObjMove = [pscustomobject]@{
-                            Type = "Move"
+                    $Global:PoolResize = [pscustomobject]@{
+                            Type = "PoolResize"
                             Point = $Null
                             Redo = $Null
                             Undo = $Global:objGroup.Point
@@ -519,17 +553,54 @@ Function funDPanAddpaint($s,$e){
                             RHeight = $Null
                             RWidth = $Null
                             Axis = $Global:objGroup.AxisPath
+                        }                   
+                }
+                If(!$Global:ObjMove -and $Global:objGroup.AxisPath -eq "TAreaPath")
+                {
+                    $Global:ObjMove = [pscustomobject]@{
+                            Type = "Move"
+                            Point = $Null
+                            Redo = $Null
+                            Undo = $Global:objGroup.Point
+                            Parentobject = $MainObject.arrGroups
+                            obj = $Global:objGroup
+                            Height = $Global:objGroup.PoolHeight
+                            Width = $Global:objGroup.PoolWidth
+                            Axis = $Global:objGroup.AxisPath
                         }
                 } 
             }
     }
         ElseIf($TextIcon.Checked -and $Global:bolMouseDown -and $Global:SelText -ne $Null)
         {
+            If(!$Global:TextMove)
+            {
+                $Global:TextMove = [pscustomobject]@{
+                        Type = "TextMove"
+                        RedopTXDiffer = $Null
+                        RedopTYDiffer = $Null
+                        UndopTXDiffer = $Global:SelText.pTXDiffer
+                        UndopTYDiffer = $Global:SelText.pTYDiffer
+                        obj = $Global:SelText
+                    } 
+            } 
             $Global:SelText.pTXDiffer = $Global:SelText.pCenter.x - $point.x
             $Global:SelText.pTYDiffer = $Global:SelText.pCenter.Y - $point.Y
+
         }
             ElseIf($TextIcon.Checked -and $Global:bolMouseDown -and $Global:SelPath -ne $Null)
-            {            
+            {
+                If(!$Global:TextMove)
+                {
+                    $Global:TextMove = [pscustomobject]@{
+                            Type = "TextMove"
+                            RedopTXDiffer = $Null
+                            RedopTYDiffer = $Null
+                            UndopTXDiffer = $Global:SelText.pTXDiffer
+                            UndopTYDiffer = $Global:SelText.pTYDiffer
+                            obj = $Global:SelPath
+                        }
+                }                         
                 $Global:SelPath.pTXDiffer = $Global:SelPath.pCenter.X - $point.X
                 $Global:SelPath.pTYDiffer = $Global:SelPath.pCenter.Y - $point.Y
             }
@@ -537,8 +608,16 @@ Function funDPanAddpaint($s,$e){
     {
         If($Global:SelLane -ne $Null)
         {
-            $Global:SelLane.LaneHeight = $Global:SelLane.LaneHeight + ($point.Y - $Global:SelLane.pBottom1.Y)
-            
+            If(!$Global:LaneResize)
+            {
+                $Global:LaneResize = [pscustomobject]@{
+                        Type = "LaneResize"
+                        Undo = $Global:SelLane.LaneHeight
+                        Redo = $Null
+                        obj = $Global:SelLane
+                    }
+            }  
+            $Global:SelLane.LaneHeight = $Global:SelLane.LaneHeight + ($point.Y - $Global:SelLane.pBottom1.Y)           
         }
     }    
     If($Global:Loading)
@@ -1129,8 +1208,6 @@ Function funDPanAddpaint($s,$e){
 
     $MatrixScale = New-Object System.Drawing.Drawing2D.Matrix
     $MatrixScale.Scale($Global:ScaleUnit,$Global:ScaleUnit)
-#    $e.Graphics.transform($MatrixScale)
-
     If ($MainObject.arrRegions.count -gt 0)
     {        
         for($i = 0; $i -lt $MainObject.arrRegions.Count; $i++)
@@ -1140,16 +1217,9 @@ Function funDPanAddpaint($s,$e){
                 $arrItem.Mainregion.isVisible($DesktopPan.PointToClient([Cursor]::Position)) `
                 -or ($arrItem -eq $Global:objShape)                                                                                                       
                )
-            { 
-            
-#                $frmPath.AddPath($arrItem.ShadowPath,$true)
- #               $frmPath.AddPath( $arrItem.MainPath,$true)
-                      
+            {                   
                 $e.Graphics.DrawPath($mypen2, $arrItem.ShadowPath)
                 $e.Graphics.DrawPath($arrItem.MainPen, $arrItem.MainPath)
-
-#                $e.Graphics.DrawPath($arrItem.MainPen, $frmPath)
-                
                 $PathGraBrush = New-Object Drawing2D.PathGradientBrush($arrItem.MainPath)
                 $PathGraBrush.SurroundColors = $arrItem.fillColor
                 $e.Graphics.FillPath($PathGraBrush,$arrItem.MainPath) 
@@ -1161,44 +1231,13 @@ Function funDPanAddpaint($s,$e){
                 {
                    $e.Graphics.DrawPath($SelPen, $arrItem."$($Global:objShapePoint)Path") 
                 }
-<#
-                $e.Graphics.DrawEllipse($arrItem.PointPen,$arrItem.pright.x,$arrItem.pright.Y,$ConnPSize,$ConnPSize)    
-                $e.Graphics.DrawEllipse($arrItem.PointPen,$arrItem.pTop.x,$arrItem.pTop.Y,$ConnPSize,$ConnPSize)   
-                $e.Graphics.DrawEllipse($arrItem.PointPen,$arrItem.pBottom.x,$arrItem.pBottom.Y,$ConnPSize,$ConnPSize)         
-                $e.Graphics.DrawEllipse($arrItem.PointPen,$arrItem.pLeft.x,$arrItem.pLeft.Y,$ConnPSize,$ConnPSize) 
-#>                        
-#                $e.Graphics.DrawImage($avatar,$arrItem.p.X+50,$arrItem.p.y+55,10,10)
-#                $e.Graphics.SetClip($arrItem.Mainregion,4)
             }
             Else
             {
-#                $frmPath.AddPath($arrItem.ShadowPath,$true)
-#                $frmPath.AddPath( $arrItem.MainPath,$true)
                 $e.Graphics.DrawPath($arrItem.MainPen, $arrItem.MainPath)
-#                $e.Graphics.DrawPath($arrItem.MainPen, $frmPath)
-                
                 $PathGraBrush = New-Object Drawing2D.LinearGradientBrush ($arrItem.BottomPointGB,$arrItem.TopPointGB,$arrItem.fillColor,[color]::White)
-#                $PathGraBrush.SurroundColors = $arrItem.fillColor
-
                 $e.Graphics.FillPath($PathGraBrush,$arrItem.MainPath)
-
-#                $e.Graphics.FillPath($PathGraBrush, $frmPath)
-                               
-#                $e.Graphics.DrawString("test", $fonty , $myBrush, $arrItem.p.X+40,$arrItem.p.y+55, [StringFormat]::GenericDefault)
- #               $e.Graphics.DrawImage($avatar,$arrItem.P1.x,$arrItem.P1.y)
-#                $e.Graphics.DrawImage($avatar,$arrItem.P2.x,$arrItem.P2.y)
-#                $e.Graphics.SetClip($arrItem.Mainregion,4)
             }
-#            New-Variable -Force -Name "$($arrItem.Name)$iMPScale" -Value (New-Object System.Drawing.Drawing2D.Matrix) 
-#            $MatrixScale = Get-Variable -ValueOnly -Include "$($arrItem.Name)$iMPScale"
-            
-
-
-
-#            $e.Graphics.Transform = $MatrixScale
-#            $e.Graphics.FillPath($PathGraBrush, $frmPath)
- #           $Global:ScaleUnit = 1
-
             If($arrItem.Text -ne "")
             {
                 New-Variable -Force -Name "$($arrItem.Name)$iTPath" -Value (New-Object Drawing2D.GraphicsPath) 
@@ -1214,16 +1253,13 @@ Function funDPanAddpaint($s,$e){
                     $TextPath.AddString($arrItem.Text, $fonty.FontFamily , $RegularFont, $TextSize ,$pTemp, [StringFormat]::GenericDefault) 
                     $e.Graphics.FillPath($TextBrush,$TextPath)
                 } 
-                $arrItem.TextPath = $TextPath               
-#                $e.Graphics.DrawString($arrItem.Text, $fonty , $myBrush, $arrItem.Pcenter.X,$arrItem.pCenter.y, [StringFormat]::GenericDefault)  
+                $arrItem.TextPath = $TextPath                
             }
-
             for($c = 0; $c -lt $arrItem.ConnArr.Count; $c++)
             {
                 $arrConnItem = $arrItem.ConnArr[$c]
                 New-Variable -Force -Name "$($arrItem.Name)$c" -Value (New-Object Drawing2D.GraphicsPath) 
                 $MainPath = Get-Variable -ValueOnly -Include "$($arrItem.Name)$c"
-#                $MainPath = New-Object Drawing2D.GraphicsPath
                 If($arrConnItem.Points.Count -gt 0)
                 {
                     for($p = 0; $p -lt $arrConnItem.Points.Count; $p++)
@@ -1271,8 +1307,7 @@ Function funDPanAddpaint($s,$e){
                         $MainPath.AddLine($Ptemp,$arrConnItem.ConnObj."$($arrConnItem.ConnPoint)")  
                     }
                 } 
-                $mypenCap.DashStyle = $arrConnItem.LineStyle
-#                $arrItem.Mainregion.intersect($MainPath)   
+                $mypenCap.DashStyle = $arrConnItem.LineStyle  
                 $arrConnItem.Path = $MainPath
                 If($Global:SelPath.Name -eq $arrItem.ConnArr[$c].Name -and $Global:SelPath.Startpoint -eq $arrConnItem.StartPoint)
                 {
@@ -1298,7 +1333,6 @@ Function funDPanAddpaint($s,$e){
                         $e.Graphics.FillPath($TextBrush,$TextPath)
                     } 
                     $arrConnItem.TextPath = $TextPath               
-    #                $e.Graphics.DrawString($arrItem.Text, $fonty , $myBrush, $arrItem.Pcenter.X,$arrItem.pCenter.y, [StringFormat]::GenericDefault)  
                 }
             }
             If($arrItem.SubProcess -Or $arrItem.Icon -ne "")
@@ -1319,15 +1353,8 @@ Function funDPanAddpaint($s,$e){
                     If($arrItem.Type -eq $Dimond.Name)
                     {
                         $TempObj = Get-Variable -ValueOnly -Include $arrItem.Icon
- #                       $e.Graphics.DrawImage($TempObj.Image,$arrItem.pTop.x - $DimondSize , $arrItem.pLeft.y - $DimondSize)
-
                         $e.Graphics.DrawImage($TempObj.Image,($arrItem.point.x - ($DimondSize / $intDevideBy2)-$intArrowSize)`
                                                             , ($arrItem.point.y - ($DimondSize / $intDevideBy2)-$intArrowSize))
-
-#                        $e.Graphics.DrawImage($avatar,$arrItem.point.x  , $arrItem.point.y)
-#                        $e.Graphics.DrawImage($avatar,$arrItem.point.x  , $arrItem.point.y)
-
-#                        $e.Graphics.DrawImage($avatar,$arrItem.pcenter.x  , $arrItem.pcenter.y)
                     }
                         ElseIf($arrItem.Type -eq $StartCircle.Name -Or $arrItem.Type -eq $InterCircle.Name -Or $arrItem.Type -eq $DoubleCircle.Name)
                         {
@@ -1357,26 +1384,21 @@ Function funDPanAddpaint($s,$e){
             {
                 New-Variable -Force -Name "$($arrGroItem.Name)$rTPath" -Value (New-Object Drawing2D.GraphicsPath) 
                 $TextPath = Get-Variable -ValueOnly -Include "$($arrGroItem.Name)$rTPath"
-#                $pTemp = $arrGroItem.TextPoint
                 $pTemp = New-Object Point ($arrGroItem.Pcenter.X - $arrGroItem.pTXDiffer) , ($arrGroItem.Pcenter.Y - $arrGroItem.pTYDiffer)
                 If($Global:SelText -eq $arrGroItem)
                 {
-                    $TextPath.AddString($arrGroItem.Text, $fonty.FontFamily , $BoldFont, $TextSize ,$pTemp, [StringFormat]::GenericDefault) 
-#                    $e.Graphics.FillPath($SelTextBrush,$TextPath)            
+                    $TextPath.AddString($arrGroItem.Text, $fonty.FontFamily , $BoldFont, $TextSize ,$pTemp, [StringFormat]::GenericDefault)            
                 }
                 Else
                 {
                     $TextPath.AddString($arrGroItem.Text, $fonty.FontFamily , $RegularFont, $TextSize ,$pTemp, [StringFormat]::GenericDefault) 
-#                    $e.Graphics.FillPath($TextBrush,$TextPath)
                 } 
                 $arrGroItem.TextPath = $TextPath
                 $matrix = New-Object System.Drawing.Drawing2D.Matrix
                 $matrix.RotateAt(-90,$pTemp)
                 $TextPath.Transform($matrix)
-                $e.Graphics.FillPath($TextBrush,$TextPath)           
-#                $e.Graphics.DrawString($arrItem.Text, $fonty , $myBrush, $arrItem.Pcenter.X,$arrItem.pCenter.y, [StringFormat]::GenericDefault)  
-            }
-#            $e.Graphics.FillPath($SelTextBrush, $arrGroItem.TAreaPath)           
+                $e.Graphics.FillPath($TextBrush,$TextPath)            
+            }          
             If($arrGroItem.TopPath.isVisible($DesktopPan.PointToClient([Cursor]::Position)))
             {$e.Graphics.Fillpath($SelTextBrush, $arrGroItem.TopPath)}
                 ElseIf($arrGroItem.RightPath.isVisible($DesktopPan.PointToClient([Cursor]::Position)))
@@ -1392,15 +1414,12 @@ Function funDPanAddpaint($s,$e){
                                 $e.Graphics.FillPath($SelTextBrush, $arrGroItem.BottomPath)
                                 $e.Graphics.FillPath($SelTextBrush, $arrGroItem.LeftPath)
                             }
-#            $e.Graphics.FillPath($SelTextBrush, $arrGroItem.TAreaPath)
             for($n = 0; $n -lt $arrGroItem.Lanes.Count; $n++)
             {
                 If($n -gt 0)
                 {
-    #                $arrConnItem = $arrGroItem.Lanes[$n]
                     New-Variable -Force -Name "$($arrGroItem.Lanes[$n].Name)$nMPath" -Value (New-Object Drawing2D.GraphicsPath) 
                     $MainPath = Get-Variable -ValueOnly -Include "$($arrGroItem.Lanes[$n].Name)$nMPath"
-    #                $MainPath = New-Object Drawing2D.GraphicsPath
                     New-Variable -Force -Name "$($arrGroItem.Lanes[$n].Name)$nTPath" -Value (New-Object Drawing2D.GraphicsPath) 
                     $TextPath = Get-Variable -ValueOnly -Include "$($arrGroItem.Lanes[$n].Name)$nTPath"
 
@@ -1418,22 +1437,9 @@ Function funDPanAddpaint($s,$e){
                     $MainPath.AddRectangle($LaneTAreaRect)
                     $arrGroItem.Lanes[$n].TextPAth = $MainPath
                     $LaneLineReac = New-Object Rectangle $pBottom1.X , ($pBottom1.Y - $PoolLineSize), ($arrGroItem.PoolWidth-$PoolTAreaSize) , $intGroPenSize
-                    $LinePath.AddRectangle($LaneLineReac)
-
-#                    $BottomPath.AddLine($pBottom1,$pBottom2)
-<#                     
-                    $BottomPath.AddLine((New-Object Point ($pBottom2.X), ($pBottom2.Y + $LaneLineSize)), `
-                                    (New-Object Point ($pBottom1.x ), ($pBottom1.Y+$LaneLineSize)))
-
-                    $BottomPath.CloseAllFigures()
-#>
-#                    $arrGroItem.Lanes[$n].BottomPath = $BottomPath  
-#                    $e.Graphics.FillPath($TextBrush, $LinePath)
-                    
+                    $LinePath.AddRectangle($LaneLineReac)                    
                     $e.Graphics.FillPath($WhiteTextBrush, $LinePath)
                     $e.Graphics.DrawLine($arrGroItem.TextPen,$pBottom1,$pBottom2)
-
-#                    $pTemp = New-Object Point ($arrGroItem.Lanes[$n].pTop.X - $arrGroItem.Lanes[$n].pTXDiffer) , ($arrGroItem.Lanes[$n].pTop.Y - $arrGroItem.Lanes[$n].pTYDiffer)
                     If($Global:objGroup.TextPath -eq $arrGroItem.Lanes[$n].TextPath)
                     {
                         $TextPath.AddString($arrGroItem.Lanes[$n].Text, $fonty.FontFamily , $BoldFont, $TextSize ,$pTemp, [StringFormat]::GenericDefault)            
@@ -1449,8 +1455,6 @@ Function funDPanAddpaint($s,$e){
                     $matrix.RotateAt(-90,$pTemp)
                     $TextPath.Transform($matrix)
                     $e.Graphics.FillPath($TextBrush,$TextPath)
-                               
-
                 }
                 Else
                 {
@@ -1459,55 +1463,75 @@ Function funDPanAddpaint($s,$e){
             }
         }
     } 
- #   If(!$Global:UndoRedo -and !$Global:Loading)
-##    {
     funChkState
-<#        
-        $ms = New-Object System.IO.MemoryStream
-        $bf = New-Object System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
-        $bf.Serialize($ms, $MainObject)
-        $ms.Position = 0
-#        $bf.Deserialize($ms) | Out-File C:\Users\Mahdzi1\Documents\test.txt -Force
-#        $Global:MainObj = $MainObject.psobject.Copy()
-        $Global:MainObj =$bf.Deserialize($ms)
-        $ms.Close()
-        $ms.Dispose()
-#        $Global:MainObj = $MainObject 
-#>      
-#    }
-#    Write-Host "hY"
     $Global:UndoRedoMove = $Null
 }
 
 Function funDPanMouseUp{
+    If($Global:LaneResize)
+    {
+        $Global:LaneResize.Redo = $Global:SelLane.LaneHeight
+        $UndoStack.Push($Global:LaneResize)
+        $Global:LaneResize = $Null
+    }
     If($Global:ObjMove)
     {
         If($Global:ObjMove.Obj.Type -eq $Pool.Name)
         {
             $Global:ObjMove.Redo = $Global:ObjMove.obj.Point
-            $Global:ObjMove.RHeight = $Global:objGroup.PoolHeight
-            $Global:ObjMove.RWidth = $Global:objGroup.PoolWidth              
+            $Global:ObjMove.Height = $Global:objGroup.PoolHeight
+            $Global:ObjMove.Width = $Global:objGroup.PoolWidth              
         }
         Else
         {
             $Global:ObjMove.Redo = $Global:ObjMove.obj.Point
         }
         $UndoStack.Push($Global:ObjMove)
-        write-host $Global:ObjMove.Type
         $Global:ObjMove = $Null
     }
+    If($Global:PoolResize)
+    {
+        $Global:PoolResize.Redo = $Global:PoolResize.obj.Point
+        $Global:PoolResize.RHeight = $Global:objGroup.PoolHeight
+        $Global:PoolResize.RWidth = $Global:objGroup.PoolWidth              
+        $UndoStack.Push($Global:PoolResize)
+        $Global:PoolResize = $Null
+    }
+
     $Global:bolMouseMove = $false
     $Global:bolMouseDown = $false
     $Global:SelLane = $Null
+    $Global:PoolResize = $Null
     $SubIconTbl.Controls | Where-Object -FilterScript {$_.Checked} | % {   
         $_.checked = $false
-        $Global:typing = $Null
-        $Global:SelText = $Null
-        $Global:SelPath = $Null
-#        write-host "mousse up"
-        $DesktopPan.Invalidate()
+        If($Global:typing)
+        {
+            If($Global:ObjText)
+            {
+                $Global:ObjText.Redo = $Global:typing.Text
+                $UndoStack.Push($Global:ObjText)
+            }
+            $Global:typing = $Null
+        }
     }
-
+    If($Global:TextMove)
+    {
+        If($Global:SelText)
+        {
+            $Global:TextMove.RedopTXDiffer = $Global:SelText.pTXDiffer
+            $Global:TextMove.RedopTYDiffer = $Global:SelText.pTYDiffer
+        }
+        Else
+        {
+            $Global:TextMove.RedopTXDiffer = $Global:SelPath.pTXDiffer
+            $Global:TextMove.RedopTYDiffer = $Global:SelPath.pTYDiffer            
+        }    
+        $UndoStack.Push($Global:TextMove)
+        $Global:TextMove = $Null
+    }
+    $Global:SelText = $Null
+#    $Global:SelPath = $Null
+    $DesktopPan.Invalidate()
     If ($Global:objShape -ne $null)
     {
         foreach($cont in $ShapesTbl.Controls)
@@ -1558,47 +1582,99 @@ Function funNewBtn{
 }
 
 Function funUndoRedo($obj){
+    $Global:objGroup = $Null
+    $Global:objShape = $null
+    $Global:objShapePoint = $null     
     If($obj.Name -eq $Undo.Name)
     {
-        $test = $UndoStack.Peek()
         If(($UndoStack.Peek()).Type -eq "Creation")
-        {
-                $test = $UndoStack.Peek()
-                ($UndoStack.Peek()).Parentobject."$(($UndoStack.Peek()).Undo)"(($UndoStack.Peek()).Obj)
-                $RedoStack.Push($UndoStack.Pop())         
+        {            
+            ($UndoStack.Peek()).Parentobject."$(($UndoStack.Peek()).Undo)"(($UndoStack.Peek()).Obj)
+            $RedoStack.Push($UndoStack.Pop())       
         }
-        Else
-        {
+            ElseIf(($UndoStack.Peek()).Type -eq "Move")
+            {
                 $Global:UndoRedoMove = $UndoStack.Peek()
                 $Global:UndoRedoMove.point = ($UndoStack.Peek()).Undo
                 If($Global:UndoRedoMove.obj.arrClass -eq $GroupsClass)
                 {
-                    $Global:UndoRedoMove.Height = ($UndoStack.Peek()).UHeight
-                    $Global:UndoRedoMove.Width = ($UndoStack.Peek()).UWidth
+                    $Global:UndoRedoMove.Height = ($UndoStack.Peek()).Height
+                    $Global:UndoRedoMove.Width = ($UndoStack.Peek()).Width
+                    $Global:UndoRedoMove.obj.AxisPath = ($UndoStack.Peek()).Axis
                 }
                 $RedoStack.Push($UndoStack.Pop())            
-        }
+            }
+                ElseIf(($UndoStack.Peek()).Type -eq "PoolResize")
+                {
+                    $Global:UndoRedoMove = $UndoStack.Peek()
+                    $Global:UndoRedoMove.point = ($UndoStack.Peek()).Undo
+                    $Global:UndoRedoMove.obj.AxisPath = ($UndoStack.Peek()).Axis
+                    $Global:UndoRedoMove.Height = ($UndoStack.Peek()).UHeight
+                    $Global:UndoRedoMove.Width = ($UndoStack.Peek()).UWidth
+                    $RedoStack.Push($UndoStack.Pop())            
+                }
+                    ElseIf(($UndoStack.Peek()).Type -eq "Text")
+                    {
+                        ($UndoStack.Peek()).obj.Text = ($UndoStack.Peek()).Undo
+                        $RedoStack.Push($UndoStack.Pop())             
+                    }
+                        ElseIf(($UndoStack.Peek()).Type -eq "TextMove")
+                        {
+                            ($UndoStack.Peek()).obj.pTXDiffer = ($UndoStack.Peek()).UndoppTXDiffer
+                            ($UndoStack.Peek()).obj.pTYDiffer = ($UndoStack.Peek()).UndoppTYDiffer
+                            $RedoStack.Push($UndoStack.Pop())      
+                        }
+                            ElseIf(($UndoStack.Peek()).Type -eq "LaneResize")
+                            {
+                                ($UndoStack.Peek()).Obj.LaneHeight = ($UndoStack.Peek()).Undo
+                                $RedoStack.Push($UndoStack.Pop())  
+                            }
     }
     Else
     {
+        
         If(($RedoStack.Peek()).Type -eq "Creation")
         {
             ($RedoStack.Peek()).Parentobject."$(($RedoStack.Peek()).Redo)"(($RedoStack.Peek()).Obj)
             $UndoStack.Push($RedoStack.Pop())
         }
-        Else
-        {
-            $test = $RedoStack.Peek()
-            $Global:UndoRedoMove = $RedoStack.Peek()
-            $Global:UndoRedoMove.point = ($RedoStack.Peek()).Redo
-            If($Global:UndoRedoMove.obj.arrClass -eq $GroupsClass)
+            ElseIf(($RedoStack.Peek()).Type -eq "Move")
             {
-                $Global:UndoRedoMove.Height = ($RedoStack.Peek()).RHeight
-                $Global:UndoRedoMove.Width = ($RedoStack.Peek()).RWidth
+                $Global:UndoRedoMove = $RedoStack.Peek()
+                $Global:UndoRedoMove.point = ($RedoStack.Peek()).Redo
+                If($Global:UndoRedoMove.obj.arrClass -eq $GroupsClass)
+                {
+                    $Global:UndoRedoMove.Height = ($RedoStack.Peek()).Height
+                    $Global:UndoRedoMove.Width = ($RedoStack.Peek()).Width
+                }
+                $UndoStack.Push($RedoStack.Pop())           
             }
-            $UndoStack.Push($RedoStack.Pop())           
-        }
+                ElseIf(($RedoStack.Peek()).Type -eq "PoolResize")
+                {
+                    $Global:UndoRedoMove = $RedoStack.Peek()
+                    $Global:UndoRedoMove.point = ($RedoStack.Peek()).Redo
+                    $Global:UndoRedoMove.Height = ($RedoStack.Peek()).RHeight
+                    $Global:UndoRedoMove.Width = ($RedoStack.Peek()).RWidth
+                    $UndoStack.Push($RedoStack.Pop())           
+                }
+                    ElseIf(($RedoStack.Peek()).Type -eq "Text")
+                    {
+                        ($RedoStack.Peek()).obj.Text = ($RedoStack.Peek()).Redo
+                        $UndoStack.Push($RedoStack.Pop())   
+                    }
+                        ElseIf(($RedoStack.Peek()).Type -eq "TextMove")
+                        {
+                            ($RedoStack.Peek()).obj.pTXDiffer = ($RedoStack.Peek()).RedopTXDiffer
+                            ($RedoStack.Peek()).obj.pTYDiffer = ($RedoStack.Peek()).RedopTYDiffer            
+                            $UndoStack.Push($RedoStack.Pop())   
+                        }
+                            ElseIf(($RedoStack.Peek()).Type -eq "LaneResize")
+                            {
+                                ($RedoStack.Peek()).obj.LaneHeight = ($RedoStack.Peek()).Redo
+                                $UndoStack.Push($RedoStack.Pop())   
+                            }
     }
+    $DesktopPan.Invalidate()
 }
 
 Function funChkState{
@@ -1744,8 +1820,11 @@ Function funLoadBtn{
         }
         $DesktopPan.Invalidate() 
         $Global:strFileName = Get-Item $dialog.FileName
+        $UndoStack.Clear()
+        $RedoStack.Clear()
         $RedoStack = New-Object System.Collections.Stack
         $UndoStack = New-Object System.Collections.Stack
+       
     }
 }
 
@@ -1825,7 +1904,7 @@ Function funDisAllShapes($O) {
       )
     {
         $Global:objShapePoint = $Null
-        $desktopPan.Invalidate()
+#        $desktopPan.Invalidate()
     } 
      
 }
@@ -1908,7 +1987,7 @@ function funClearAll{
                 $funName = $_.functions
                 New-Variable -Force -Name "$($_.objName)var" -Value ($_.functions)
                 $thisControl.Add_Click({
-                    If(!$This.Checked){$DesktopPan.Focus()}
+#                    If(!$This.Checked){$DesktopPan.Focus()}
                     funDisAllShapes  $This
                     $ObjFunVar = Get-Variable -ValueOnly -Include "$($This.Name)$VarFileCont"
                     invoke-expression  $ObjFunVar
@@ -1929,41 +2008,24 @@ function funClearAll{
 #----------------------------Controls
 
 $WidthTxb.Add_KeyDown({      
-        If ($_.KeyCode -eq [System.Windows.Forms.Keys]::Enter -and $WidthTxb.Text -notmatch '\D') {
-            If([int]$WidthTxb.Text -lt $intMaxWidth)
-            {     
-                $_.SuppressKeyPress = $True
-                funFrmSettings $WidthTxb.Text $null
-            }
+    If ($_.KeyCode -eq [System.Windows.Forms.Keys]::Enter -and $WidthTxb.Text -notmatch '\D') {
+        If([int]$WidthTxb.Text -lt $intMaxWidth)
+        {     
+            $_.SuppressKeyPress = $True
+            funFrmSettings $WidthTxb.Text $null
         }
-<#
-        Else
-        {
-            # Check if Text contains any non-Digits
-            if($WidthTxb.Text -notmatch '\D'){
-            }      
-        }
-#>
-    })
+    }
+})
 
 $HeightTxb.Add_KeyDown({      
-        If ($_.KeyCode -eq [System.Windows.Forms.Keys]::Enter -and $HeightTxb.Text -notmatch '\D') {
-            If([int]$HeightTxb.Text -lt $intMaxHeight)
-            {
-                $_.SuppressKeyPress = $True
-                funFrmSettings $null $HeightTxb.Text                
-            }
-        }
-<#
-        Else
+    If ($_.KeyCode -eq [System.Windows.Forms.Keys]::Enter -and $HeightTxb.Text -notmatch '\D') {
+        If([int]$HeightTxb.Text -lt $intMaxHeight)
         {
-            # Check if Text contains any non-Digits
-            if($HeightTxb.Text -notmatch '\D'){
-                Write-Host "ooops"
-            }      
+            $_.SuppressKeyPress = $True
+            funFrmSettings $null $HeightTxb.Text                
         }
-#>
-    })
+    }
+})
 
 $DesktopPan = New-Object Panel
 #$DesktopPan.Anchor = 'Top, Left'
@@ -2031,16 +2093,13 @@ $ReturnBtn.Add_Click({
 $MainTbl.Controls.Add($ReturnBtn,0,0)
 $MainTbl.Controls.Add($ReturnBtn,0,0)
 $MainTbl.Controls.Add($TopMenuTbl,1,0)
-#$MainTbl.SetColumnSpan()
 $MainTbl.Controls.Add($DesktopCC,1,1)
 $MainTbl.Controls.Add($ShapesTbl,0,1)
 $MainTbl.Controls.Add($SubIconTbl,0,2)
 $MainTbl.Controls.Add($LinesTbl,0,3)
-#$MainTbl.Controls.Add($butsTbl,0,4)
 $MainTbl.Controls.Add($GroupsTbl,0,4)
 #$MainTbl.Controls.Add($Annotation,0,5)
 $MainTbl.SetRowSpan($DesktopCC,4)
-#New-Object Drawing.Size 1250, 820
 
 $Secoform.Controls.Add($MainTbl)
 $Secoform.Add_Shown({$Secoform.Activate(); $DesktopPan.Focus()})
@@ -2057,7 +2116,9 @@ $Secoform.Add_Closing{
    $Global:ObjLane = $Null
    $Global:MainObj = $Null
    $Global:ObjMove = $Null
-#   $Global:objGroup?.AxisPath = $Null
+   $Global:ObjText = $Null
+   $Global:PoolResize = $Null
+   $Global:LaneResize = $Null
    $MainObject.arrRegions.Clear()
    $MainObject.arrGroups.Clear()
 }

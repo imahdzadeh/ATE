@@ -32,7 +32,6 @@ System.Windows.Forms.CheckBox,ShapesTbl,DataObject,50,50,,,0,DataObj,MiddleCente
 System.Windows.Forms.CheckBox,GroupsTbl,Pool,50,60,,,0,Pool,MiddleCenter,1,2,,,,,,
 System.Windows.Forms.CheckBox,GroupsTbl,Lane,50,60,,,0,Lane,MiddleCenter,1,2,,,,,,
 System.Windows.Forms.CheckBox,GroupsTbl,Group,50,60,,,0,Group,MiddleCenter,1,2,,,,,,
-System.Windows.Forms.Button,TopMenuTbl,DelAll,110,30,,,,,,,,funClearAll,#d2d4d6,#000,,,پاک کردن همه شکلها
 System.Windows.Forms.Button,TopMenuTbl,Saveas,80,30,,,,,,,,funSaveAsBtn,#d2d4d6,#000,,,ذخیره با نام
 System.Windows.Forms.Button,TopMenuTbl,Save,30,30,,,,Save,,,,funSaveBtn,,,,,
 System.Windows.Forms.Button,TopMenuTbl,Load,30,30,,,,Load,,,,funLoadBtn,,,,,
