@@ -1260,6 +1260,15 @@ Function funDPanAddpaint($s,$e){
                 $arrConnItem = $arrItem.ConnArr[$c]
                 New-Variable -Force -Name "$($arrItem.Name)$c" -Value (New-Object Drawing2D.GraphicsPath) 
                 $MainPath = Get-Variable -ValueOnly -Include "$($arrItem.Name)$c"
+                New-Variable -Force -Name "$($arrItem.Name)$cLP" -Value (New-Object Drawing2D.GraphicsPath) 
+                $LPath = Get-Variable -ValueOnly -Include "$($arrItem.Name)$cLP"
+
+<#
+                $LPathLineReac = New-Object Rectangle $pBottom1.X , ($pBottom1.Y - $PoolLineSize), ($arrGroItem.PoolWidth-$PoolTAreaSize) , $intGroPenSize
+                $LinePath.AddRectangle($LaneLineReac) 
+                $e.Graphics.FillPath($WhiteTextBrush, $LinePath)
+                $e.Graphics.DrawLine($arrGroItem.TextPen,$pBottom1,$pBottom2)
+#>
                 If($arrConnItem.Points.Count -gt 0)
                 {
                     for($p = 0; $p -lt $arrConnItem.Points.Count; $p++)
@@ -1276,13 +1285,45 @@ Function funDPanAddpaint($s,$e){
                         $Point2 = $arrConnItem.Points[$p]
                         If($arrConnItem.StartPoint -eq "pTop" -or $arrConnItem.StartPoint -eq "pBottom")
                         {
-                            $Ptemp  = new-object Point ($Point1.X , $Point2.Y)
+                            $Ptemp  = new-object Point ($Point1.X , $Point2.Y)                            
+                            $P1 = new-object Point (($Point1.X-$PoolLineSize) , $Point1.Y)
+                            $P2 = new-object Point (($Point1.X-$PoolLineSize) , $Ptemp.Y)
+                            $LPath.AddLine($P1,$P2)
+                            $P3 = new-object Point (($P2.X+$intGroPenSize) , $Ptemp.Y)
+                            $LPath.AddLine($P2,$P3)
+                            $P1 = new-object Point ( ($Point1.X + $PoolLineSize) , $Point1.Y)
+                            $LPath.AddLine($P3,$P1)
+                            $LPath.CloseAllFigures()
+                            $P1 = new-object Point (($Ptemp.X) , ($Ptemp.Y-$PoolLineSize))
+                            $P2 = new-object Point (($Point2.x) , ($Point2.Y-$PoolLineSize))
+                            $LPath.AddLine($P1,$P2)
+                            $P3 = new-object Point (($P2.X) , ($P2.Y+$intGroPenSize))
+                            $LPath.AddLine($P2,$P3)
+                            $P1 = new-object Point ( ($Ptemp.X) , ($Ptemp.Y + $PoolLineSize))
+                            $LPath.AddLine($P3,$P1)
+                            $LPath.CloseAllFigures()
                             $MainPath.AddLine($Point1,$Ptemp)
                             $MainPath.AddLine($Ptemp,$Point2)
                         }
                         Else
                         {
                             $Ptemp  = new-object Point ($Point2.X , $Point1.Y)
+                            $P1 = new-object Point (($Point1.X) , ($Point1.Y-$PoolLineSize))
+                            $P2 = new-object Point (($Ptemp.x) , ($Ptemp.Y-$PoolLineSize))
+                            $LPath.AddLine($P1,$P2)
+                            $P3 = new-object Point (($P2.X) , ($P2.Y+$intGroPenSize))
+                            $LPath.AddLine($P2,$P3)
+                            $P1 = new-object Point ( ($Point1.X) , ($Point1.Y + $PoolLineSize))
+                            $LPath.AddLine($P3,$P1)
+                            $LPath.CloseAllFigures()                          
+                            $P1 = new-object Point (($Ptemp.X-$PoolLineSize) , $Ptemp.Y)
+                            $P2 = new-object Point (($Point2.X-$PoolLineSize) , $Point2.Y)
+                            $LPath.AddLine($P1,$P2)
+                            $P3 = new-object Point (($P2.X+$intGroPenSize) , $P2.Y)
+                            $LPath.AddLine($P2,$P3)
+                            $P1 = new-object Point ( ($Ptemp.X + $PoolLineSize) , $Ptemp.Y)
+                            $LPath.AddLine($P3,$P1)
+                            $LPath.CloseAllFigures()
                             $MainPath.AddLine($Point1,$Ptemp)
                             $MainPath.AddLine($Ptemp,$Point2)
                         }
@@ -1297,24 +1338,62 @@ Function funDPanAddpaint($s,$e){
                     If($arrConnItem.StartPoint -eq "pTop" -or $arrConnItem.StartPoint -eq "pBottom")
                     {
                         $Ptemp  = new-object Point ($Point2.X, $arrConnItem.ConnObj."$($arrConnItem.ConnPoint)".Y)
-                        $MainPath.AddLine($Point2,$Ptemp)
-                        $MainPath.AddLine($Ptemp,$arrConnItem.ConnObj."$($arrConnItem.ConnPoint)")
+                        
+#                        $Ptemp  = new-object Point ($Point1.X , $Point2.Y)                            
+                        $P1 = new-object Point (($Point2.X-$PoolLineSize) , $Point2.Y)
+                        $P2 = new-object Point (($Point2.X-$PoolLineSize) , $Ptemp.Y)
+                        $LPath.AddLine($P1,$P2)
+                        $P3 = new-object Point (($P2.X+$intGroPenSize) , $Ptemp.Y)
+                        $LPath.AddLine($P2,$P3)
+                        $P1 = new-object Point ( ($Point2.X + $PoolLineSize) , $Point2.Y)
+                        $LPath.AddLine($P3,$P1)
+                        $LPath.CloseAllFigures()
+                        $MainPath.AddLine($Point2,$Ptemp)  
+                        $Point2 = $arrConnItem.ConnObj."$($arrConnItem.ConnPoint)"
+                        $P1 = new-object Point (($Ptemp.X) , ($Ptemp.Y-$PoolLineSize))
+                        $P2 = new-object Point (($Point2.x) , ($Point2.Y-$PoolLineSize))
+                        $LPath.AddLine($P1,$P2)
+                        $P3 = new-object Point (($P2.X) , ($P2.Y+$intGroPenSize))
+                        $LPath.AddLine($P2,$P3)
+                        $P1 = new-object Point ( ($Ptemp.X) , ($Ptemp.Y + $PoolLineSize))
+                        $LPath.AddLine($P3,$P1)
+                        $LPath.CloseAllFigures()                                                                                         
+                        $MainPath.AddLine($Ptemp,$arrConnItem.ConnObj."$($arrConnItem.ConnPoint)")                        
                     }
                     Else
                     {
                         $Ptemp  = new-object Point ($arrConnItem.ConnObj."$($arrConnItem.ConnPoint)".X, $Point2.Y)
+                        $P1 = new-object Point (($Point2.X) , ($Point2.Y-$PoolLineSize))
+                        $P2 = new-object Point (($Ptemp.x) , ($Ptemp.Y-$PoolLineSize))
+                        $LPath.AddLine($P1,$P2)
+                        $P3 = new-object Point (($P2.X) , ($P2.Y+$intGroPenSize))
+                        $LPath.AddLine($P2,$P3)
+                        $P1 = new-object Point ( ($Point2.X) , ($Point2.Y + $PoolLineSize))
+                        $LPath.AddLine($P3,$P1)
+                        $LPath.CloseAllFigures() 
                         $MainPath.AddLine($Point2,$Ptemp)
-                        $MainPath.AddLine($Ptemp,$arrConnItem.ConnObj."$($arrConnItem.ConnPoint)")  
+                        $Point2 = $arrConnItem.ConnObj."$($arrConnItem.ConnPoint)"                         
+                        $P1 = new-object Point (($Ptemp.X-$PoolLineSize) , $Ptemp.Y)
+                        $P2 = new-object Point (($Point2.X-$PoolLineSize) , $Point2.Y)
+                        $LPath.AddLine($P1,$P2)
+                        $P3 = new-object Point (($P2.X+$intGroPenSize) , $P2.Y)
+                        $LPath.AddLine($P2,$P3)
+                        $P1 = new-object Point ( ($Ptemp.X + $PoolLineSize) , $Ptemp.Y)
+                        $LPath.AddLine($P3,$P1)
+                        $LPath.CloseAllFigures()                        
+                        $MainPath.AddLine($Ptemp,$arrConnItem.ConnObj."$($arrConnItem.ConnPoint)") 
                     }
                 } 
                 $mypenCap.DashStyle = $arrConnItem.LineStyle  
-                $arrConnItem.Path = $MainPath
+                $arrConnItem.Path = $LPath
                 If($Global:SelPath.Name -eq $arrItem.ConnArr[$c].Name -and $Global:SelPath.Startpoint -eq $arrConnItem.StartPoint)
-                {
+                {                   
+                    $e.Graphics.fillpath($WhiteTextBrush, $LPath)
                     $e.Graphics.DrawPath($BigpenCap, $MainPath)
                 }
                 Else
-                {               
+                {                   
+                    $e.Graphics.fillpath($WhiteTextBrush, $LPath)
                     $e.Graphics.DrawPath($mypenCap, $MainPath)
                 }
                 If($arrConnItem.Text -ne "")
@@ -1422,10 +1501,8 @@ Function funDPanAddpaint($s,$e){
                     $MainPath = Get-Variable -ValueOnly -Include "$($arrGroItem.Lanes[$n].Name)$nMPath"
                     New-Variable -Force -Name "$($arrGroItem.Lanes[$n].Name)$nTPath" -Value (New-Object Drawing2D.GraphicsPath) 
                     $TextPath = Get-Variable -ValueOnly -Include "$($arrGroItem.Lanes[$n].Name)$nTPath"
-
                     New-Variable -Force -Name "$($arrGroItem.Lanes[$n].Name)$nLPath" -Value (New-Object Drawing2D.GraphicsPath) 
-                    $LinePath = Get-Variable -ValueOnly -Include "$($arrGroItem.Lanes[$n].Name)$nLPath"
-                                        
+                    $LinePath = Get-Variable -ValueOnly -Include "$($arrGroItem.Lanes[$n].Name)$nLPath"                                        
                     $pTop = $arrGroItem.Lanes[$n-1].pBottom1
                     $pCenter = New-Object Point ($pTop.X + ($PoolTAreaSize / $intDevideby2)), ($pTop.Y + ($LaneSize / $intDevideBy2))
                     $arrGroItem.Lanes[$n].pCenter = $pCenter
