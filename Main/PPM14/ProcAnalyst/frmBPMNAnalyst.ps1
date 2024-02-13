@@ -56,7 +56,6 @@ Function funTextIconClick{
             {
                 $Global:typing = $Global:SelPath
             }
-#                ElseIf($global:objGroup -ne $Null)
                 ElseIf($global:objGroup -ne $Null )
                 {
                     $Global:typing = $global:objGroup
@@ -225,7 +224,6 @@ Function funDelShape{
 }
 
 Function funImgStreamer($imgPath){
-
     $inStream = ([FileInfo]$imgPath).Open([FileMode]::Open, [FileAccess]::ReadWrite)
     [Image]::FromStream($inStream)
     $inStream.Dispose()
@@ -528,7 +526,8 @@ Function funDPanAddpaint($s,$e){
                         Type = "Move"
                         Point = $Null
                         Redo = $Null
-                        Undo = $global:objShape.Point
+                        Undo = New-object point (($global:objShape.Point.X + $global:objShape.PXDiff), `
+                                                ($global:objShape.Point.Y + $global:objShape.PYDiff))
                         Parentobject = $MainObject.arrRegions
                         obj = $global:objShape
                     } 
@@ -645,7 +644,9 @@ Function funDPanAddpaint($s,$e){
         $DoubleCircle.Name { 
             $point.X = $point.X - ($StartCircleSize / $intDevideBy2)
             $point.Y = $point.Y - ($StartCircleSize / $intDevideBy2)
-            $sizeDevidedBy2 = $StartCircleSize / $intDevideBy2            
+            $sizeDevidedBy2 = $StartCircleSize / $intDevideBy2   
+            $PXDiff = $StartCircleSize / $intDevideBy2   
+            $PYDiff = $StartCircleSize / $intDevideBy2           
             $TopPointGB = New-Object Point ($point.X) , ($point.Y - $adjustPixel)
             $BottomPointGB = New-Object Point ($point.X) , (($point.Y + $StartCircleSize) + $adjustPixel)
             $pCenter = New-Object Point ($point.X + ($sizeDevidedBy2)) , ($point.Y + $sizeDevidedBy2)
@@ -668,7 +669,9 @@ Function funDPanAddpaint($s,$e){
         $StartCircle.Name { 
             $point.X = $point.X - ($StartCircleSize / $intDevideBy2)
             $point.Y = $point.Y - ($StartCircleSize / $intDevideBy2)
-            $sizeDevidedBy2 = $StartCircleSize / $intDevideBy2            
+            $sizeDevidedBy2 = $StartCircleSize / $intDevideBy2 
+            $PXDiff = $StartCircleSize / $intDevideBy2   
+            $PYDiff = $StartCircleSize / $intDevideBy2            
             $TopPointGB = New-Object Point ($point.X) , ($point.Y - $adjustPixel)
             $BottomPointGB = New-Object Point ($point.X) , (($point.Y + $StartCircleSize) + $adjustPixel)
             $pCenter = New-Object Point ($point.X + ($sizeDevidedBy2)) , ($point.Y + $sizeDevidedBy2)
@@ -690,7 +693,9 @@ Function funDPanAddpaint($s,$e){
         $InterCircle.Name {
             $point.X = $point.X - ($InterCircleSize / $intDevideBy2)
             $point.Y = $point.Y - ($InterCircleSize / $intDevideBy2)
-            $sizeDevidedBy2 = $InterCircleSize / $intDevideBy2            
+            $sizeDevidedBy2 = $InterCircleSize / $intDevideBy2
+            $PXDiff = $InterCircleSize / $intDevideBy2   
+            $PYDiff = $InterCircleSize / $intDevideBy2             
             $TopPointGB = New-Object Point ($point.X) , ($point.Y - $adjustPixel)
             $BottomPointGB = New-Object Point ($point.X) , (($point.Y + $InterCircleSize) + $adjustPixel)
             $pCenter = New-Object Point ($point.X + ($sizeDevidedBy2)) , ($point.Y + $sizeDevidedBy2)
@@ -713,6 +718,8 @@ Function funDPanAddpaint($s,$e){
             $point.X = $point.X - ($DimondSize / $intDevideBy2)
             $point.Y = $point.Y - ($DimondSize / $intDevideBy2)
             $sizeDevidedBy2 = $DimondSize / $intDevideBy2
+            $PXDiff = $DimondSize / $intDevideBy2   
+            $PYDiff = $DimondSize / $intDevideBy2  
             $TopPointGB = New-Object Point ($point.X) , ($point.Y - $adjustPixel)
             $BottomPointGB = New-Object Point ($point.X) , (($point.Y + $DimondSize) + $adjustPixel)
             $pCenter = New-Object Point ($point.X + ($sizeDevidedBy2)) , ($point.Y + $sizeDevidedBy2)
@@ -742,6 +749,8 @@ Function funDPanAddpaint($s,$e){
         $Square.Name {
             $point.X = $point.X - ($squareSize / $intDevideBy2)
             $point.Y = $point.Y - ($squareSizeY / $intDevideBy2)
+            $PXDiff = $squareSize / $intDevideBy2   
+            $PYDiff = $squareSizeY / $intDevideBy2             
             $TopPointGB = New-Object Point ($point.X) , ($point.Y - $adjustPixel)
             $BottomPointGB = New-Object Point ($point.X) , (($point.Y + $squareSizeY) + $adjustPixel)
             $pCenter = New-Object Point ($point.X + ($squareSize /$intDevideBy2)) , ($point.Y + ($squareSizeY / $intDevideBy2))
@@ -771,6 +780,8 @@ Function funDPanAddpaint($s,$e){
         $DataObject.Name {
             $point.X = $point.X - ($DataObjSize / $intDevideBy2)
             $point.Y = $point.Y - ($DataObjSize / $intDevideBy2)
+            $PXDiff = $DataObjSize / $intDevideBy2   
+            $PYDiff = $DataObjSize / $intDevideBy2 
             $pp1 = New-Object Point ($point.X) , ($point.Y)
             $pp2 = New-Object Point ($point.X + $DataObjSizeX), ($point.Y)
             $pp3 = New-Object Point (($point.X + $DataObjSizeX) + $adjustPixel) , ($point.Y + $DataObjSize)
@@ -813,10 +824,6 @@ Function funDPanAddpaint($s,$e){
         $Pool.Name {
             If($Global:objGroup -ne $null -and $Global:objGroup.AxisPath -ne $Null)
             {
-                If($Global:UndoRedoMove){
-                $test
-#                    $Global:objGroup.AxisPath = $Global:UndoRedoMove.Axis
-                }
                 If($Global:objGroup.AxisPath -eq "TopPath")
                 {
                     If(!$Global:UndoRedoMove)
@@ -945,39 +952,7 @@ Function funDPanAddpaint($s,$e){
             $TAreaPath.AddRectangle($TAreaRect)
             $MainPen = $RegPen
         }
-        $Lane.Name {
- <#
-            If($Global:Loading)
-            {
-                $LaneHeight = $global:LaneHeight
-            }
-            Else
-            {
-                If($Global:objGroup.Lanes.Count -eq 1)
-                {
-                    $LaneHeight = $LaneSize
-                }
-                Else
-                {
-                    $LaneHeight = $Global:objGroup.pBottom2.Y - $Global:objGroup.Lanes[$Global:objGroup.Lanes.Count].pBottom
-                }
-            }
-#>
-<#
-            $pCenter = New-Object Point ($point.X + ($PoolTAreaSize / $intDevideby2)), ($point.Y + ($LaneSize / $intDevideBy2))    
-                    
-            $pTop = $Global:objGroup.Lanes[$Global:objGroup.Lanes.Count-1].pBottom1
-            $pBottom1 = New-Object Point ($pTop.X, ($pTop.Y + $LaneSize))
-            $pBottom2 = New-Object Point (($pTop.X +($Global:objGroup.PoolWidth-$PoolTAreaSize)), ($pTop.Y + $LaneSize))           
-            $TAreaRect = New-Object Rectangle $pTop.X , $pTop.Y, ($Global:objGroup.Width-$PoolTAreaSize) , $LaneSize
-            $TAreaPath.AddRectangle($TAreaRect)
-
-            $BottomPath.AddLine($pBottom1,$pBottom2) 
-            $BottomPath.AddLine((New-Object Point ($pBottom2.X), ($pBottom2.Y + $LaneLineSize)), `
-                            (New-Object Point ($pBottom1.x ), ($pBottom1.Y+$LaneLineSize)))
-            $BottomPath.CloseAllFigures()                       
-#>            
-                                    
+        $Lane.Name {                                   
         }               
     }
     If($strSwitch -ne "")
@@ -1025,6 +1000,8 @@ Function funDPanAddpaint($s,$e){
                     pLeftPath = $pLeftPath
                     PointPen = $RegPen
                     MainPen = $MainPen
+                    PXDiff = $PXDiff  
+                    PYDiff = $PYDiff
                     ConnArr = [ArrayList]@()
                     Text = ""
                     Icon = ""
@@ -1199,8 +1176,6 @@ Function funDPanAddpaint($s,$e){
                 $global:objLane.pCenter = $pCenter
                 $global:objLane.TextPen = $TinyPen
                 $global:objLane.MainPen = $GroupPen
-#                $global:objLane.pTXDiffer = 0
-#                $global:objLane.pTYDiffer = 0
                 $global:objLane.LaneHeight = $LaneHeight                               
             }
         }
@@ -1262,13 +1237,6 @@ Function funDPanAddpaint($s,$e){
                 $MainPath = Get-Variable -ValueOnly -Include "$($arrItem.Name)$c"
                 New-Variable -Force -Name "$($arrItem.Name)$cLP" -Value (New-Object Drawing2D.GraphicsPath) 
                 $LPath = Get-Variable -ValueOnly -Include "$($arrItem.Name)$cLP"
-
-<#
-                $LPathLineReac = New-Object Rectangle $pBottom1.X , ($pBottom1.Y - $PoolLineSize), ($arrGroItem.PoolWidth-$PoolTAreaSize) , $intGroPenSize
-                $LinePath.AddRectangle($LaneLineReac) 
-                $e.Graphics.FillPath($WhiteTextBrush, $LinePath)
-                $e.Graphics.DrawLine($arrGroItem.TextPen,$pBottom1,$pBottom2)
-#>
                 If($arrConnItem.Points.Count -gt 0)
                 {
                     for($p = 0; $p -lt $arrConnItem.Points.Count; $p++)
@@ -1337,9 +1305,7 @@ Function funDPanAddpaint($s,$e){
                 {
                     If($arrConnItem.StartPoint -eq "pTop" -or $arrConnItem.StartPoint -eq "pBottom")
                     {
-                        $Ptemp  = new-object Point ($Point2.X, $arrConnItem.ConnObj."$($arrConnItem.ConnPoint)".Y)
-                        
-#                        $Ptemp  = new-object Point ($Point1.X , $Point2.Y)                            
+                        $Ptemp  = new-object Point ($Point2.X, $arrConnItem.ConnObj."$($arrConnItem.ConnPoint)".Y)                            
                         $P1 = new-object Point (($Point2.X-$PoolLineSize) , $Point2.Y)
                         $P2 = new-object Point (($Point2.X-$PoolLineSize) , $Ptemp.Y)
                         $LPath.AddLine($P1,$P2)
@@ -1561,7 +1527,8 @@ Function funDPanMouseUp{
         }
         Else
         {
-            $Global:ObjMove.Redo = $Global:ObjMove.obj.Point
+            $Global:ObjMove.Redo = New-object point (($Global:ObjMove.obj.Point.X + $Global:ObjMove.obj.PXDiff),`
+                                                     ($Global:ObjMove.obj.Point.Y + $Global:ObjMove.obj.PYDiff))
         }
         $UndoStack.Push($Global:ObjMove)
         $Global:ObjMove = $Null
@@ -1574,7 +1541,6 @@ Function funDPanMouseUp{
         $UndoStack.Push($Global:PoolResize)
         $Global:PoolResize = $Null
     }
-
     $Global:bolMouseMove = $false
     $Global:bolMouseDown = $false
     $Global:SelLane = $Null
@@ -1616,7 +1582,6 @@ Function funDPanMouseUp{
             $cont.checked = $false
         }
     }
-
     If ($Global:objGroup -ne $null)
     {
         foreach($cont in $GroupsTbl.Controls)
@@ -1630,7 +1595,6 @@ Function funDPanMouseMove{
     If(
         ($Global:bolMouseDown) -and 
         ($global:objShape -ne $null -or $Global:SelPath -ne $Null -or $Global:objGroup -ne $Null -or $global:SelLane -ne $null) -and 
-#        !$SolidLine.Checked -and !$DashedLine.Checked -and !$dottedline.Checked
         !($LinesTbl.Controls | Where-Object -FilterScript {$_.Checked})
       )
     {
@@ -1779,7 +1743,6 @@ Function funLoadBtn{
     $result = $dialog.ShowDialog()
     if($result -eq [System.Windows.Forms.DialogResult]::OK){
         funClearAll         
-
         $Global:Loading = $true
         $global:serializedObj = $null
         $global:SerializedP = New-Object Point
@@ -1861,8 +1824,7 @@ Function funLoadBtn{
                     for($u = 1; $u -lt $objLoad.Lanes.Count; $u++)
                     {
                         $global:serializedObj = ""
-                        $Global:intIterate ++
-                        
+                        $Global:intIterate ++                        
                         $objLane = [pscustomobject]@{     
                                 Name = $objLoad.Lanes[$u].name
                                 Type= $objLoad.Lanes[$u].Type
@@ -1886,8 +1848,7 @@ Function funLoadBtn{
                             } 
                         $MainObject.arrGroups[$i].Lanes.Add($objLane)
                         $DesktopPan.Invalidate() 
-                        $DesktopPan.Update()                   
-                                 
+                        $DesktopPan.Update()                                                    
                     }                
                 
                 
@@ -1900,8 +1861,7 @@ Function funLoadBtn{
         $UndoStack.Clear()
         $RedoStack.Clear()
         $RedoStack = New-Object System.Collections.Stack
-        $UndoStack = New-Object System.Collections.Stack
-       
+        $UndoStack = New-Object System.Collections.Stack       
     }
 }
 
