@@ -71,8 +71,9 @@ Function funTextIconClick{
             {
                 $Global:ObjText.Redo = $Global:typing.Text
                 $UndoStack.Push($Global:ObjText)
+                $Global:ObjText = $null
             }
-            $Global:typing = $Null
+            $Global:typing = $Null            
         }       
         $Global:SelText = $Null
         $Global:SelPath = $Null
@@ -248,8 +249,9 @@ Function funDPanMouseDown{
                 {
                     $Global:ObjText.Redo = $Global:typing.Text
                     $UndoStack.Push($Global:ObjText)
+                    $Global:ObjText = $Null
                 }
-                $Global:typing = $Null
+                $Global:typing = $Null                
             }
             If ($arrItem.ShadowRegion.isVisible($point))
             {
@@ -401,7 +403,7 @@ Function funDPanMouseDown{
                         {
                             $Global:ObjText.Redo = $Global:typing.Text
                             $UndoStack.Push($Global:ObjText)
-                            Write-Host "2"
+                            $Global:ObjText = $Null
                         }
                         $Global:typing = $Null
                     }
@@ -1553,6 +1555,7 @@ Function funDPanMouseUp{
             {
                 $Global:ObjText.Redo = $Global:typing.Text
                 $UndoStack.Push($Global:ObjText)
+                $Global:ObjText = $Null
             }
             $Global:typing = $Null
         }
