@@ -337,10 +337,26 @@ Function funDPanMouseDown{
                         If($arrItem.SubProcess)
                         {
                             $arrItem.SubProcess = $false
+                            $UndoStack.Push([pscustomobject]@{
+                                        Type = $SubProcess.Name
+                                        Redo = $false
+                                        Undo = $True
+                                        Prop = "SubProcess"
+                                        Parentobject = $Global:objShape.ConnArr
+                                        obj = $arrItem
+                                    }) 
                         }
                         Else
                         {
                             $arrItem.SubProcess = $true
+                            $UndoStack.Push([pscustomobject]@{
+                                        Type = $SubProcess.Name
+                                        Redo = $True
+                                        Undo = $false
+                                        Prop = "SubProcess"
+                                        Parentobject = $Global:objShape.ConnArr
+                                        obj = $arrItem
+                                    })  
                         }                                
                     }
                     Else
@@ -348,10 +364,27 @@ Function funDPanMouseDown{
                         If($arrItem.Icon -eq "" -Or $arrItem.Icon -ne ($SubIconTbl.Controls | Where-Object -FilterScript {$_.Checked}).Name)
                         {
                             $arrItem.Icon = ($SubIconTbl.Controls | Where-Object -FilterScript {$_.Checked}).Name
+                            $test = ($SubIconTbl.Controls | Where-Object -FilterScript {$_.Checked}).Name
+                            $UndoStack.Push([pscustomobject]@{
+                                        Type = $SubIconTbl.Name
+                                        Redo = ($SubIconTbl.Controls | Where-Object -FilterScript {$_.Checked}).Name
+                                        Undo = ""
+                                        Prop = "Icon"
+                                        Parentobject = $Global:objShape.ConnArr
+                                        obj = $arrItem
+                                    }) 
                         }
                         Else
                         {
                             $arrItem.Icon = ""
+                            $RedoStack.Push([pscustomobject]@{
+                                        Type = $SubIconTbl.Name
+                                        Redo = ""
+                                        Undo = ($SubIconTbl.Controls | Where-Object -FilterScript {$_.Checked}).Name
+                                        Prop = "Icon"
+                                        Parentobject = $Global:objShape.ConnArr
+                                        obj = $arrItem
+                                    }) 
                         }
                     }
                 }                              
@@ -1673,6 +1706,16 @@ Function funUndoRedo($obj){
                                 ($UndoStack.Peek()).Obj.LaneHeight = ($UndoStack.Peek()).Undo
                                 $RedoStack.Push($UndoStack.Pop())  
                             }
+                                ElseIf(($UndoStack.Peek()).Type -eq $SubProcess.Name)
+                                {
+                                    ($UndoStack.Peek()).obj."$(($UndoStack.Peek()).Prop)" = ($UndoStack.Peek()).Undo
+                                    $RedoStack.Push($UndoStack.Pop())
+                                }
+                                    ElseIf((($UndoStack.Peek()).Type -eq $SubIconTbl.Name))
+                                    {
+                                        ($UndoStack.Peek()).obj."$(($UndoStack.Peek()).Prop)" = ($UndoStack.Peek()).Undo
+                                        $RedoStack.Push($UndoStack.Pop())
+                                    }
     }
     Else
     {
@@ -1717,6 +1760,16 @@ Function funUndoRedo($obj){
                                 ($RedoStack.Peek()).obj.LaneHeight = ($RedoStack.Peek()).Redo
                                 $UndoStack.Push($RedoStack.Pop())   
                             }
+                                ElseIf(($RedoStack.Peek()).Type -eq $SubProcess.Name)
+                                {
+                                    ($RedoStack.Peek()).obj."$(($RedoStack.Peek()).Prop)" = ($RedoStack.Peek()).Redo
+                                    $UndoStack.Push($RedoStack.Pop())                                       
+                                }
+                                    ElseIf(($RedoStack.Peek()).Type -eq $SubIconTbl.Name)
+                                    {
+                                        ($RedoStack.Peek()).obj."$(($RedoStack.Peek()).Prop)" = ($RedoStack.Peek()).Redo
+                                        $UndoStack.Push($RedoStack.Pop())                                       
+                                    }
     }
     $DesktopPan.Invalidate()
 }
