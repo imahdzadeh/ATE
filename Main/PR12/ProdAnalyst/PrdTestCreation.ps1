@@ -4,7 +4,7 @@
 Try
 {
  . "$(Split-Path $PSScriptRoot -Parent)\Config\$(($PSCommandPath.Split('\') | select -last 1) -replace (".ps1$","var.ps1"))"
-
+ 
     if($varDebugTrace -ne 0){Set-PSDebug -Trace $varDebugTrace}Else{Set-PSDebug -Trace $varDebugTrace}
 
 #    throw [System.IO.FileNotFoundException] "$file not found."

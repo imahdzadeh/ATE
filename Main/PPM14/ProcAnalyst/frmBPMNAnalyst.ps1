@@ -8,7 +8,12 @@
 #|   Atenshin Elsci               |#
 #==================================#
 
-. "$(Split-Path $PSScriptRoot -Parent)\Config\$(($PSCommandPath.Split('\') | select -last 1) -replace (".ps1$","var.ps1"))"
+$DepCodeTemp = (Split-Path $PSScriptRoot -Parent).Split('\') | select -Last 1
+    $ConFol =  (Get-Item $PSScriptRoot).parent.Parent.Parent.FullName
+    $pathTemp = "$ConFol\Config\$DepCodeTemp\$((Get-Item $PSCommandPath).Name)" -replace (".ps1$","")
+  . "$pathTemp\$(((Get-Item $PSCommandPath).Name) -replace (".ps1$","var.ps1"))"
+
+#. "$(Split-Path $PSScriptRoot -Parent)\Config\$(($PSCommandPath.Split('\') | select -last 1) -replace (".ps1$","var.ps1"))"
 
 If($varDebugTrace -ne 0){Set-PSDebug -Trace $varDebugTrace}Else{Set-PSDebug -Trace $varDebugTrace}
 
