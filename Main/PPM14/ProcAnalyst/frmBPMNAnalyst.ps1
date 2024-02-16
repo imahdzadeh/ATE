@@ -45,6 +45,7 @@ Function funScale ($Magobj){
 }  
 
 Function funTextIconClick{
+    $DesktopPan.Focus()
     If($TextIcon.Checked)
     {   
         If($global:objShape -ne $null)

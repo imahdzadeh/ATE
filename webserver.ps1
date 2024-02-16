@@ -40,7 +40,7 @@ Add-Type -TypeDefinition @"
         public PowerShellHelper(Runspace remoteRunspace)
         {
             
-           runspace = remoteRunspace;-
+           runspace = remoteRunspace;
 
         }
 
