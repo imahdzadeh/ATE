@@ -114,18 +114,18 @@ foreach ($item in $Array) {
 }
 #>
     
-    Get-ChildItem $MainRoot -Directory | foreach{
-        If (Test-Path "$($_.FullName)\$ConfigFolName\$($_.Name)$CSVFileExt" )
+    Get-ChildItem $confRoot -Directory | foreach{
+        If (Test-Path "$($_.FullName)\$($_.Name)$CSVFileExt" )
         {
             $depcode = $_.Name
-            $ScriptCSV = Import-Csv "$($_.FullName)\$ConfigFolName\$($_.Name)$CSVFileExt"
+            $ScriptCSV = Import-Csv "$($_.FullName)\$($_.Name)$CSVFileExt"
             Get-ChildItem $_.FullName -Directory | foreach{
-                $DepCodeFol = $_.Name
                 If ($_.Name -ne $ConfigFolName -and $_.name -ne $LogFolName)
                 {
-                    Get-ChildItem $_.FullName -File | foreach {
-                        $ScriptName = $_.Name
+                    Get-ChildItem $_.FullName -File | Where {$_.name -match "/*.ps1"} | foreach {
+                        $ScriptName = $_.Name -replace ("var.ps1",".ps1") 
                         $ScriptCSV | Where-Object {$_.ScriptName -match $ScriptName} | Foreach{
+                            $TitleFol = $_.Title
                             New-Variable -Force -Name $ScriptName -Value (New-Object System.Windows.Forms.Button)
                             $thisButton = Get-Variable -ValueOnly -Include $ScriptName
                             $thisButton.Anchor = 'right'
@@ -136,7 +136,7 @@ foreach ($item in $Array) {
                             $thisButton.Add_Click({
                                 $Mainform.Close()
                                 $Mainform.Dispose()          
-                                & "$MainRoot\$depCode\$DepCodeFol\$ScriptName"   
+                                & "$MainRoot\$depCode\$TitleFol\$ScriptName"   
                             }.GetNewClosure())
                             $ButtonsTbl.Controls.Add($thisButton)    
                         }

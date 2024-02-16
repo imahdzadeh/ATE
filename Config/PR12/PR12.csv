@@ -1,0 +1,3 @@
+ScriptName,Title,PersianAlias
+PrdTestCreation.ps1,ProdAnalyst, ایجاد یا تغییر آزمایش برای محصولات جدید
+PrdTestProdMgmt.ps1,ProdAnalyst, مدیریت محصولات و آزمایشها
