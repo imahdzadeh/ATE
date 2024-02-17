@@ -1,8 +1,8 @@
 ﻿# Created by Isar Mahdzadeh
 # Decmeber 12 2023
 #
-Try
-{
+#Try
+#{
     $DepCodeTemp = (Split-Path $PSScriptRoot -Parent).Split('\') | select -Last 1
     $ConFol =  (Get-Item $PSScriptRoot).parent.Parent.Parent.FullName
     $pathTemp = "$ConFol\Config\$DepCodeTemp\$((Get-Item $PSCommandPath).Name)" -replace (".ps1$","")
@@ -70,7 +70,8 @@ Try
     Function funSaveBtn {
         Try
         {
-            $strFileName = "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$FolderNameTests\$($NewFileNameLbl.Text)$($CSVFileExt)"
+ #           $strFileName = "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$FolderNameTests\$($NewFileNameTxb.Tag)$($CSVFileExt)"
+            $strFileName = "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$FolderNameTests\$($NewFileNameTxb.Tag)"
             If(funSaveDupRowChk)
             {
                 If(funSaveEmpRowChk)
@@ -96,7 +97,7 @@ Try
                                         }
                                         Else
                                         {
-                                            "$( ($_.Cells | % {$_.Value}) -join ','),$strCreated,$((Get-Date).ToString('MM/dd/yyyy hh:mm tt')),$([Environment]::UserName),NA,NA".Trim() | 
+                                            "$( ($_.Cells | % {$_.Value}) -join ','),$strCreated,$((Get-Date).ToString('MM/dd/yyyy hh:mm tt')),$([Environment]::UserName),NA,NA,$($NewFileNameTxb.Text)".Trim() | 
                                             Out-file $strFileName -Append   
                                         }
                                 
@@ -105,11 +106,11 @@ Try
                                 }
                                 If($ImageBx.tag -ne $null)
                                 {
-                                    $ImageBx.Image.Save("$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$imgFolder\$($NewFileNameLbl.Text)$($ImageExt)")
-#                                    $strTemp = "$($NewFileNameLbl.Text)$($ImageExt)"
+                                    $ImageBx.Image.Save("$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$imgFolder\$($NewFileNameTxb.Tag)$($ImageExt)")
+#                                    $strTemp = "$($NewFileNameTxb.Tag)$($ImageExt)"
                                 } 
-                                "$((Get-Date).ToString('MM/dd/yyyy hh:mm:ss tt'))`t $($PSCommandPath.Split('\') | 
-                                select -last 1)-SaveBtn`t $($NewRB.Text) `t $($NewFileNameLbl.Text) `t $Global:StrImageLast `t $([Environment]::UserName)" | 
+                                "$((Get-Date).ToString('MM/dd/yyyy hh:mm:ss tt'))`t$($PSCommandPath.Split('\') | 
+                                select -last 1)-SaveBtn`t$($NewRB.Text)`t$($NewFileNameTxb.Tag)`t$($NewFileNameTxb.Text)`t$Global:StrImageLast`t$([Environment]::UserName)" | 
                                 Out-File $UserLogPath -Append     
                             } 
                             Else
@@ -140,33 +141,33 @@ Try
                                     }
                                     Else
                                     {
-                                        "$( ($_.Cells | % {$_.Value}) -join ','),$strChanged,$((Get-Date).ToString('MM/dd/yyyy hh:mm tt')),$([Environment]::UserName),NA,NA".Trim() | 
+                                        "$( ($_.Cells | % {$_.Value}) -join ','),$strChanged,$((Get-Date).ToString('MM/dd/yyyy hh:mm tt')),$([Environment]::UserName),NA,NA,$($NewFileNameTxb.Text)".Trim() | 
                                         Out-file $strFileName -Append
                                     }                                  
                                 }
                                 $imageFolTemp = "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$imgFolder\"
                                 If($ImageBx.tag -eq $ImgFileAddbtn.Text)
                                 {                                 
-                                    If(Test-Path "$imageFolTemp$($NewFileNameLbl.Text)$($ImageExt)")
+                                    If(Test-Path "$imageFolTemp$($NewFileNameTxb.Tag)$($ImageExt)")
                                     {
-                                        Move-Item  "$imageFolTemp$($NewFileNameLbl.Text)$($ImageExt)" "$imageFolTemp$ArchFolder\$($NewFileNameLbl.Text)$($ImageExt)"
-                                        Rename-Item "$imageFolTemp$ArchFolder\$($NewFileNameLbl.Text)$($ImageExt)" `
-                                        "$imageFolTemp$ArchFolder\$($NewFileNameLbl.Text)_$((Get-Date).ToString('MM-dd-yyyy_hh-mm-ss tt'))$($ImageExt)"
-#                                        $strTemp = "$($NewFileNameLbl.Text)_$((Get-Date).ToString('MM-dd-yyyy_hh-mm-ss tt'))$($ImageExt)"
+                                        Move-Item  "$imageFolTemp$($NewFileNameTxb.Tag)$($ImageExt)" "$imageFolTemp$ArchFolder\$($NewFileNameTxb.Tag)$($ImageExt)"
+                                        Rename-Item "$imageFolTemp$ArchFolder\$($NewFileNameTxb.Tag)$($ImageExt)" `
+                                        "$imageFolTemp$ArchFolder\$($NewFileNameTxb.Tag)_$((Get-Date).ToString('MM-dd-yyyy_hh-mm-ss tt'))$($ImageExt)"
+#                                        $strTemp = "$($NewFileNameTxb.Tag)_$((Get-Date).ToString('MM-dd-yyyy_hh-mm-ss tt'))$($ImageExt)"
                                     }
-                                    $ImageBx.Image.Save("$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$imgFolder\$($NewFileNameLbl.Text)$($ImageExt)")
+                                    $ImageBx.Image.Save("$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$imgFolder\$($NewFileNameTxb.Tag)$($ImageExt)")
                                 }
                                 Else
                                 {
-                                     If((Test-Path "$imageFolTemp$($NewFileNameLbl.Text)$($ImageExt)") -and ($ImageBx.tag -eq $ImgFileRembtn.Text))
+                                     If((Test-Path "$imageFolTemp$($NewFileNameTxb.Tag)$($ImageExt)") -and ($ImageBx.tag -eq $ImgFileRembtn.Text))
                                      {
-                                        Move-Item  "$imageFolTemp$($NewFileNameLbl.Text)$($ImageExt)" "$imageFolTemp$ArchFolder\$($NewFileNameLbl.Text)$($ImageExt)"
-                                        Rename-Item "$imageFolTemp$ArchFolder\$($NewFileNameLbl.Text)$($ImageExt)" `
-                                        "$imageFolTemp$ArchFolder\$($NewFileNameLbl.Text)_$((Get-Date).ToString('MM-dd-yyyy_hh-mm-ss tt'))$($ImageExt)"                                       
+                                        Move-Item  "$imageFolTemp$($NewFileNameTxb.Tag)$($ImageExt)" "$imageFolTemp$ArchFolder\$($NewFileNameTxb.Tag)$($ImageExt)"
+                                        Rename-Item "$imageFolTemp$ArchFolder\$($NewFileNameTxb.Tag)$($ImageExt)" `
+                                        "$imageFolTemp$ArchFolder\$($NewFileNameTxb.Tag)_$((Get-Date).ToString('MM-dd-yyyy_hh-mm-ss tt'))$($ImageExt)"                                       
                                      }
                                 } 
                                 "$((Get-Date).ToString('MM/dd/yyyy hh:mm:ss tt'))`t $($PSCommandPath.Split('\') | 
-                                select -last 1)-SaveBtn`t $($OldRB.Text)`t $($NewFileNameLbl.Text) `t $Global:StrImageLast `t $([Environment]::UserName)" | 
+                                select -last 1)-SaveBtn`t $($OldRB.Text)`t $($NewFileNameTxb.Tag) Name:$($NewFileNameTxb.Text)`t $Global:StrImageLast `t $([Environment]::UserName)" | 
                                 Out-File $UserLogPath -Append -Force     
                             }
                             $SaveBtn.Enabled = $false
@@ -186,7 +187,7 @@ Try
                         {
                             [System.Windows.MessageBox]::Show("لطفا مقادیر مواد اولیه را وارد کنید ، ذخیره انجام نشد")
                             "$((Get-Date).ToString('MM/dd/yyyy hh:mm:ss tt'))`t $($PSCommandPath.Split('\') | 
-                            select -last 1)-SaveBtn`t لطفا مقادیر مواد اولیه را وارد کنید ، ذخیره انجام نشد `t$($NewFileNameLbl.Text) `t$([Environment]::UserName)" | 
+                            select -last 1)-SaveBtn`t لطفا مقادیر مواد اولیه را وارد کنید ، ذخیره انجام نشد `t$($NewFileNameTxb.Tag) `t$([Environment]::UserName)" | 
                             Out-File $UserLogPath -Append                                
                         }
                     }
@@ -194,7 +195,7 @@ Try
                     {
                         [System.Windows.MessageBox]::Show("وجود دارد، ذخیره انجام نشد $($Global:strDupFileName) فرمول مشابه در شماره")
                         "$((Get-Date).ToString('MM/dd/yyyy hh:mm:ss tt'))`t $($PSCommandPath.Split('\') | 
-                        select -last 1)-SaveBtn`t وجود دارد، ذخیره انجام نشد $($strDupFileName) فرمول مشابه در شماره `t$($NewFileNameLbl.Text) `t$([Environment]::UserName)" | 
+                        select -last 1)-SaveBtn`t وجود دارد، ذخیره انجام نشد $($strDupFileName) فرمول مشابه در شماره `t$($NewFileNameTxb.Tag) `t$([Environment]::UserName)" | 
                         Out-File $UserLogPath -Append                            
                     }
                 }
@@ -202,7 +203,7 @@ Try
                 {
                     [System.Windows.MessageBox]::Show("سطر خالی وجود دارد، ذخیره انجام نشد $($strCBPeopName) در ستون")
                     "$((Get-Date).ToString('MM/dd/yyyy hh:mm:ss tt'))`t $($PSCommandPath.Split('\') | 
-                    select -last 1)-SaveBtn`t سطر خالی وجود دارد، ذخیره انجام نشد $($strCBPeopName) در ستون `t$($NewFileNameLbl.Text) `t$([Environment]::UserName)" | 
+                    select -last 1)-SaveBtn`t سطر خالی وجود دارد، ذخیره انجام نشد $($strCBPeopName) در ستون `t$($NewFileNameTxb.Tag) `t$([Environment]::UserName)" | 
                     Out-File $UserLogPath -Append  
                 }
             }
@@ -210,7 +211,7 @@ Try
             {
                 [System.Windows.MessageBox]::Show("تکرار وجود دارد، ذخیره انجام نشد $($strCBPeopName) در ستون")
                 "$((Get-Date).ToString('MM/dd/yyyy hh:mm:ss tt'))`t $($PSCommandPath.Split('\') | 
-                select -last 1)-SaveBtn`t کرار وجود دارد، ذخیره انجام نشد $($strCBPeopName) در ستون `t$($NewFileNameLbl.Text) `t$([Environment]::UserName)" | 
+                select -last 1)-SaveBtn`t کرار وجود دارد، ذخیره انجام نشد $($strCBPeopName) در ستون `t$($NewFileNameTxb.Tag) `t$([Environment]::UserName)" | 
                 Out-File $UserLogPath -Append 
             }
         }
@@ -293,7 +294,7 @@ Try
                     $bolCHK = $false
                     $object2 = (Get-Content $_.FullName  | Where-Object { !$_.StartsWith("#") }) | ConvertFrom-Csv
                     Compare-Object $object1 $object2 -Property $ArrColToCompare | % {$bolCHK = $True} 
-                    If (($bolCHK -eq $false) -and ($_.Name -ne "$($NewFileNameLbl.Text)$($CSVFileExt)")){
+                    If (($bolCHK -eq $false) -and ($_.Name -ne "$($NewFileNameTxb.Tag)")){
                         $Global:strDupFileName = ($_.Name).TrimEnd($CSVFileExt)
                         $bolReturn = $false
                     }      
@@ -342,7 +343,7 @@ Try
         $ProdLB.Items.Clear()
         $ProdLB.Text = $null
         $EmailGV.Enabled = $false
-        $NewFileNameLbl.Text = "" 
+        $NewFileNameTxb.Tag = "" 
         $NewNameLbl.Visible = $false
         $NameLbl.Visible = $false 
     } 
@@ -353,7 +354,7 @@ Try
             $ProdLB.Enabled = $true
             $DesktopBtn.Enabled = $false
             $EmailGV.Enabled = $false 
-            $NewFileNameLbl.Text = ""
+            $NewFileNameTxb.Tag = ""
             $NewNameLbl.Visible = $false 
 <#
             $PRFFiles = Get-ChildItem -Path "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$FolderNameTests" -File | 
@@ -394,21 +395,23 @@ Try
         $TotPercentIB.Visible = $false
         $TotMlIB.Visible = $false
         $NewNameLbl.Visible = $false 
-        $NewFileNameLbl.Text = ""
+        $NewFileNameTxb.Text = ""
+        $NewFileNameTxb.Enabled = $false
         $Cancelbtn.Enabled = $flase
         $saveBtn.Enabled = $false
         $ProdCatLB.Text = $null
         $NameLbl.Visible = $false
         $PrjNameLB.Enabled = $true
         $ImageBx.Image = $null
+        $arrProducts.Clear()
         If ($EmailGV.Rows.Count -gt 0){
             $DGVDataTab.Clear()
         }
     }
 
     Function funShowInfo{
-        Try
-        {
+#        Try
+#        {
             $DesktopBtn.Enabled = $false
             $NewRB.Enabled = $faslse
             $ProdCatLB.Enabled = $false
@@ -424,13 +427,17 @@ Try
             $saveBtn.Enabled = $true
             $NewBtn.Enabled = $false
             $ImgFileAddbtn.Enabled = $true
+            $NewFileNameTxb.Enabled = $true
             $intSum = 0
             $intCal = 0
             If ($NewRB.Checked){
                 $ConfFileVer = $null
                 $TotMlIB.Text = 0
                 $TotPercentIB.Text = 0
-                $ConfFileVer = gci "$confRoot\$ConFolPRF" -file | Foreach{
+                "$ConfFol\$(((Get-Item $PSCommandPath).Name) -replace (".ps1$",''))\$ConFolPRF$($DGVCBInfoVer.IntVal)"
+
+#                $ConfFileVer = gci "$confRoot\$ConFolPRF" -file | Foreach{
+                $ConfFileVer = gci "$ConfFol\$(((Get-Item $PSCommandPath).Name) -replace (".ps1$",''))" -file | Foreach{
                     $_ -match $RegExVerVar
                     } | Select-Object *, @{ n = "IntVal"; e = {[int]($Matches[2])}} | Sort-Object IntVal | Select-Object -Last 1
 
@@ -439,12 +446,15 @@ Try
                 $ConfFileNo = gci "$ProdRoot\$($PrjNameLB.SelectedItem)" -file -Recurse| Foreach{
                     $_ -match $RegExNoVar
                     } | Select-Object *, @{ n = "IntVal"; e = {[int]($Matches[4])}} | Sort-Object IntVal | Select-Object -Last 1
-                $NewFileNameLbl.Text = "$($ConFolPRF)$($ConfFileVer.IntVal)$($DepCode)$($ConfFileNo.IntVal+1)" 
+                $NewFileNameTxb.Tag = "$($ConFolPRF)$($ConfFileVer.IntVal)$($DepCode)$($ConfFileNo.IntVal+1)" 
+                $NewFileNameTxb.Text = ""
                 $NewNameLbl.Visible = $true
             }
             Else
             {
-                Get-Content "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$FolderNameTests\$($ProdLB.SelectedItem)$CSVFileExt" | 
+                $TestID = ($arrProducts.GetEnumerator() | Where-Object {$_.Value -eq $ProdLB.SelectedItem}).Name  
+#                Get-Content "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$FolderNameTests\$($ProdLB.SelectedItem)$CSVFileExt" | 
+                Get-Content "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$FolderNameTests\$TestID" | 
                 Where-Object { !$_.StartsWith("#") } | ConvertFrom-Csv | Foreach {
                     $row = $DGVDataTab.NewRow() 
                     foreach($column in $DGVDataTab.Columns)
@@ -453,7 +463,8 @@ Try
                     }
                     $DGVDataTab.Rows.Add($row)
                 }
-                $NewFileNameLbl.Text = $ProdLB.SelectedItem
+                $NewFileNameTxb.Tag = $TestID
+                $NewFileNameTxb.Text = $arrProducts.Item($TestID)
                 $NameLbl.Visible = $true
                 foreach ($TGVRow in $EmailGV.Rows)
                 {
@@ -469,17 +480,18 @@ Try
                 }
                 $TotPercentIB.Text = [int]$intSum
                 $TotMlIB.Text = [math]::round($intCal,2)
-                If(Test-Path "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$imgFolder\$($NewFileNameLbl.Text)$($ImageExt)")
+                If(Test-Path "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$imgFolder\$($NewFileNameTxb.Tag)$($ImageExt)")
                     {
  #                       $imgFile = (Get-Item $dialog.FileName)
-                        $Global:img = [System.Drawing.Image]::Fromfile("$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$imgFolder\$($NewFileNameLbl.Text)$($ImageExt)");
+                        $Global:img = [System.Drawing.Image]::Fromfile("$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$imgFolder\$($NewFileNameTxb.Tag)$($ImageExt)");
                         $ImageBx.Image = $Global:img
                         $ImageBx.Tag = $imgFile.Name
-#                        $ImageBx.Image.Save("$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$imgFolder\$($NewFileNameLbl.Text)$($ImageExt)")
+#                        $ImageBx.Image.Save("$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$imgFolder\$($NewFileNameTxb.Tag)$($ImageExt)")
 #                        $Global:img.Dispose()
                     } 
             }
             If($ImageBx.Image -ne $null){$ImgFileRembtn.Enabled = $true}
+<#
         }
         Catch
         {
@@ -494,6 +506,7 @@ Try
                 throw $_
             } 
         }
+#>
     }
 
     Function funShowMAC{
@@ -755,13 +768,40 @@ Try
                             }
                        }
             }
+#Where-Object { !$_.StartsWith("#") } | ConvertFrom-Csv | Foreach {
             $ProdLB.Items.Clear()
-            $PRFFiles = Get-ChildItem -Path "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$FolderNameTests" -File | 
-            ForEach-Object{$_.Name.TrimEnd($CSVFileExt)}
+            $intIterateTemp = 1
+#            $PRFFiles = Get-ChildItem -Path "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$FolderNameTests" -File | 
+            Get-ChildItem -Path "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$FolderNameTests" -File | `
+#            ForEach-Object{$_.PersianAlias}
+            ForEach-Object{
+                $FileNameTemp = $_.Name 
+                Get-Content $_.FullName | Where-Object { !$_.StartsWith("#") }  | ConvertFrom-Csv | select -first 1 |`
+                foreach{
+#                    If($_.PersianAlias -eq [System.DBNull]::Value)
+                    If($_.PersianAlias -eq $Null)
+                    {
+                        $arrProducts.add($FileNameTemp,"noname$intIterateTemp")
+                        $intIterateTemp++
+                    }
+                    Else
+                    {
+                        $arrProducts.add($FileNameTemp,$_.PersianAlias)
+                    }                    
+                }
+#            $_.Name.TrimEnd($CSVFileExt)
+            }
+            
+            foreach($arrProdItem in $arrProducts.keys)
+            {
+                $ProdLB.Items.Add($arrProducts.Item($arrProdItem))
+            }
+<#
             If ($PRFFiles -ne $null)
             {
                 $ProdLB.Items.AddRange($PRFFiles)
             }
+#>
         }
         Catch
         {
@@ -1059,7 +1099,7 @@ Try
     $NewNameLbl = New-Object System.Windows.Forms.label
     $NewNameLbl.Location = New-Object System.Drawing.size(200,85)
     $NewNameLbl.Size = New-Object System.Drawing.Size(80,20) 
-    $NewNameLbl.Text = ":شماره آزمایش جدید" 
+    $NewNameLbl.Text = ":نام آزمایش جدید" 
     $NewNameLbl.TextAlign=[System.Drawing.ContentAlignment]::bottomleft
     $NewNameLbl.Visible = $false
     $NewNameLbl.BackColor = ''
@@ -1067,19 +1107,20 @@ Try
     $NameLbl = New-Object System.Windows.Forms.label
     $NameLbl.Location = New-Object System.Drawing.size(195,85)
     $NameLbl.Size = New-Object System.Drawing.Size(70,20) 
-    $NameLbl.Text = ":شماره آزمایش" 
+    $NameLbl.Text = ":نام آزمایش" 
     $NameLbl.TextAlign=[System.Drawing.ContentAlignment]::bottomleft
     $NameLbl.Visible = $False
     $NameLbl.BackColor = ''
 
-    $NewFileNameLbl = New-Object System.Windows.Forms.label
-    $NewFileNameLbl.Location = New-Object System.Drawing.size(90,85)
-    #$NewFileNameLbl.Size = New-Object System.Drawing.Size(80,20)
-    $NewFileNameLbl.AutoSize = $ture 
-    $NewFileNameLbl.Text = ""
-    $NewFileNameLbl.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 9, [System.Drawing.FontStyle]::Bold)
-    $NewFileNameLbl.TextAlign=[System.Drawing.ContentAlignment]::MiddleRight
-    $NewFileNameLbl.BackColor = ''
+    $NewFileNameTxb = New-Object System.Windows.Forms.TextBox
+    $NewFileNameTxb.Location = New-Object System.Drawing.size(90,85)
+    #$NewFileNameTxb.Size = New-Object System.Drawing.Size(80,20)
+    $NewFileNameTxb.AutoSize = $ture 
+    $NewFileNameTxb.Text = ""
+    $NewFileNameTxb.Tag = ""
+    $NewFileNameTxb.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 9, [System.Drawing.FontStyle]::Bold)
+ #   $NewFileNameTxb.TextAlign=[System.Drawing.ContentAlignment]::MiddleRight
+    $NewFileNameTxb.BackColor = ''
 
     #[System.Windows.MessageBox]::Show('test')
 
@@ -1324,7 +1365,7 @@ Try
     $DesktopGB.Controls.Add($CancelBtn)
     $DesktopGB.Controls.Add($SaveBtn)
     $DesktopGB.Controls.Add($NewNameLbl)
-    $DesktopGB.Controls.Add($NewFileNameLbl)
+    $DesktopGB.Controls.Add($NewFileNameTxb)
     $DesktopGB.Controls.Add($RBGroup)
     $DesktopGB.Controls.Add($TotPercentIB)
     $DesktopGB.Controls.Add($TotMlIB)
@@ -1343,6 +1384,7 @@ Try
     $SecoForm.Controls.Add($DesktopGB)
 
     [void]$SecoForm.ShowDialog()
+<#
 }
 Catch
 { 
@@ -1350,3 +1392,4 @@ Catch
     select -last 1)-Main`t $_ `t$([Environment]::UserName)" | 
     Out-File $ErrLogPath -Append 
 }
+#>

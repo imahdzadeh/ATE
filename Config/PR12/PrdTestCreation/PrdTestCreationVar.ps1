@@ -15,6 +15,7 @@ Where-Object {$_.UserID -match $([Environment]::UserName)} | % {$_.mainpath}
 #
 # Define objects and variables customed to this script between the lines
 #///////////////////////////////////////////////////////////////////////////////////
+$arrProducts = @{}
 $varDebugTrace = 0
 $Logging = $True
 $ConFolPRF = "PRF"
@@ -38,7 +39,7 @@ $ArrColToCompare = @('Material code','ratio %','Weight ml' )
 $RegExNoneCo = "'^.*(?:\r?\n)?'"
 $DecimalRegEx = '^\d*\.?\d+$'
 $RegExComment= "#$_"
-$ExtrInfoArr = @('Latest Change','Date','User ID','Process No', 'Status')
+$ExtrInfoArr = @('Latest Change','Date','User ID','Process No', 'Status','PersianAlias')
 $ShowFrmArr = @('عکس','شماره','توضیحات','وضعیت','تاریخ')
 $ImgColName = 'عکس'
 $strComLine = $("#" * 20)
