@@ -17,12 +17,14 @@ Try
     $ProjNames = Get-ChildItem -Path $ProdRoot -Directory | ForEach-Object {$_.Name}
     $DGVCellValueChanging = $flase
     $DGVCBInfo = New-Object system.Data.DataTable
-    $DGVCBInfoVer = gci "$confRoot\$ConFolPRF" -file | Foreach {
+    $test = "$ConfFol\$(((Get-Item $PSCommandPath).Name) -replace (".ps1$",''))"
+    $test1 = "$ConfFol\$(((Get-Item $PSCommandPath).Name) -replace (".ps1$",''))\$ConFolPRF$($DGVCBInfoVer.IntVal)"
+    $DGVCBInfoVer = gci "$ConfFol\$(((Get-Item $PSCommandPath).Name) -replace (".ps1$",''))" -file | Foreach {
       $_ -replace '^PRF', ''
       } | Select-Object *, @{ n = "IntVal"; e = {[int]($_)}} | Sort-Object IntVal | Select-Object -Last 1
 
     $DGVCBInfoCol = @()
-    (Get-Content "$confRoot\$ConFolPRF\$ConFolPRF$($DGVCBInfoVer.IntVal)" | select -First 1) -split $CSVDelimiter | foreach {
+    (Get-Content "$ConfFol\$(((Get-Item $PSCommandPath).Name) -replace (".ps1$",''))\$ConFolPRF$($DGVCBInfoVer.IntVal)" | select -First 1) -split $CSVDelimiter | foreach {
         $DGVCBInfoCol += $_
         $col2 = New-Object System.Data.DataColumn
         $col2.DataType = [string]
@@ -33,7 +35,7 @@ Try
     $DGVCBColumn = New-Object system.Data.DataTable
     [void]$DGVCBColumn.Columns.Add($strCBPeopName)
 
-    Import-Csv "$confRoot\$ConFolPRF\$ConFolPRF$($DGVCBInfoVer.IntVal)" |  foreach {
+    Import-Csv "$ConfFol\$(((Get-Item $PSCommandPath).Name) -replace (".ps1$",''))\$ConFolPRF$($DGVCBInfoVer.IntVal)" |  foreach {
         $row2 = $DGVCBInfo.NewRow() 
         foreach($column in $DGVCBInfoCol){
             $row2.$column=$_.$column

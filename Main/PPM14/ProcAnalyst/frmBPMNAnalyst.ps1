@@ -1800,163 +1800,195 @@ Function funChkState{
 }
 
 Function funLoadBtn{
-    $dialog = [System.Windows.Forms.OpenFileDialog]::new()
-    $dialog.RestoreDirectory = $true
-    $result = $dialog.ShowDialog()
-    if($result -eq [System.Windows.Forms.DialogResult]::OK){
-        funClearAll         
-        $Global:Loading = $true
-        $global:serializedObj = $null
-        $global:SerializedP = New-Object Point
-        $objPSNewShape = Import-Clixml $dialog.FileName
-        $FileNameLbl.Text = ((Get-Item $dialog.FileName).Name).Replace(".ate",'')
-        funFrmSettings $objPSNewShape.objSettings.Width $objPSNewShape.objSettings.Height 
-        foreach($objLoad in $objPSNewShape.arrRegions)
-        {
-            $global:Class = $objLoad.Class
-            $global:serializedObj = $objLoad.Type
-            $Global:intIterate = $objLoad.intIterate
-            $global:SerializedP.X = $objLoad.pCenter.X
-            $global:SerializedP.Y = $objLoad.pCenter.Y
-            $DesktopPan.Invalidate() 
-            $DesktopPan.Update()        
-        }
-        for($i = 0; $i -lt $MainObject.arrRegions.Count; $i++)
-        {
-            $arrItem = $MainObject.arrRegions[$i]
+    Try
+    {
+        $dialog = [System.Windows.Forms.OpenFileDialog]::new()
+        $dialog.RestoreDirectory = $true
+        $result = $dialog.ShowDialog()
+        if($result -eq [System.Windows.Forms.DialogResult]::OK){
+            funClearAll         
+            $Global:Loading = $true
+            $global:serializedObj = $null
+            $global:SerializedP = New-Object Point
+            $objPSNewShape = Import-Clixml $dialog.FileName
+            $FileNameLbl.Text = ((Get-Item $dialog.FileName).Name).Replace(".ate",'')
+            funFrmSettings $objPSNewShape.objSettings.Width $objPSNewShape.objSettings.Height 
             foreach($objLoad in $objPSNewShape.arrRegions)
             {
-                If($objLoad.Name -eq $MainObject.arrRegions[$i].Name)
+                $global:Class = $objLoad.Class
+                $global:serializedObj = $objLoad.Type
+                $Global:intIterate = $objLoad.intIterate
+                $global:SerializedP.X = $objLoad.pCenter.X
+                $global:SerializedP.Y = $objLoad.pCenter.Y
+                $DesktopPan.Invalidate() 
+                $DesktopPan.Update()        
+            }
+            for($i = 0; $i -lt $MainObject.arrRegions.Count; $i++)
+            {
+                $arrItem = $MainObject.arrRegions[$i]
+                foreach($objLoad in $objPSNewShape.arrRegions)
                 {
-                    $MainObject.arrRegions[$i].Text = $objLoad.Text
-                    $MainObject.arrRegions[$i].pTXDiffer = $objLoad.pTXDiffer
-                    $MainObject.arrRegions[$i].pTYDiffer = $objLoad.pTYDiffer
-                    $MainObject.arrRegions[$i].Icon = $objLoad.Icon
-                    $MainObject.arrRegions[$i].SubProcess = $objLoad.SubProcess
-                    $MainObject.arrRegions[$i].Condition = $objLoad.Condition               
-                    for($c = 0; $c -lt $objLoad.ConnArr.Count; $c++)
+                    If($objLoad.Name -eq $MainObject.arrRegions[$i].Name)
                     {
-                        $points = [ArrayList]@()
-                        for($k = 0; $k -lt $objLoad.ConnArr[$c].Points.Count; $k++)
+                        $MainObject.arrRegions[$i].Text = $objLoad.Text
+                        $MainObject.arrRegions[$i].pTXDiffer = $objLoad.pTXDiffer
+                        $MainObject.arrRegions[$i].pTYDiffer = $objLoad.pTYDiffer
+                        $MainObject.arrRegions[$i].Icon = $objLoad.Icon
+                        $MainObject.arrRegions[$i].SubProcess = $objLoad.SubProcess
+                        $MainObject.arrRegions[$i].Condition = $objLoad.Condition               
+                        for($c = 0; $c -lt $objLoad.ConnArr.Count; $c++)
                         {
-                            $p = New-Object Point $objLoad.ConnArr[$c].Points[$k].X,$objLoad.ConnArr[$c].Points[$k].Y
-                            $points.Add($p)
+                            $points = [ArrayList]@()
+                            for($k = 0; $k -lt $objLoad.ConnArr[$c].Points.Count; $k++)
+                            {
+                                $p = New-Object Point $objLoad.ConnArr[$c].Points[$k].X,$objLoad.ConnArr[$c].Points[$k].Y
+                                $points.Add($p)
+                            }
+                            $connObj = [pscustomobject]@{
+                                Points = $points
+                                ConnObj = $MainObject.arrRegions | where name -eq $objLoad.ConnArr[$c].ConnObj.Name
+                                Name = $objLoad.ConnArr[$c].Name
+                                ConnType = $objLoad.ConnArr[$c].ConnType
+                                StartPoint = $objLoad.ConnArr[$c].StartPoint
+                                ConnPoint = $objLoad.ConnArr[$c].ConnPoint
+                                Path = $objLoad.ConnArr[$c].Path
+                                Text = $objLoad.ConnArr[$c].Text
+                                pCenter = $objLoad.ConnArr[$c].pCenter
+                                TextPath = $objLoad.ConnArr[$c].TextPath
+                                pTXDiffer = $objLoad.ConnArr[$c].pTXDiffer
+                                pTYDiffer = $objLoad.ConnArr[$c].pTYDiffer
+                                LineStyle = $objLoad.ConnArr[$c].LineStyle
+                            } 
+                            $MainObject.arrRegions[$i].ConnArr.Add($connObj)
                         }
-                        $connObj = [pscustomobject]@{
-                            Points = $points
-                            ConnObj = $MainObject.arrRegions | where name -eq $objLoad.ConnArr[$c].ConnObj.Name
-                            Name = $objLoad.ConnArr[$c].Name
-                            ConnType = $objLoad.ConnArr[$c].ConnType
-                            StartPoint = $objLoad.ConnArr[$c].StartPoint
-                            ConnPoint = $objLoad.ConnArr[$c].ConnPoint
-                            Path = $objLoad.ConnArr[$c].Path
-                            Text = $objLoad.ConnArr[$c].Text
-                            pCenter = $objLoad.ConnArr[$c].pCenter
-                            TextPath = $objLoad.ConnArr[$c].TextPath
-                            pTXDiffer = $objLoad.ConnArr[$c].pTXDiffer
-                            pTYDiffer = $objLoad.ConnArr[$c].pTYDiffer
-                            LineStyle = $objLoad.ConnArr[$c].LineStyle
-                        } 
-                        $MainObject.arrRegions[$i].ConnArr.Add($connObj)
                     }
                 }
             }
-        }
-        foreach($objLoad in $objPSNewShape.arrGroups)
-        {
-            $global:serializedObj = $objLoad.Type
-            $Global:intIterate = $objLoad.intIterate
-            $global:SerializedP.X = $objLoad.Point.X
-            $global:SerializedP.Y = $objLoad.Point.Y
-            $global:PoolWidth = $objLoad.PoolWidth
-            $global:PoolHeight = $objLoad.PoolHeight
-            $DesktopPan.Invalidate() 
-            $DesktopPan.Update()        
-        }
-        $Global:Loading = $false
-        for($i = 0; $i -lt $MainObject.arrGroups.Count; $i++)
-        {
             foreach($objLoad in $objPSNewShape.arrGroups)
             {
-                If($objLoad.Name -eq $MainObject.arrGroups[$i].Name)
-                {
-                    $MainObject.arrGroups[$i].Text = $objLoad.Text
-                    $MainObject.arrGroups[$i].pTXDiffer = $objLoad.pTXDiffer
-                    $MainObject.arrGroups[$i].pTYDiffer = $objLoad.pTYDiffer                
-                    for($u = 1; $u -lt $objLoad.Lanes.Count; $u++)
-                    {
-                        $global:serializedObj = ""
-                        $Global:intIterate ++                        
-                        $objLane = [pscustomobject]@{     
-                                Name = $objLoad.Lanes[$u].name
-                                Type= $objLoad.Lanes[$u].Type
-                                pCenter = $Null
-                                TextPath = $Null
-                                LanePath = $Null
-                                TAreaPath = $Null
-                                intIterate = $objLoad.Lanes[$u].intIterate
-                                Pool = $objLoad.Lanes[$u].Pool
-                                Point = $objLoad.Lanes[$u].point
-                                TPoint = $objLoad.Lanes[$u].TPoint
-                                pTop = $objLoad.Lanes[$u].pTop
-                                pBottom1 = $objLoad.Lanes[$u].pBottom1
-                                pBottom2 = $objLoad.Lanes[$u].pBottom2
-                                Text = $objLoad.Lanes[$u].Text
-                                TextPen = $TinyPen
-                                MainPen = $GroupPen
-                                pTXDiffer = $objLoad.Lanes[$u].pTXDiffer
-                                pTYDiffer = $objLoad.Lanes[$u]. pTYDiffer
-                                LaneHeight =$objLoad.Lanes[$u].LaneHeight
-                            } 
-                        $MainObject.arrGroups[$i].Lanes.Add($objLane)
-                        $DesktopPan.Invalidate() 
-                        $DesktopPan.Update()                                                    
-                    }                
-                
-                
-                }
-
+                $global:serializedObj = $objLoad.Type
+                $Global:intIterate = $objLoad.intIterate
+                $global:SerializedP.X = $objLoad.Point.X
+                $global:SerializedP.Y = $objLoad.Point.Y
+                $global:PoolWidth = $objLoad.PoolWidth
+                $global:PoolHeight = $objLoad.PoolHeight
+                $DesktopPan.Invalidate() 
+                $DesktopPan.Update()        
             }
+            $Global:Loading = $false
+            for($i = 0; $i -lt $MainObject.arrGroups.Count; $i++)
+            {
+                foreach($objLoad in $objPSNewShape.arrGroups)
+                {
+                    If($objLoad.Name -eq $MainObject.arrGroups[$i].Name)
+                    {
+                        $MainObject.arrGroups[$i].Text = $objLoad.Text
+                        $MainObject.arrGroups[$i].pTXDiffer = $objLoad.pTXDiffer
+                        $MainObject.arrGroups[$i].pTYDiffer = $objLoad.pTYDiffer                
+                        for($u = 1; $u -lt $objLoad.Lanes.Count; $u++)
+                        {
+                            $global:serializedObj = ""
+                            $Global:intIterate ++                        
+                            $objLane = [pscustomobject]@{     
+                                    Name = $objLoad.Lanes[$u].name
+                                    Type= $objLoad.Lanes[$u].Type
+                                    pCenter = $Null
+                                    TextPath = $Null
+                                    LanePath = $Null
+                                    TAreaPath = $Null
+                                    intIterate = $objLoad.Lanes[$u].intIterate
+                                    Pool = $objLoad.Lanes[$u].Pool
+                                    Point = $objLoad.Lanes[$u].point
+                                    TPoint = $objLoad.Lanes[$u].TPoint
+                                    pTop = $objLoad.Lanes[$u].pTop
+                                    pBottom1 = $objLoad.Lanes[$u].pBottom1
+                                    pBottom2 = $objLoad.Lanes[$u].pBottom2
+                                    Text = $objLoad.Lanes[$u].Text
+                                    TextPen = $TinyPen
+                                    MainPen = $GroupPen
+                                    pTXDiffer = $objLoad.Lanes[$u].pTXDiffer
+                                    pTYDiffer = $objLoad.Lanes[$u]. pTYDiffer
+                                    LaneHeight =$objLoad.Lanes[$u].LaneHeight
+                                } 
+                            $MainObject.arrGroups[$i].Lanes.Add($objLane)
+                            $DesktopPan.Invalidate() 
+                            $DesktopPan.Update()                                                    
+                        }                                
+                    }
+                }
+            }
+            $DesktopPan.Invalidate() 
+            $Global:strFileName = Get-Item $dialog.FileName
+            $UndoStack.Clear()
+            $RedoStack.Clear()
+            $RedoStack = New-Object System.Collections.Stack
+            $UndoStack = New-Object System.Collections.Stack       
         }
-        $DesktopPan.Invalidate() 
-        $Global:strFileName = Get-Item $dialog.FileName
-        $UndoStack.Clear()
-        $RedoStack.Clear()
-        $RedoStack = New-Object System.Collections.Stack
-        $UndoStack = New-Object System.Collections.Stack       
+        "$((Get-Date).ToString('MM/dd/yyyy hh:mm:ss tt'))`t $($PSCommandPath.Split('\') | 
+        select -last 1)-funLoadBtn`t file $Global:strFileName Loaded`t $([Environment]::UserName)" | 
+        Out-File $UserLogPath -Append -Force  
+    }
+    Catch
+    {
+        "$((Get-Date).ToString('MMMyy'))`t $($PSCommandPath.Split('\') | select -last 1)-funLoadBtn`t failed $_`t$([Environment]::UserName)" | 
+        Out-File $ErrLogPath -Append  
     }
 }
 
 Function funSaveAsBtn{
-    $dialog = [System.Windows.Forms.SaveFileDialog]::new()
-    $dialog.RestoreDirectory = $true
-    $result = $dialog.ShowDialog()
-    if($result -eq [System.Windows.Forms.DialogResult]::OK){
-        $Global:strFileName = "$($dialog.FileName).ate"
-        $MainObject | Export-Clixml "$($dialog.FileName).ate" -Depth 1
-        $FileNameLbl.Text = ((Get-Item "$($dialog.FileName).ate").Name).Replace(".ate",'')
-    }   
-}
-
-Function funSaveBtn{
-
-    If($Global:strFileName -eq $Null)
+    Try
     {
         $dialog = [System.Windows.Forms.SaveFileDialog]::new()
         $dialog.RestoreDirectory = $true
         $result = $dialog.ShowDialog()
-        $MainObject.arrGroups
         if($result -eq [System.Windows.Forms.DialogResult]::OK){
             $Global:strFileName = "$($dialog.FileName).ate"
             $MainObject | Export-Clixml "$($dialog.FileName).ate" -Depth 1
-            $FileNameLbl.Text = (Get-Item "$($dialog.FileName).ate").Name
+            $FileNameLbl.Text = ((Get-Item "$($dialog.FileName).ate").Name).Replace(".ate",'')
         }
+        "$((Get-Date).ToString('MM/dd/yyyy hh:mm:ss tt'))`t $($PSCommandPath.Split('\') | 
+        select -last 1)-funSaveAsBtn`t Newfile $dialog.FileName saved`t $([Environment]::UserName)" | 
+        Out-File $UserLogPath -Append -Force  
     }
-    Else
+    Catch
     {
-        $MainObject | Export-Clixml $Global:strFileName -Depth 1
-    } 
-    $MainObject.arrGroups  
+        "$((Get-Date).ToString('MMMyy'))`t $($PSCommandPath.Split('\') | select -last 1)-funSaveAsBtn`t failed $_`t$([Environment]::UserName)" | 
+        Out-File $ErrLogPath -Append          
+    }   
+}
+
+Function funSaveBtn{
+    Try
+    {
+        If($Global:strFileName -eq $Null)
+        {
+            $dialog = [System.Windows.Forms.SaveFileDialog]::new()
+            $dialog.RestoreDirectory = $true
+            $result = $dialog.ShowDialog()
+            $MainObject.arrGroups
+            if($result -eq [System.Windows.Forms.DialogResult]::OK){
+                $Global:strFileName = "$($dialog.FileName).ate"
+                $MainObject | Export-Clixml "$($dialog.FileName).ate" -Depth 1
+                $FileNameLbl.Text = (Get-Item "$($dialog.FileName).ate").Name
+            }
+            "$((Get-Date).ToString('MM/dd/yyyy hh:mm:ss tt'))`t $($PSCommandPath.Split('\') | 
+            select -last 1)-funSaveBtn`t Newfile $Global:strFileName saved`t $([Environment]::UserName)" | 
+            Out-File $UserLogPath -Append -Force  
+        }
+        Else
+        {
+            $MainObject | Export-Clixml $Global:strFileName -Depth 1
+            "$((Get-Date).ToString('MM/dd/yyyy hh:mm:ss tt'))`t $($PSCommandPath.Split('\') | 
+            select -last 1)-funSaveBtn`t file $Global:strFileName saved`t $([Environment]::UserName)" | 
+            Out-File $UserLogPath -Append -Force  
+        } 
+    }
+    Catch
+    {
+        "$((Get-Date).ToString('MMMyy'))`t $($PSCommandPath.Split('\') | select -last 1)-funSaveBtn`t failed $_ `t$([Environment]::UserName)" | 
+        Out-File $ErrLogPath -Append        
+    }
+      
 }
 
 Function funDisAllShapes($O) { 

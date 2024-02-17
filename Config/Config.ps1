@@ -30,6 +30,7 @@ $CommentCar = "#"
 $CSVDelimiter = ','
 $strCreated = 'جدید'
 $strChanged = 'ویرایش'
+$Root = "$ComRoot\IT\Root"
 $MainRoot= "$ComRoot\IT\Root\Main"
 $ProdRoot = "$ComRoot\Production\Projects"
 $confRoot = "$ComRoot\IT\Root\Config"
