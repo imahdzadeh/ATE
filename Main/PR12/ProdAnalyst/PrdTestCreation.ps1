@@ -356,6 +356,7 @@
             $EmailGV.Enabled = $false 
             $NewFileNameTxb.Tag = ""
             $NewNameLbl.Visible = $false 
+            ProdCatLBSelectedIndexChanged
 <#
             $PRFFiles = Get-ChildItem -Path "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$FolderNameTests" -File | 
             ForEach-Object{$_.Name.TrimEnd($CSVFileExt)}
@@ -446,7 +447,7 @@
                 $ConfFileNo = gci "$ProdRoot\$($PrjNameLB.SelectedItem)" -file -Recurse| Foreach{
                     $_ -match $RegExNoVar
                     } | Select-Object *, @{ n = "IntVal"; e = {[int]($Matches[4])}} | Sort-Object IntVal | Select-Object -Last 1
-                $NewFileNameTxb.Tag = "$($ConFolPRF)$($ConfFileVer.IntVal)$($DepCode)$($ConfFileNo.IntVal+1)" 
+                $NewFileNameTxb.Tag = "$($ConFolPRF)$($ConfFileVer.IntVal)$($DepCode)$($ConfFileNo.IntVal+1)$CSVFileExt" 
                 $NewFileNameTxb.Text = ""
                 $NewNameLbl.Visible = $true
             }
@@ -751,7 +752,7 @@
     }
 
     Function ProdCatLBSelectedIndexChanged{   
-            Try
+        Try
         {
             $NewRB.Enabled = $true
             $OldRB.Enabled = $true
@@ -759,6 +760,7 @@
             $ShowMACbtn.Enabled = $true
             $ShowPRFbtn.Enabled = $true
             $DGVCBColumn.Rows.Clear()
+            $arrProducts.Clear()
  #           gci "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$($MatCodeFol)" -file | Foreach{
             gci "$ProdRoot\$($PrjNameLB.SelectedItem)" -file -Recurse| Foreach{
                        If( $_.Name -match $RegExMAC)
@@ -802,6 +804,7 @@
                 $ProdLB.Items.AddRange($PRFFiles)
             }
 #>
+
         }
         Catch
         {
@@ -815,7 +818,7 @@
             {
                 throw $_
             }      
-        }            
+        }                   
     }
 
     Function EmailGVCellValueChanged{
