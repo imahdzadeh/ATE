@@ -1,8 +1,8 @@
 ﻿# Created by Isar Mahdzadeh
 # Decmeber 12 2023
 #
-#Try
-#{
+Try
+{
     $DepCodeTemp = (Split-Path $PSScriptRoot -Parent).Split('\') | select -Last 1
     $ConFol =  (Get-Item $PSScriptRoot).parent.Parent.Parent.FullName
     $pathTemp = "$ConFol\Config\$DepCodeTemp\$((Get-Item $PSCommandPath).Name)" -replace (".ps1$","")
@@ -411,8 +411,8 @@
     }
 
     Function funShowInfo{
-#        Try
-#        {
+        Try
+        {
             $DesktopBtn.Enabled = $false
             $NewRB.Enabled = $faslse
             $ProdCatLB.Enabled = $false
@@ -453,9 +453,15 @@
             }
             Else
             {
-                $TestID = ($arrProducts.GetEnumerator() | Where-Object {$_.Value -eq $ProdLB.SelectedItem}).Name  
+                $TestID = ($arrProducts.GetEnumerator() | Where-Object {$_.Value -eq $ProdLB.SelectedItem}).Name 
+                write-host $TestID.count
+                $FileID, $rest = $TestID
+                If($rest.count -gt 0)
+                {
+                   [System.Windows.MessageBox]::Show("نام مشابه در $($rest.count) فرمول دیگر وجود دارد") 
+                }
 #                Get-Content "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$FolderNameTests\$($ProdLB.SelectedItem)$CSVFileExt" | 
-                Get-Content "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$FolderNameTests\$TestID" | 
+                Get-Content "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$FolderNameTests\$FileID" | 
                 Where-Object { !$_.StartsWith("#") } | ConvertFrom-Csv | Foreach {
                     $row = $DGVDataTab.NewRow() 
                     foreach($column in $DGVDataTab.Columns)
@@ -464,7 +470,7 @@
                     }
                     $DGVDataTab.Rows.Add($row)
                 }
-                $NewFileNameTxb.Tag = $TestID
+                $NewFileNameTxb.Tag = $FileID
                 $NewFileNameTxb.Text = $arrProducts.Item($TestID)
                 $NameLbl.Visible = $true
                 foreach ($TGVRow in $EmailGV.Rows)
@@ -492,7 +498,7 @@
                     } 
             }
             If($ImageBx.Image -ne $null){$ImgFileRembtn.Enabled = $true}
-<#
+
         }
         Catch
         {
@@ -507,7 +513,7 @@
                 throw $_
             } 
         }
-#>
+
     }
 
     Function funShowMAC{
@@ -1387,7 +1393,7 @@
     $SecoForm.Controls.Add($DesktopGB)
 
     [void]$SecoForm.ShowDialog()
-<#
+
 }
 Catch
 { 
@@ -1395,4 +1401,4 @@ Catch
     select -last 1)-Main`t $_ `t$([Environment]::UserName)" | 
     Out-File $ErrLogPath -Append 
 }
-#>
+
