@@ -946,11 +946,13 @@ Try
                                 ($TGVRow.cells[$intColToCal].Value -ne [System.DBNull]::Value) -and
                                 ($TGVRow.cells[$intColToCal].Value -ne 0)                      -and
                                 ($TGVRow.cells[$intColToSum].Value -ne $null)                  -and                                    
-                                ($TGVRow.cells[$intColToCal].Value -ne [math]::round(( ([int]($TotMlIB.Text)*[int]($TGVRow.cells[$intColToSum].Value))/100).ToString(),2))
+#                                ($TGVRow.cells[$intColToCal].Value -ne [math]::round(( ([int]($TotMlIB.Text)*[int]($TGVRow.cells[$intColToSum].Value))/100).ToString(),2))
+                                ($TGVRow.cells[$intColToCal].Value -ne [math]::round(( ([Float]($TotMlIB.Text)*[Float]($TGVRow.cells[$intColToSum].Value))/100).ToString(),2))
                             )                                   
                         )
                     {
-                        $TGVRow.cells[$intColToCal].Value = [math]::round(( ([int]($TotMlIB.Text)*[int]($TGVRow.cells[$intColToSum].Value))/100).ToString(),2)
+#                        $TGVRow.cells[$intColToCal].Value = [math]::round(( ([int]($TotMlIB.Text)*[int]($TGVRow.cells[$intColToSum].Value))/100).ToString(),2)
+                        $TGVRow.cells[$intColToCal].Value = [math]::round(( ([Float]($TotMlIB.Text)*[Float]($TGVRow.cells[$intColToSum].Value))/100).ToString(),2)
                     }
                 }
             }
