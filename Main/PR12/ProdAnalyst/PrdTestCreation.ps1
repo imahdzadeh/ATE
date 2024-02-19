@@ -842,7 +842,7 @@ Try
                         $TGVRow.HeaderCell.Value = ($TGVRow.Index +1).ToString()
                             If ($TGVRow.cells[$intColToSum].Value -match '^\d*\.?\d+$') 
                             {
-                                $intSum  = $intSum + [int]($TGVRow.cells[$intColToSum].Value) 
+                                $intSum  = $intSum + [Float]($TGVRow.cells[$intColToSum].Value) 
                             }
                             If ($TotMlIB.Text -match $DecimalRegEx )
                             {
