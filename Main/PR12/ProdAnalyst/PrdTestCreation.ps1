@@ -1135,8 +1135,8 @@ Try
     $NameLbl.BackColor = ''
 
     $NewFileNameTxb = New-Object System.Windows.Forms.TextBox
-    $NewFileNameTxb.Location = New-Object System.Drawing.size(570,120)
-    #$NewFileNameTxb.Size = New-Object System.Drawing.Size(80,20)
+    $NewFileNameTxb.Location = New-Object System.Drawing.size(520,120)
+    $NewFileNameTxb.Size = New-Object System.Drawing.Size(130,20)
     $NewFileNameTxb.AutoSize = $ture 
     $NewFileNameTxb.Text = ""
     $NewFileNameTxb.Tag = ""
