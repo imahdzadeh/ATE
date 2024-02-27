@@ -497,10 +497,13 @@ Try
                 }
                 $TotPercentIB.Text = [int]$intSum
                 $TotMlIB.Text = [math]::round($intCal,2)
-                If(Test-Path "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$imgFolder\$($NewFileNameTxb.Tag)$($ImageExt)")
+
+#                $test = "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$imgFolder\$($NewFileNameTxb.Tag)$($ImageExt)"
+                $test = "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$imgFolder\$($TestIDTxt.Text)$($ImageExt)"
+                If(Test-Path "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$imgFolder\$($TestIDTxt.Text)$($ImageExt)")
                     {
  #                       $imgFile = (Get-Item $dialog.FileName)
-                        $Global:img = [System.Drawing.Image]::Fromfile("$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$imgFolder\$($NewFileNameTxb.Tag)$($ImageExt)");
+                        $Global:img = [System.Drawing.Image]::Fromfile("$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$imgFolder\$($TestIDTxt.Text)$($ImageExt)");
                         $ImageBx.Image = $Global:img
                         $ImageBx.Tag = $imgFile.Name
 #                        $ImageBx.Image.Save("$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$imgFolder\$($NewFileNameTxb.Tag)$($ImageExt)")
@@ -980,9 +983,15 @@ Try
 
     Function ProdLBDrawItem($s,$e){       
         If ($s.Items.Count -eq 0) {return}
-        If(Test-Path "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$imgFolder\$($s.Items[$e.Index])$($ImageExt)")
+        
+        $TestID = ($arrProducts.GetEnumerator() | Where-Object {$_.Value -eq ($s.Items[$e.Index]).trim()}).Name 
+        $FileID, $rest = $TestID
+        $FileID = $FileID -replace $CSVFileExt,""
+        $test = "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$imgFolder\$FileID$($ImageExt)" 
+#        If(Test-Path "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$imgFolder\$($s.Items[$e.Index])$($ImageExt)")
+        If(Test-Path "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$imgFolder\$FileID$($ImageExt)")
             {
-                $Global:img = [System.Drawing.Image]::Fromfile("$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$imgFolder\$($s.Items[$e.Index])$($ImageExt)");
+                $Global:img = [System.Drawing.Image]::Fromfile("$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$imgFolder\$FileID$($ImageExt)");
                 $e.Graphics.DrawImage($Global:img,0,$e.Bounds.Y+2.5,10,10)
                 $Global:img.Dispose()
             }             
@@ -1135,8 +1144,8 @@ Try
     $NameLbl.BackColor = ''
 
     $NewFileNameTxb = New-Object System.Windows.Forms.TextBox
-    $NewFileNameTxb.Location = New-Object System.Drawing.size(520,120)
-    $NewFileNameTxb.Size = New-Object System.Drawing.Size(130,20)
+    $NewFileNameTxb.Location = New-Object System.Drawing.size(500,120)
+    $NewFileNameTxb.Size = New-Object System.Drawing.Size(150,20)
     $NewFileNameTxb.AutoSize = $ture 
     $NewFileNameTxb.Text = ""
     $NewFileNameTxb.Tag = ""
@@ -1258,7 +1267,7 @@ Try
     #$DesktopGB.BackColor = 'red'
 
     $OldRB = New-Object System.Windows.Forms.RadioButton
-    $OldRB.Location = New-Object System.Drawing.size(140,12)
+    $OldRB.Location = New-Object System.Drawing.size(190,12)
     $OldRB.Size = New-Object System.Drawing.Size(100,20)
     $oldRB.Checked = $false 
     $OldRB.Text = "تغییر آزمایش موجود"
@@ -1270,7 +1279,7 @@ Try
     #$NeworOldRB.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 9, [System.Drawing.FontStyle]::Bold)
 
     $NewRB = New-Object System.Windows.Forms.RadioButton
-    $NewRB.Location = New-Object System.Drawing.size(255,12)
+    $NewRB.Location = New-Object System.Drawing.size(305,12)
     $NewRB.Size = New-Object System.Drawing.Size(90,20) 
     $NewRB.Checked = $false
     $NewRB.Enabled = $false
@@ -1282,7 +1291,7 @@ Try
 
     $ProdLB = New-Object System.Windows.Forms.ComboBox
     $ProdLB.Location = New-Object System.Drawing.size(10,10)
-    $ProdLB.Size = New-Object System.Drawing.Size(120,30)
+    $ProdLB.Size = New-Object System.Drawing.Size(170,30)
     $ProdLB.AutoCompleteSource = 'ListItems'
     $ProdLB.AutoCompleteMode = 'Append'
     #$ProdLB.Text = 200
@@ -1298,8 +1307,8 @@ Try
     })
 
     $RBGroup = New-Object System.Windows.Forms.GroupBox
-    $RBGroup.Location = '400,70'
-    $RBGroup.size = '350,35'
+    $RBGroup.Location = '350,70'
+    $RBGroup.size = '400,35'
     #$RBGroup.Enabled = $false
     $RBGroup.Padding = 1
 
