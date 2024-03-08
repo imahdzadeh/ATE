@@ -97,10 +97,9 @@ Try
                                         }
                                         Else
                                         {
-                                            "$( ($_.Cells | % {$_.Value}) -join ','),$strCreated,$((Get-Date).ToString('MM/dd/yyyy hh:mm tt')),$([Environment]::UserName),NA,NA,$($NewFileNameTxb.Text)".Trim() | 
+                                            "$( ($_.Cells | % {$_.Value}) -join ','),$strCreated,$((Get-Date).ToString('MM/dd/yyyy hh:mm tt')),$([Environment]::UserName),NA,NA,$($NewFileNameTxb.Text),$true,$($VerTxt.Text)".Trim() | 
                                             Out-file $strFileName -Append   
-                                        }
-                                
+                                        }                                
                                     }
                                     End{}                           
                                 }
@@ -125,8 +124,7 @@ Try
                                     Else
                                     {
                                         '#' + $_        
-                                    }                           
-                            
+                                    }                            
                                 } |  Out-File $strFileName
                             #       $strComLine | Out-File $strFileName -Append
                             #      $FileWriter = new-object System.IO.StreamWriter($strFileName)
@@ -141,7 +139,7 @@ Try
                                     }
                                     Else
                                     {
-                                        "$( ($_.Cells | % {$_.Value}) -join ','),$strChanged,$((Get-Date).ToString('MM/dd/yyyy hh:mm tt')),$([Environment]::UserName),NA,NA,$($NewFileNameTxb.Text)".Trim() | 
+                                        "$( ($_.Cells | % {$_.Value}) -join ','),$strChanged,$((Get-Date).ToString('MM/dd/yyyy hh:mm tt')),$([Environment]::UserName),NA,NA,$($NewFileNameTxb.Text),$true,$([int]$VerTxt.Text+1)".Trim() | 
                                         Out-file $strFileName -Append
                                     }                                  
                                 }
@@ -344,8 +342,8 @@ Try
         $ProdLB.Text = $null
         $EmailGV.Enabled = $false
         $NewFileNameTxb.Tag = "" 
-        $NewNameLbl.Visible = $false
-        $NameLbl.Visible = $false 
+#        $NewNameLbl.Visible = $false
+#        $NameLbl.Visible = $false 
     } 
 
     Function funOldRBClick{
@@ -355,7 +353,7 @@ Try
             $DesktopBtn.Enabled = $false
             $EmailGV.Enabled = $false 
             $NewFileNameTxb.Tag = ""
-            $NewNameLbl.Visible = $false 
+#            $NewNameLbl.Visible = $false 
             ProdCatLBSelectedIndexChanged
 <#
             $PRFFiles = Get-ChildItem -Path "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$FolderNameTests" -File | 
@@ -375,6 +373,8 @@ Try
     } 
 
     Function funDisAllCB{
+        $VerTxt.Text = ""
+        $TestIDTxt.Text = ""
         $NewRB.Enabled = $faslse
         $OldRB.Enabled = $false
         $NewRB.Checked = $false
@@ -395,13 +395,13 @@ Try
         $TotLbl.Visible = $false
         $TotPercentIB.Visible = $false
         $TotMlIB.Visible = $false
-        $NewNameLbl.Visible = $false 
+#        $NewNameLbl.Visible = $false 
         $NewFileNameTxb.Text = ""
         $NewFileNameTxb.Enabled = $false
         $Cancelbtn.Enabled = $flase
         $saveBtn.Enabled = $false
         $ProdCatLB.Text = $null
-        $NameLbl.Visible = $false
+#        $NameLbl.Visible = $false
         $PrjNameLB.Enabled = $true
         $ImageBx.Image = $null
         $arrProducts.Clear()
@@ -435,6 +435,7 @@ Try
                 $ConfFileVer = $null
                 $TotMlIB.Text = 0
                 $TotPercentIB.Text = 0
+                $VerTxt.Text = 1
                 "$ConfFol\$(((Get-Item $PSCommandPath).Name) -replace (".ps1$",''))\$ConFolPRF$($DGVCBInfoVer.IntVal)"
 
 #                $ConfFileVer = gci "$confRoot\$ConFolPRF" -file | Foreach{
@@ -448,13 +449,14 @@ Try
                     $_ -match $RegExNoVar
                     } | Select-Object *, @{ n = "IntVal"; e = {[int]($Matches[4])}} | Sort-Object IntVal | Select-Object -Last 1
                 $NewFileNameTxb.Tag = "$($ConFolPRF)$($ConfFileVer.IntVal)$($DepCode)$($ConfFileNo.IntVal+1)$CSVFileExt" 
+                $TestIDTxt.Text = "$($ConFolPRF)$($ConfFileVer.IntVal)$($DepCode)$($ConfFileNo.IntVal+1)"
                 $NewFileNameTxb.Text = ""
-                $NewNameLbl.Visible = $true
+#                $NewNameLbl.Visible = $true
             }
             Else
             {
+                $VerTxt.Text = 1
                 $TestID = ($arrProducts.GetEnumerator() | Where-Object {$_.Value -eq $ProdLB.SelectedItem}).Name 
-                write-host $TestID.count
                 $FileID, $rest = $TestID
                 If($rest.count -gt 0)
                 {
@@ -463,6 +465,13 @@ Try
 #                Get-Content "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$FolderNameTests\$($ProdLB.SelectedItem)$CSVFileExt" | 
                 Get-Content "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$FolderNameTests\$FileID" | 
                 Where-Object { !$_.StartsWith("#") } | ConvertFrom-Csv | Foreach {
+                    If($_.Header)
+                    {
+                        If([int]$_.Ver -gt 0)
+                        {
+                            $VerTxt.Text = [int]$_.Ver
+                        }
+                    }    
                     $row = $DGVDataTab.NewRow() 
                     foreach($column in $DGVDataTab.Columns)
                     {            
@@ -471,8 +480,9 @@ Try
                     $DGVDataTab.Rows.Add($row)
                 }
                 $NewFileNameTxb.Tag = $FileID
+                $TestIDTxt.Text = $FileID -replace $CSVFileExt,""
                 $NewFileNameTxb.Text = $arrProducts.Item($TestID)
-                $NameLbl.Visible = $true
+#                $NameLbl.Visible = $true
                 foreach ($TGVRow in $EmailGV.Rows)
                 {
                     $TGVRow.HeaderCell.Value = ($TGVRow.Index +1).ToString()
@@ -487,10 +497,13 @@ Try
                 }
                 $TotPercentIB.Text = [int]$intSum
                 $TotMlIB.Text = [math]::round($intCal,2)
-                If(Test-Path "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$imgFolder\$($NewFileNameTxb.Tag)$($ImageExt)")
+
+#                $test = "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$imgFolder\$($NewFileNameTxb.Tag)$($ImageExt)"
+                $test = "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$imgFolder\$($TestIDTxt.Text)$($ImageExt)"
+                If(Test-Path "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$imgFolder\$($TestIDTxt.Text)$($ImageExt)")
                     {
  #                       $imgFile = (Get-Item $dialog.FileName)
-                        $Global:img = [System.Drawing.Image]::Fromfile("$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$imgFolder\$($NewFileNameTxb.Tag)$($ImageExt)");
+                        $Global:img = [System.Drawing.Image]::Fromfile("$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$imgFolder\$($TestIDTxt.Text)$($ImageExt)");
                         $ImageBx.Image = $Global:img
                         $ImageBx.Tag = $imgFile.Name
 #                        $ImageBx.Image.Save("$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$imgFolder\$($NewFileNameTxb.Tag)$($ImageExt)")
@@ -498,6 +511,7 @@ Try
                     } 
             }
             If($ImageBx.Image -ne $null){$ImgFileRembtn.Enabled = $true}
+           
 
         }
         Catch
@@ -969,9 +983,15 @@ Try
 
     Function ProdLBDrawItem($s,$e){       
         If ($s.Items.Count -eq 0) {return}
-        If(Test-Path "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$imgFolder\$($s.Items[$e.Index])$($ImageExt)")
+        
+        $TestID = ($arrProducts.GetEnumerator() | Where-Object {$_.Value -eq ($s.Items[$e.Index]).trim()}).Name 
+        $FileID, $rest = $TestID
+        $FileID = $FileID -replace $CSVFileExt,""
+        $test = "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$imgFolder\$FileID$($ImageExt)" 
+#        If(Test-Path "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$imgFolder\$($s.Items[$e.Index])$($ImageExt)")
+        If(Test-Path "$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$imgFolder\$FileID$($ImageExt)")
             {
-                $Global:img = [System.Drawing.Image]::Fromfile("$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$imgFolder\$($s.Items[$e.Index])$($ImageExt)");
+                $Global:img = [System.Drawing.Image]::Fromfile("$ProdRoot\$($PrjNameLB.SelectedItem)\$($ProdCatLB.SelectedItem)\$imgFolder\$FileID$($ImageExt)");
                 $e.Graphics.DrawImage($Global:img,0,$e.Bounds.Y+2.5,10,10)
                 $Global:img.Dispose()
             }             
@@ -1013,7 +1033,7 @@ Try
 
     $EmailGV = $null
     $EmailGV = New-Object System.Windows.Forms.DataGridView
-    $EmailGV.Location = New-Object System.Drawing.size(80,115)
+    $EmailGV.Location = New-Object System.Drawing.size(80,145)
     $EmailGV.RowHeadersVisible = $True
 #    $EmailGV.rowh
 #    $EmailGV.DefaultCellStyle.flatstyle = 0
@@ -1043,7 +1063,7 @@ Try
         [void]$EmailGV.columns.Add($col)
     }
     $HeaderWidth = $HeaderWidth + 52
-    $EmailGV.Size=New-Object System.Drawing.Size($HeaderWidth,350)
+    $EmailGV.Size=New-Object System.Drawing.Size($HeaderWidth,320)
     $EmailGV.AllowUserToDeleteRows = $false
     $EmailGV.AllowUserToAddRows = $true
     $EmailGV.ReadOnly = $false
@@ -1106,32 +1126,67 @@ Try
     $ProdLbl.Size = New-Object System.Drawing.Size(80,20) 
     $ProdLbl.Text = ":نوع محصول" 
     $ProdLbl.TextAlign=[System.Drawing.ContentAlignment]::bottomright
-
+<#
     $NewNameLbl = New-Object System.Windows.Forms.label
-    $NewNameLbl.Location = New-Object System.Drawing.size(200,85)
+    $NewNameLbl.Location = New-Object System.Drawing.size(200,120)
     $NewNameLbl.Size = New-Object System.Drawing.Size(80,20) 
     $NewNameLbl.Text = ":نام آزمایش جدید" 
     $NewNameLbl.TextAlign=[System.Drawing.ContentAlignment]::bottomleft
-    $NewNameLbl.Visible = $false
-    $NewNameLbl.BackColor = ''
-
+    $NewNameLbl.Visible = $ture 
+    $NewNameLbl.BackColor = 'green'
+#>
     $NameLbl = New-Object System.Windows.Forms.label
-    $NameLbl.Location = New-Object System.Drawing.size(195,85)
-    $NameLbl.Size = New-Object System.Drawing.Size(70,20) 
+    $NameLbl.Location = New-Object System.Drawing.size(650,120)
+    $NameLbl.Size = New-Object System.Drawing.Size(50,20) 
     $NameLbl.Text = ":نام آزمایش" 
     $NameLbl.TextAlign=[System.Drawing.ContentAlignment]::bottomleft
-    $NameLbl.Visible = $False
+#    $NameLbl.Visible = $ture 
     $NameLbl.BackColor = ''
 
     $NewFileNameTxb = New-Object System.Windows.Forms.TextBox
-    $NewFileNameTxb.Location = New-Object System.Drawing.size(90,85)
-    #$NewFileNameTxb.Size = New-Object System.Drawing.Size(80,20)
+    $NewFileNameTxb.Location = New-Object System.Drawing.size(500,120)
+    $NewFileNameTxb.Size = New-Object System.Drawing.Size(150,20)
     $NewFileNameTxb.AutoSize = $ture 
     $NewFileNameTxb.Text = ""
     $NewFileNameTxb.Tag = ""
-    $NewFileNameTxb.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 9, [System.Drawing.FontStyle]::Bold)
+    $NewFileNameTxb.TextAlign = 2
+    $NewFileNameTxb.Font = [System.Drawing.Font]::new("arial", 10, [System.Drawing.FontStyle]::Bold)
  #   $NewFileNameTxb.TextAlign=[System.Drawing.ContentAlignment]::MiddleRight
     $NewFileNameTxb.BackColor = ''
+    $NewFileNameTxb.Enabled = $false
+    $NewFileNameTxb.Visible = $True
+
+    $VerLbl = New-Object System.Windows.Forms.label
+    $VerLbl.Location = New-Object System.Drawing.size(400,120)
+    $VerLbl.Size = New-Object System.Drawing.Size(70,20) 
+    $VerLbl.Text = ":نسخه" 
+    $VerLbl.TextAlign=[System.Drawing.ContentAlignment]::bottomleft
+    $VerLbl.Visible = $True
+    $VerLbl.BackColor = ''
+
+    $VerTxt = New-Object System.Windows.Forms.label
+    $VerTxt.Location = New-Object System.Drawing.size(380,120)
+    $VerTxt.Size = New-Object System.Drawing.Size(20,20) 
+    $VerTxt.Text = "" 
+    $VerTxt.TextAlign=[System.Drawing.ContentAlignment]::bottomleft
+    $VerTxt.Visible = $True
+    $VerTxt.BackColor = ''
+
+    $TestIDLbl = New-Object System.Windows.Forms.label
+    $TestIDLbl.Location = New-Object System.Drawing.size(190,120)
+    $TestIDLbl.Size = New-Object System.Drawing.Size(35,20) 
+    $TestIDLbl.Text = ":شناسه" 
+    $TestIDLbl.TextAlign=[System.Drawing.ContentAlignment]::bottomleft
+    $TestIDLbl.Visible = $True
+    $TestIDLbl.BackColor = ''
+
+    $TestIDTxt = New-Object System.Windows.Forms.label
+    $TestIDTxt.Location = New-Object System.Drawing.size(85,120)
+    $TestIDTxt.Size = New-Object System.Drawing.Size(100,20) 
+    $TestIDTxt.Text = "" 
+    $TestIDTxt.TextAlign=[System.Drawing.ContentAlignment]::bottomleft
+    $TestIDTxt.Visible = $True
+    $TestIDTxt.BackColor = ''
 
     #[System.Windows.MessageBox]::Show('test')
 
@@ -1212,7 +1267,7 @@ Try
     #$DesktopGB.BackColor = 'red'
 
     $OldRB = New-Object System.Windows.Forms.RadioButton
-    $OldRB.Location = New-Object System.Drawing.size(140,12)
+    $OldRB.Location = New-Object System.Drawing.size(190,12)
     $OldRB.Size = New-Object System.Drawing.Size(100,20)
     $oldRB.Checked = $false 
     $OldRB.Text = "تغییر آزمایش موجود"
@@ -1224,7 +1279,7 @@ Try
     #$NeworOldRB.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 9, [System.Drawing.FontStyle]::Bold)
 
     $NewRB = New-Object System.Windows.Forms.RadioButton
-    $NewRB.Location = New-Object System.Drawing.size(255,12)
+    $NewRB.Location = New-Object System.Drawing.size(305,12)
     $NewRB.Size = New-Object System.Drawing.Size(90,20) 
     $NewRB.Checked = $false
     $NewRB.Enabled = $false
@@ -1236,7 +1291,7 @@ Try
 
     $ProdLB = New-Object System.Windows.Forms.ComboBox
     $ProdLB.Location = New-Object System.Drawing.size(10,10)
-    $ProdLB.Size = New-Object System.Drawing.Size(120,30)
+    $ProdLB.Size = New-Object System.Drawing.Size(170,30)
     $ProdLB.AutoCompleteSource = 'ListItems'
     $ProdLB.AutoCompleteMode = 'Append'
     #$ProdLB.Text = 200
@@ -1252,8 +1307,8 @@ Try
     })
 
     $RBGroup = New-Object System.Windows.Forms.GroupBox
-    $RBGroup.Location = '400,70'
-    $RBGroup.size = '350,35'
+    $RBGroup.Location = '350,70'
+    $RBGroup.size = '400,35'
     #$RBGroup.Enabled = $false
     $RBGroup.Padding = 1
 
@@ -1320,7 +1375,7 @@ Try
     $ShowPRFbtn.Add_Click({funShowPRF})
 
     $ImgFileAddbtn = New-Object system.Windows.Forms.Button
-    $ImgFileAddbtn.Location = New-Object System.Drawing.Size(180,55) 
+    $ImgFileAddbtn.Location = New-Object System.Drawing.Size(180,65) 
     $ImgFileAddbtn.BackColor = "#d2d4d6"
     $ImgFileAddbtn.text = "بارگذاری عکس"
     $ImgFileAddbtn.width = 100
@@ -1331,7 +1386,7 @@ Try
     $ImgFileAddbtn.Add_Click({funImgAddFile})
 
     $ImgFileRembtn = New-Object system.Windows.Forms.Button
-    $ImgFileRembtn.Location = New-Object System.Drawing.Size(180,25) 
+    $ImgFileRembtn.Location = New-Object System.Drawing.Size(180,35) 
     $ImgFileRembtn.BackColor = "#d2d4d6"
     $ImgFileRembtn.text = "حذف عکس"
     $ImgFileRembtn.width = 100
@@ -1342,7 +1397,7 @@ Try
     $ImgFileRembtn.Add_Click({funImgRemFile})
 
     $ImageBx = new-object Windows.Forms.PictureBox
-    $ImageBx.Location = New-Object System.Drawing.Size(95,25)
+    $ImageBx.Location = New-Object System.Drawing.Size(95,35)
     $ImageBx.Size = New-Object System.Drawing.Size(80,60)
     $ImageBx.SizeMode = 1
     $ImageBx.add_paint({
@@ -1382,6 +1437,13 @@ Try
     $DesktopGB.Controls.Add($TotMlIB)
     $DesktopGB.Controls.Add($TotLbl)
     $DesktopGB.Controls.Add($GBLbl)
+
+    $DesktopGB.Controls.Add($VerLbl)
+    $DesktopGB.Controls.Add($VerTxt)
+    $DesktopGB.Controls.Add($TestIDLbl)
+    $DesktopGB.Controls.Add($TestIDTxt)
+    
+    
     $DesktopGB.Controls.Add($ProdLbl)
     $DesktopGB.Controls.Add($ProjLbl)
     #$DesktopGB.Controls.Add($ProdLB)
