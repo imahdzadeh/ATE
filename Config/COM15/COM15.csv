@@ -1,0 +1,5 @@
+ScriptName,Title,PersianAlias
+frmGoodsDef.ps1,COMAnalyst, تعریف کالا
+frmWHReceipt.ps1,COMAnalyst, رسید انبار
+frmWHRemitt.ps1,COMAnalyst, حواله انبار
+frmWHCardex.ps1,COMAnalyst, کارت انبار

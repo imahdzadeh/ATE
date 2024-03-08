@@ -1,0 +1,5 @@
+obj,MainTableName,TableName,BackColor,AutoSize,ColumnCount,RowCount,CellBorderStyle,Height
+System.Windows.Forms.TableLayoutPanel,MainTbl,HeaderTbl,red,$true,4,3,0,
+
+
+

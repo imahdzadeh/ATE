@@ -1,0 +1,2 @@
+obj,TableName,objName,Width,Height,Padding,Margin,Tag,ImageName,ImageAlign,Appearance,FlatStyle,functions,BackColor,ForeColor,TextAlign,Anchor,Text
+System.Windows.Forms.Label,HeaderTbl,FileNameLbl,110,30,,,,,,,,,,,256,,salam test text

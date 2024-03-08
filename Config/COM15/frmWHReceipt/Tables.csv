@@ -1,0 +1,10 @@
+obj,MainTableName,TableName,BackColor,AutoSize,ColumnCount,RowCount,CellBorderStyle,Height
+System.Windows.Forms.TableLayoutPanel,MainTbl,ShapesTbl,,$true,2,,0,
+System.Windows.Forms.TableLayoutPanel,MainTbl,LinesTbl,,$true,1,,0,
+System.Windows.Forms.TableLayoutPanel,MainTbl,SubIconTbl,,$true,3,,0,
+System.Windows.Forms.TableLayoutPanel,MainTbl,LaunchTbl,,$true,3,0,0,
+System.Windows.Forms.TableLayoutPanel,MainTbl,MagnifierTbl,,$true,3,0,0,
+System.Windows.Forms.TableLayoutPanel,MainTbl,GroupsTbl,,$true,2,,0,
+System.Windows.Forms.TableLayoutPanel,MainTbl,TopMenuTbl,,$true,16,1,1,25
+
+

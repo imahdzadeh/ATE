@@ -37,7 +37,7 @@ $confRoot = "$ComRoot\IT\Root\Config"
 $LogFolder = "$ComRoot\IT\Root\Log"
 $ImageFolder = "$ComRoot\IT\Root\Images"
 $ITRoot = "$ComRoot\IT"
-$AllDepCode = "B10|OF11|HR20|LA30|OP40|IT50|AF60|SA70|MKT80|CE90|PR12|PU13"
+$AllDepCode = "B10|OF11|HR20|LA30|OP40|IT50|AF60|SA70|MKT80|CE90|PR12|PU13|COM15"
 $persianCalendar = New-Object System.Globalization.PersianCalendar
 $gregorianDate = [System.TimeZoneInfo]::ConvertTimeBySystemTimeZoneId([DateTime]::Now,"Iran Standard Time")
 # Convert the Gregorian date to Shamsi (Jalali) calendar
