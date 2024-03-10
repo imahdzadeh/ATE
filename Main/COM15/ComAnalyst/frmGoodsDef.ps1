@@ -17,13 +17,23 @@ $pathTemp = "$ConFol\Config\$DepCodeTemp\$((Get-Item $PSCommandPath).Name)" -rep
 
 if($varDebugTrace -ne 0){Set-PSDebug -Trace $varDebugTrace}Else{Set-PSDebug -Trace $varDebugTrace}
 
+$DesktopCC = New-Object Panel
+$DesktopCC.AutoScroll = $true
+#$DesktopCC.Size = New-Object Size(1100,601)
+#$DesktopCC.Controls.Add($DesktopPan)
+#$DesktopCC.BackColor = 'gray'
 
 $MainTbl = New-Object TableLayoutPanel
 #$MainTbl.AutoSize = $true
 $MainTbl.CellBorderStyle = 1
 $MainTbl.Size = New-Object Size(1100,601)
+#$MainTbl.ColumnCount = 4
+#$MainTbl.RowCount = 3
+#$MainTbl.BackColor = 'green'
 
 $HeaderTbl = New-Object TableLayoutPanel
+#$HeaderTbl.AutoScroll = $true
+#$HeaderTbl.Controls.Add($DesktopPan)
 $HeaderTbl.CellBorderStyle = 2
 $HeaderTbl.Size = New-Object Size(1100,100)
 $HeaderTbl.ColumnCount = 3
@@ -31,6 +41,8 @@ $HeaderTbl.RowCount = 3
 $HeaderTbl.BackColor = 'pink'
 
 $HeaderTblLbl1 = New-Object System.Windows.Forms.label
+#$HeaderTblLbl1.Location = New-Object System.Drawing.size(520,-5)
+#$HeaderTblLbl1.Size = New-Object System.Drawing.Size(250,20) 
 $HeaderTblLbl1.Text = "فرم تعریف کالا" 
 $HeaderTblLbl1.Font = 'Arial'
 $HeaderTblLbl1.TextAlign=[System.Drawing.ContentAlignment]::TopRight  
@@ -41,7 +53,8 @@ $HeaderTblLbl2.Font = 'Arial'
 $HeaderTblLbl2.TextAlign=[System.Drawing.ContentAlignment]::TopLeft
 
 $HeaderTblLbl3 = New-Object System.Windows.Forms.label
-
+#$HeaderTblLbl1.Location = New-Object System.Drawing.size(520,-5)
+#$HeaderTblLbl1.Size = New-Object System.Drawing.Size(250,20) 
 $HeaderTblLbl3.Text = "WHE-FR-001-00" 
 $HeaderTblLbl3.Font = 'Arial'
 $HeaderTblLbl3.TextAlign=[System.Drawing.ContentAlignment]::TopRight
@@ -67,23 +80,27 @@ $HeaderTblRefvalueLbl.Font = 'Arial'
 $HeaderTblRefValueLbl.TextAlign=[System.Drawing.ContentAlignment]::TopRight
 
 $HeaderTblNameLbl = New-Object System.Windows.Forms.label
-$HeaderTblNamelbl.Tex ="شرکت مهــــــدپــویـــــــان اطلــــــس"  
+$HeaderTblNamelbl.Text = "شرکت مهــــــدپــویـــــــان اطلــــــس" 
 $HeaderTblNameLbl.Font = 'Arial'
+#$HeaderTblNameLbl.TextAlign=[System.Drawing.ContentAlignment]::MiddleCenter
 
+
+$DesktopCC.Controls.Add($HeaderTblNameLbl)
 
 $Secoform.Controls.Add($MainTbl)
 $MainTbl.Controls.Add($HeaderTbl)
+#$HeaderTbl.Controls.Add($HeaderTblLbl1,2,2)
 $HeaderTbl.Controls.Add($HeaderTblLbl2,1,0)
 $HeaderTbl.Controls.Add($HeaderTblLbl3,0,0)
 $HeaderTbl.Controls.Add($HeaderTblDateLbl,1,1)
 $HeaderTbl.Controls.Add($HeaderTblDateValueLbl,0,1)
 $HeaderTbl.Controls.Add($HeaderTblRefLbl,1,2)
 $HeaderTbl.Controls.Add($HeaderTblRefValueLbl,0,2)
-$HeaderTbl.Controls.Add($HeaderTblNameLbl,2,0)
-$HeaderTbl.SetRowSpan($HeaderTblNameLbl,2)
+$HeaderTbl.Controls.Add($DesktopCC,2,0)
+$HeaderTbl.SetRowSpan($DesktopCC,2)
+#$HeaderTbl.SetRowSpan(2)
 
-
-
+#$Secoform.Controls.Add($HeaderTbl)
     
 
 
