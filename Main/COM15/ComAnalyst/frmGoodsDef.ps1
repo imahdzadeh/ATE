@@ -17,6 +17,11 @@ $pathTemp = "$ConFol\Config\$DepCodeTemp\$((Get-Item $PSCommandPath).Name)" -rep
 
 if($varDebugTrace -ne 0){Set-PSDebug -Trace $varDebugTrace}Else{Set-PSDebug -Trace $varDebugTrace}
 
+$DesktopCC = New-Object Panel
+$DesktopCC.AutoScroll = $true
+#$DesktopCC.Size = New-Object Size(1100,601)
+#$DesktopCC.Controls.Add($DesktopPan)
+#$DesktopCC.BackColor = 'gray'
 
 $MainTbl = New-Object TableLayoutPanel
 #$MainTbl.AutoSize = $true
@@ -79,6 +84,9 @@ $HeaderTblNamelbl.Text = "شرکت مهــــــدپــویـــــــا�
 $HeaderTblNameLbl.Font = 'Arial'
 #$HeaderTblNameLbl.TextAlign=[System.Drawing.ContentAlignment]::MiddleCenter
 
+
+$DesktopCC.Controls.Add($HeaderTblNameLbl)
+
 $Secoform.Controls.Add($MainTbl)
 $MainTbl.Controls.Add($HeaderTbl)
 #$HeaderTbl.Controls.Add($HeaderTblLbl1,2,2)
@@ -88,8 +96,8 @@ $HeaderTbl.Controls.Add($HeaderTblDateLbl,1,1)
 $HeaderTbl.Controls.Add($HeaderTblDateValueLbl,0,1)
 $HeaderTbl.Controls.Add($HeaderTblRefLbl,1,2)
 $HeaderTbl.Controls.Add($HeaderTblRefValueLbl,0,2)
-$HeaderTbl.Controls.Add($HeaderTblNameLbl,2,0)
-$HeaderTbl.SetRowSpan($HeaderTblNameLbl,2)
+$HeaderTbl.Controls.Add($DesktopCC,2,0)
+$HeaderTbl.SetRowSpan($DesktopCC,2)
 #$HeaderTbl.SetRowSpan(2)
 
 #$Secoform.Controls.Add($HeaderTbl)
