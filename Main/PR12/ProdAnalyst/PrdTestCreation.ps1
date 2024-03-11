@@ -17,8 +17,6 @@ Try
     $ProjNames = Get-ChildItem -Path $ProdRoot -Directory | ForEach-Object {$_.Name}
     $DGVCellValueChanging = $flase
     $DGVCBInfo = New-Object system.Data.DataTable
-    $test = "$ConfFol\$(((Get-Item $PSCommandPath).Name) -replace (".ps1$",''))"
-    $test1 = "$ConfFol\$(((Get-Item $PSCommandPath).Name) -replace (".ps1$",''))\$ConFolPRF$($DGVCBInfoVer.IntVal)"
     $DGVCBInfoVer = gci "$ConfFol\$(((Get-Item $PSCommandPath).Name) -replace (".ps1$",''))" -file | Foreach {
       $_ -replace '^PRF', ''
       } | Select-Object *, @{ n = "IntVal"; e = {[int]($_)}} | Sort-Object IntVal | Select-Object -Last 1
