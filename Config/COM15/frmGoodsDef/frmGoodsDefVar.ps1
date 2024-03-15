@@ -15,6 +15,7 @@ Where-Object {$_.UserID -match $([Environment]::UserName)} | % {$_.mainpath}
 #
 # Define objects and variables customed to this script between the lines
 #///////////////////////////////////////////////////////////////////////////////////
+$maintbl = "maintbl"
 $Creation = "Creation"
 $DesktopWidth = 1100
 $desktopHeight = 600
